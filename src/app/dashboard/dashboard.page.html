@@ -1,0 +1,52 @@
+<ion-header>
+    <ion-toolbar>
+        <ion-title slot="start"> {{connectedDevice.name}}</ion-title>
+        <ion-label slot="end" color="danger" class="disconnect" (click)="disconnect(connectedDevice)">Disconnect</ion-label>
+    </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+    <!-- [START] Buttons grid -->
+    <ion-grid>
+
+        <ion-row>
+            <ion-col>
+                <ion-item>
+                    <ion-range  min="0" max="180" step="1" snaps="true" [(ngModel)]="speed" (ionChange)="onRangeChange(speed)" (touchend)="onRangeRelease()" value="90"></ion-range>
+                  </ion-item>            
+            </ion-col>
+
+        </ion-row>
+    </ion-grid>
+    <!-- [END] Buttons grid -->
+
+    <!-- [START] Round progress bar grid (potentio level) -->
+    <ion-grid>
+        <ion-row>
+            <ion-col>
+                <div class="progress-bar-level">
+                    <ion-label class="level">{{potentioLevel}}% </ion-label>
+                </div>
+
+                <round-progress class="round-progress-bar" [current]="potentioLevel" [max]="100" [color]="'#3880ff'" [background]="'#ffffff'" [radius]="120" [stroke]="20" [semicircle]="false" [rounded]="false" [clockwise]="true"></round-progress>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+    <!-- [END] Round progress bar grid (potentio level) -->
+
+    <!-- [START] Progress bar grid (battery level) -->
+    <ion-grid>
+        <ion-row>
+            <ion-col>
+                <ion-label class="level"> {{batteryLevel}}%</ion-label>
+            </ion-col>
+        </ion-row>
+        <ion-row>
+            <ion-col>
+                <ion-progress-bar color="primary" value="{{batteryLevel/100}}"></ion-progress-bar>
+            </ion-col>
+        </ion-row>
+    </ion-grid>
+    <!-- [END] Progress bar grid (battery level) -->
+</ion-content>
