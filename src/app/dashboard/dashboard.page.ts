@@ -3,6 +3,11 @@ import { NavController, AlertController, ToastController} from '@ionic/angular';
 import { ActivatedRoute} from "@angular/router";
 import { Platform } from '@ionic/angular'; 
 import { BLE } from '@ionic-native/ble/ngx';
+import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plugins/device-motion/ngx';
+
+import { interval } from 'rxjs';
+
+
 
 const CUSTOM_SERVICE_UUID       = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
 const LEDS_STATES_CHAR_UUID     = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
@@ -15,6 +20,7 @@ const isLogEnabled = true
   styleUrls: ['./dashboard.page.scss'],
 })
 export class DashboardPage  {
+  get_duration_interval: any;
 
   connectedDevice : any = {}; 
 
@@ -30,8 +36,10 @@ export class DashboardPage  {
   batteryLevel : number = 0;
 
   speed : number = 0;
+  steering : number = 0;
 
   constructor(  private ble: BLE,
+                private deviceMotion: DeviceMotion,    
                 public  navCtrl: NavController,  
                 private route: ActivatedRoute, 
                 private alertCtrl: AlertController,      
@@ -50,16 +58,32 @@ export class DashboardPage  {
                       () => this.onNotConnected(device)
                     );  
                   });
-
-                  
                 }
-
-  // on connected to a device
+    getCurrentCoordinates() 
+    {
+        // Get the device current acceleration
+        this.deviceMotion.getCurrentAcceleration().then(
+          (acceleration: DeviceMotionAccelerationData) => console.log(acceleration.y),
+          (error: any) => console.log(error)
+        );
+    
+        // Watch device acceleration
+        //var subscription = this.deviceMotion.watchAcceleration().subscribe((acceleration: DeviceMotionAccelerationData) => {
+          //console.log(acceleration);
+        //});
+    
+        // Stop watch
+        //subscription.unsubscribe();
+    }  
+// on connected to a device
   onConnected(device)
   {
+    
+
     this.ngZone.run(() => { 
 
       this.connectedDevice = device;
+      this.get_duration_interval= setInterval(()=> { this.sendBLE() }, 50);
     });
   } 
 
@@ -83,15 +107,25 @@ export class DashboardPage  {
   }
   onRangeRelease()
   {
-    console.log('90');
-    this.speed=90;
+    this.potentioLevel = 90;
   }
  
-  onRangeChange(speed)
-  {
-    let data = new Uint8Array(this.speed);
+  onRangeChange(speed){
+    this.potentioLevel = speed;
+  }
 
-    let string = this.speed +'S' + '9';
+
+  sendBLE() : any
+  {
+    // Get the device current acceleration
+    this.deviceMotion.getCurrentAcceleration().then(
+      (acceleration: DeviceMotionAccelerationData) => this.steering = acceleration.y,
+      (error: any) => console.log(error)
+    );
+
+    let data = new Uint8Array(this.speed);
+    let net_sp =  this.speed-9;
+    let string = this.speed +'S' + this.steering.toFixed(2);
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
       array[i] = string.charCodeAt(i);
@@ -128,6 +162,7 @@ export class DashboardPage  {
   // on disconnecting from device
   onDisconnecting(device)
   {
+    clearInterval(this.get_duration_interval);
     if(isLogEnabled) console.log(device.name+' is disconnected.');
     if(isLogEnabled) console.info('Navigating to [scanner] page.');
     this.showToast('Disconneced from '+device.name+'.', 'danger', 2000, 'bottom');

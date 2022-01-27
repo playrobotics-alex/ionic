@@ -6,6 +6,7 @@ import { BLE } from '@ionic-native/ble/ngx';
 import { NativeStorage } from '@ionic-native/native-storage/ngx';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 
+
 const isLogEnabled = true;
 const defaultDeviceName =  "ESP32";
 
@@ -27,7 +28,7 @@ export class ScannerPage  {
               private toastCtrl: ToastController,  
               private alertCtrl: AlertController,
               private loadingController: LoadingController,
-              private ngZone: NgZone ) { }
+              private ngZone: NgZone ) { }  
 
 
   // app view about to display this page (scanner)
