@@ -5,6 +5,8 @@ import { NavigationExtras } from "@angular/router";
 import { BLE } from '@ionic-native/ble/ngx';
 import { NativeStorage } from '@ionic-native/native-storage/ngx';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
+import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
+
 
 
 const isLogEnabled = true;
@@ -27,10 +29,18 @@ export class ScannerPage  {
               public  platform: Platform,        
               private toastCtrl: ToastController,  
               private alertCtrl: AlertController,
+              private screenOrientation: ScreenOrientation,
               private loadingController: LoadingController,
-              private ngZone: NgZone ) { }  
+              private ngZone: NgZone ) 
+              {
+                this.platform.ready().then(() => {
+                  this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.PORTRAIT);
+                  });
+              }
 
-
+              ngOnInit() {
+                //$("#myValues").speedometer({divFact:10,eventListenerType:'keyup'});
+              }
   // app view about to display this page (scanner)
   ionViewWillEnter() 
   {
@@ -63,7 +73,7 @@ export class ScannerPage  {
 
 // start the BLE scan
 async startBleScan()
-{
+{ 
   let scanSpinner = await this.loadingController.create({
       spinner : "bubbles",
       animated : true,

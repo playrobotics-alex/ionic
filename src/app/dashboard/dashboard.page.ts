@@ -5,7 +5,7 @@ import { Platform } from '@ionic/angular';
 import { BLE } from '@ionic-native/ble/ngx';
 import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plugins/device-motion/ngx';
 
-import { interval } from 'rxjs';
+import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 
 
 
@@ -20,6 +20,8 @@ const isLogEnabled = true
   styleUrls: ['./dashboard.page.scss'],
 })
 export class DashboardPage  {
+  declare myValueProperty : number;
+
   get_duration_interval: any;
 
   connectedDevice : any = {}; 
@@ -37,7 +39,7 @@ export class DashboardPage  {
 
   speed : number = 0;
   steering : number = 0;
-
+  
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
                 public  navCtrl: NavController,  
@@ -45,8 +47,13 @@ export class DashboardPage  {
                 private alertCtrl: AlertController,      
                 private toastCtrl: ToastController,
                 public  platform: Platform,
+                private screenOrientation: ScreenOrientation,
                 private ngZone: NgZone ) 
                 {
+                  myValueProperty : String;
+                  this.platform.ready().then(() => {
+                    this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
+                    });
                   this.speed=90;
                   this.route.queryParams.subscribe(params => {
                     let device = JSON.parse(params['device']);

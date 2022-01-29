@@ -4,7 +4,6 @@
         <ion-icon style="font-size: 24px; padding-right: 4px;" slot="end" name="search" (click)="startBleScan()" color="primary"></ion-icon>
     </ion-toolbar>
 </ion-header>
-
 <ion-content>
     <div *ngIf="scannedDevices.length; else noDevicesScanned">
         <div class="device" *ngFor="let scannedDevice of scannedDevices">

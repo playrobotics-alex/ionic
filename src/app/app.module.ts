@@ -13,7 +13,9 @@ import {RoundProgressModule} from 'angular-svg-round-progressbar';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
+
 import { DeviceMotion } from '@awesome-cordova-plugins/device-motion/ngx';
+import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 
 
 @NgModule({
@@ -29,6 +31,11 @@ import { DeviceMotion } from '@awesome-cordova-plugins/device-motion/ngx';
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
+    ScreenOrientation,
+    { 
+      provide: RouteReuseStrategy, 
+      useClass: IonicRouteStrategy 
+    },    
     BLE, Diagnostic, NativeStorage, DeviceMotion
   ], 
   bootstrap: [AppComponent]

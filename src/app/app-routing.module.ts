@@ -8,7 +8,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    redirectTo: 'scanner',
+    redirectTo: 'dashboard',
     pathMatch: 'full'
   },
   {

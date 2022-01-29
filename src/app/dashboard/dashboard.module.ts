@@ -10,11 +10,17 @@ import { DashboardPage } from './dashboard.page';
 
 import { RoundProgressModule } from 'angular-svg-round-progressbar'; 
 
+import {GaugesModule} from '@biacsics/ng-canvas-gauges';
+
+import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
+
+
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    GaugesModule,    
     DashboardPageRoutingModule,
     RoundProgressModule
   ],
