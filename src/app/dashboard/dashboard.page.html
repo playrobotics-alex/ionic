@@ -4,24 +4,7 @@
         <ion-label slot="end" color="danger" class="disconnect" (click)="disconnect(connectedDevice)">Disconnect</ion-label>
     </ion-toolbar>
 </ion-header>
-<radial-gauge id="gauge-ps" width="300" height="300"
-[attr.value]="myValueProperty"
-    units="RPM"
-    title=""
-    major-ticks="0,1,2,3,4,5,6,7,8,9,10"
-    min-value="0"
-    max-value="10"
-    color-plate="#000"
-    color-title="#eee"
-    color-units="#ccc"
-    color-numbers="#eee"
-    color-major-ticks="#ddd"
-    color-minor-ticks="#ddd"
-    borders="true"    
-    minor-ticks="2"
-    stroke-ticks="true"
-    highlights='[{"from": 7, "to": 10, "color": "rgba(200, 50, 50, .75)"}]'
-></radial-gauge>
+
 <ion-content>
    
     <!-- [START] Buttons grid -->
@@ -29,12 +12,35 @@
         <ion-row>
             <ion-col>
                 <ion-item>
-                    <ion-range  min="0" max="180" step="1" snaps="true" [(ngModel)]="speed" (ionChange)="onRangeChange(speed)" (touchend)="onRangeRelease()" value="90"></ion-range>
+                    <ion-range  min="0" max="180" step="1" snaps="true" [(ngModel)]="speed" (ionChange)="onRangeChange(speed)" (touchend)="onRangeRelease()" value="90" style="-ms-transform: rotate(-90deg); /* IE 9 */
+                    -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
+                    transform: rotate(-90deg);"></ion-range>
                   </ion-item>            
+            </ion-col>
+            <ion-col>
+                <radial-gauge id="gauge-ps" width="300" height="300"
+                [attr.value]="myValueProperty"
+                    units="R1PM"
+                    title=""
+                    major-ticks="0,1,2,3,4,5,6,7,8,9,10"
+                    min-value="0"
+                    max-value="10"
+                    color-plate="#000"
+                    color-title="#eee"
+                    color-units="#ccc"
+                    color-numbers="#eee"
+                    color-major-ticks="#ddd"
+                    color-minor-ticks="#ddd"
+                    borders="true"    
+                    minor-ticks="2"
+                    stroke-ticks="true"
+                    highlights='[{"from": 7, "to": 10, "color": "rgba(200, 50, 50, .75)"}]'
+                ></radial-gauge>
             </ion-col>
 
         </ion-row>
     </ion-grid>
+    
     <!-- [END] Buttons grid -->
 
     <!-- [START] Round progress bar grid (potentio level) -->
