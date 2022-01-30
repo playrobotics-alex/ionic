@@ -86,13 +86,18 @@ export class DashboardPage implements AfterViewInit {
                 }       
     onMove(ev){
       console.log(ev.currentY);
-      this.RPMValue = ev.currentY;
+      this.GasValue = 1000-ev.currentY*3;
+      this.RPMValue =  1000-ev.currentY*3;
+      //this.RPMValue = 1000-ev.currentY*3;
     }
     onStart(ev){
       console.log(ev.currentY);
+      this.GasValue =  1000-ev.currentY*3;
+      this.RPMValue =  1000-ev.currentY*3;
     }   
     onEnd(ev){
-      console.log(ev.currentY);
+      console.log("00");
+      this.GasValue = 500;
     }         
     getCurrentCoordinates() 
     {
