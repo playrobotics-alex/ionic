@@ -1,12 +1,12 @@
-import { Component, NgZone } from '@angular/core';
-import { NavController, AlertController, ToastController} from '@ionic/angular';
+import { Component, ElementRef, AfterViewInit, NgZone, ViewChild } from '@angular/core';
+import { NavController, AlertController, ToastController, GestureConfig} from '@ionic/angular';
 import { ActivatedRoute} from "@angular/router";
 import { Platform } from '@ionic/angular'; 
 import { BLE } from '@ionic-native/ble/ngx';
 import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plugins/device-motion/ngx';
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
-
+import { Gesture, GestureController } from '@ionic/angular';
 
 
 const CUSTOM_SERVICE_UUID       = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
@@ -19,8 +19,11 @@ const isLogEnabled = true
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
 })
-export class DashboardPage  {
-  declare myValueProperty : number;
+export class DashboardPage implements AfterViewInit {
+  @ViewChild('gas', { static: true, read: ElementRef }) gas: ElementRef;
+
+  declare GasValue : number;
+  declare RPMValue : number;
 
   get_duration_interval: any;
 
@@ -36,10 +39,10 @@ export class DashboardPage  {
 
   potentioLevel : number = 0;
   batteryLevel : number = 0;
+  private gesture;
 
   speed : number = 0;
   steering : number = 0;
-  
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
                 public  navCtrl: NavController,  
@@ -48,9 +51,11 @@ export class DashboardPage  {
                 private toastCtrl: ToastController,
                 public  platform: Platform,
                 private screenOrientation: ScreenOrientation,
+                private gestureCtrl: GestureController,
                 private ngZone: NgZone ) 
                 {
-                  myValueProperty : String;
+                  RPMValue : String;
+                  myValueProperty : String;                  
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
                     });
@@ -66,6 +71,29 @@ export class DashboardPage  {
                     );  
                   });
                 }
+
+                ngAfterViewInit(): void {
+                  this.gesture = this.gestureCtrl.create({
+                    gestureName: 'doubleTap',
+                    el: this.gas.nativeElement,
+                    threshold: 0,
+                    onMove: ev => { this.onMove(ev); },
+                    onStart: ev => { this.onStart(ev); },
+                    onEnd: ev => { this.onEnd(ev); },
+                  }, true);
+                
+                  this.gesture.enable();
+                }       
+    onMove(ev){
+      console.log(ev.currentY);
+      this.RPMValue = ev.currentY;
+    }
+    onStart(ev){
+      console.log(ev.currentY);
+    }   
+    onEnd(ev){
+      console.log(ev.currentY);
+    }         
     getCurrentCoordinates() 
     {
         // Get the device current acceleration
@@ -209,5 +237,17 @@ export class DashboardPage  {
           cssClass : 'alert'
           })         
     await alert.present()
-  }    
+  }  
+  
+
+  /*
+  getCoordinates(event)
+  {
+      // This output's the X coord of the click
+      console.log(event.clientX);
+
+      // This output's the Y coord of the click
+      console.log(event.clientY);
+  }
+  */
 }

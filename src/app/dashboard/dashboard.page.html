@@ -1,3 +1,50 @@
+
+<div #gas style="position: relative; top: 0; left:0;width:150px;height:0px" >
+    <linear-gauge id="linear-ps" width="120" height="300"
+    [attr.value]="GasValue"
+        units="GAS"
+        title=""
+        number-side="left"
+        tick-side="left"
+        needle-side="left"
+        major-ticks="R,N,D"
+        min-value="0"
+        max-value="100"
+        color-plate="#000"
+        color-title="#eee"
+        color-units="#ccc"
+        color-numbers="#eee"
+        color-major-ticks="#ddd"
+        color-minor-ticks="#ddd"
+        borders="false"    
+        minor-ticks="2"
+        stroke-ticks="fa"
+        value-box="false"
+        bar-begin-circle="false"
+        value=50
+        highlights='[{"from": 50, "to": 100, "color": "rgba(0, 255, 0, .5)"}]'
+    ></linear-gauge>   
+</div>
+<div style="position: relative; top: 0; left:20%;width:300px;height:300px;">
+    <radial-gauge id="gauge-ps" width="300" height="300"
+    [attr.value]="RPMValue"
+        units="RPM/1000"
+        title=""
+        major-ticks="0,1,2,3,4,5,6,7,8,9,10"
+        min-value="0"
+        max-value="10"
+        color-plate="#000"
+        color-title="#eee"
+        color-units="#ccc"
+        color-numbers="#eee"
+        color-major-ticks="#ddd"
+        color-minor-ticks="#ddd"
+        borders="true"    
+        minor-ticks="2"
+        stroke-ticks="true"
+        highlights='[{"from": 7, "to": 10, "color": "rgba(200, 50, 50, .75)"}]'
+    ></radial-gauge>
+</div>
 <ion-header>
     <ion-toolbar>
         <ion-title slot="start"> {{connectedDevice.name}}</ion-title>
@@ -5,37 +52,19 @@
     </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="ion-no-margin">
    
-    <!-- [START] Buttons grid -->
-    <ion-grid>
-        <ion-row>
-            <ion-col>
-                <ion-item>
-                    <ion-range  min="0" max="180" step="1" snaps="true" [(ngModel)]="speed" (ionChange)="onRangeChange(speed)" (touchend)="onRangeRelease()" value="90" style="-ms-transform: rotate(-90deg); /* IE 9 */
-                    -webkit-transform: rotate(-90deg); /* Chrome, Safari, Opera */
-                    transform: rotate(-90deg);"></ion-range>
-                  </ion-item>            
+    <!-- <ion-range  min="0" max="180" step="1" snaps="true" [(ngModel)]="speed" (ionChange)="onRangeChange(speed)" (touchend)="onRangeRelease()" value="90"></ion-range>
+                     -->
+    <ion-grid class="ion-no-margin">        
+        <ion-row class="ion-no-margin">
+            <ion-col size="3" class="ion-no-padding">
+                <ion-item class="ion-no-padding">
+                      
+                </ion-item>                             
             </ion-col>
-            <ion-col>
-                <radial-gauge id="gauge-ps" width="300" height="300"
-                [attr.value]="myValueProperty"
-                    units="R1PM"
-                    title=""
-                    major-ticks="0,1,2,3,4,5,6,7,8,9,10"
-                    min-value="0"
-                    max-value="10"
-                    color-plate="#000"
-                    color-title="#eee"
-                    color-units="#ccc"
-                    color-numbers="#eee"
-                    color-major-ticks="#ddd"
-                    color-minor-ticks="#ddd"
-                    borders="true"    
-                    minor-ticks="2"
-                    stroke-ticks="true"
-                    highlights='[{"from": 7, "to": 10, "color": "rgba(200, 50, 50, .75)"}]'
-                ></radial-gauge>
+            <ion-col size="9">
+               
             </ion-col>
 
         </ion-row>

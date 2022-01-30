@@ -36,3 +36,8 @@ ion-progress-bar {
   border-radius: 4px;
   border: 1px solid rgb(56, 128, 255);
 }
+
+ion-grid {
+  --ion-grid-padding:0;
+  --ion-grid-margin:0;
+}
