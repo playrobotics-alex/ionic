@@ -159,12 +159,22 @@ export class DashboardPage implements AfterViewInit {
  
   sendBLE() : any
   {
+    //Map Gas slider
+    
+    //Limit slider only to possitive values
+    if ((1000 - this.gasLevel*3.3)<0)
+      this.GasValue = 0;
+    else
+      this.GasValue =  1000 - this.gasLevel*3.3;
+
+
+
     //Map rpm gauge
 
     if (this.gasLevel<150)
     { //Forward
       this.ProgressBarValue = "#327ac0"; 
-      this.RPMValue =  (500 - this.gasLevel*2.5)*2;
+      this.RPMValue =  (500 - this.gasLevel*3.3)*2;
       //this.RPMValue = this.gasLevel;
     }  
     else  
@@ -178,14 +188,15 @@ export class DashboardPage implements AfterViewInit {
       }  
       else
       {
+        //this.RPMValue = this.gasLevel;
         this.RPMValue =   (500 - this.gasLevel*3.3)*-2
+        
         //this.RPMValue = this.gasLevel;
         this.ProgressBarValue = "#FF0000";
       }
     }      
 
-      //Map Gas slider
-    this.GasValue =  1000 - this.gasLevel*3.3;
+   
     // Get the device current acceleration
     this.deviceMotion.getCurrentAcceleration().then(
       (acceleration: DeviceMotionAccelerationData) => this.steering = acceleration.y,
