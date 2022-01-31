@@ -8,6 +8,10 @@ import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plu
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Gesture, GestureController } from '@ionic/angular';
 
+declare const NavigationBar: any;
+//NavigationBar.backgroundColorByHexString("#FF0000", true);
+NavigationBar.hide();
+
 
 const CUSTOM_SERVICE_UUID       = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
 const LEDS_STATES_CHAR_UUID     = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
@@ -22,10 +26,15 @@ const isLogEnabled = true
 export class DashboardPage implements AfterViewInit {
   @ViewChild('gas', { static: true, read: ElementRef }) gas: ElementRef;
 
-  declare GasValue : number;
-  declare RPMValue : number;
+  GasValue : number = 150;
+  RPMValue : number = 0;
+  gasLevel : number = 150;
+  declare ProgressBarValue : string;
+
 
   get_duration_interval: any;
+
+  gauge_interval: any;
 
   connectedDevice : any = {}; 
 
@@ -37,8 +46,8 @@ export class DashboardPage implements AfterViewInit {
   led3IsOn : boolean = false;
   led4IsOn : boolean = false;
 
-  potentioLevel : number = 0;
-  batteryLevel : number = 0;
+  
+  steeringLevel : number = 0;
   private gesture;
 
   speed : number = 0;
@@ -83,21 +92,22 @@ export class DashboardPage implements AfterViewInit {
                   }, true);
                 
                   this.gesture.enable();
+                  this.get_duration_interval= setInterval(()=> { this.sendBLE() }, 100);
+
                 }       
     onMove(ev){
       console.log(ev.currentY);
-      this.GasValue = 1000-ev.currentY*3;
-      this.RPMValue =  1000-ev.currentY*3;
+      this.gasLevel = ev.currentY;
       //this.RPMValue = 1000-ev.currentY*3;
     }
     onStart(ev){
       console.log(ev.currentY);
-      this.GasValue =  1000-ev.currentY*3;
-      this.RPMValue =  1000-ev.currentY*3;
+      this.gasLevel =  ev.currentY;
+      //this.RPMValue =  1000-ev.currentY*3;
     }   
     onEnd(ev){
       console.log("00");
-      this.GasValue = 500;
+      this.gasLevel = 150;
     }         
     getCurrentCoordinates() 
     {
@@ -145,18 +155,37 @@ export class DashboardPage implements AfterViewInit {
     if(isLogEnabled) console.info('navigating back to [scanner] page.');
     this.navCtrl.navigateBack('scanner');
   }
-  onRangeRelease()
-  {
-    this.potentioLevel = 90;
-  }
  
-  onRangeChange(speed){
-    this.potentioLevel = speed;
-  }
-
-
+ 
   sendBLE() : any
   {
+    //Map rpm gauge
+
+    if (this.gasLevel<150)
+    { //Forward
+      this.ProgressBarValue = "#327ac0"; 
+      this.RPMValue =  (500 - this.gasLevel*2.5)*2;
+      //this.RPMValue = this.gasLevel;
+    }  
+    else  
+    {  
+      //Backward      
+      
+      if (this.gasLevel==150)
+      {
+        this.ProgressBarValue = "#ffffff";
+        this.RPMValue = 0;        
+      }  
+      else
+      {
+        this.RPMValue =   (500 - this.gasLevel*3.3)*-2
+        //this.RPMValue = this.gasLevel;
+        this.ProgressBarValue = "#FF0000";
+      }
+    }      
+
+      //Map Gas slider
+    this.GasValue =  1000 - this.gasLevel*3.3;
     // Get the device current acceleration
     this.deviceMotion.getCurrentAcceleration().then(
       (acceleration: DeviceMotionAccelerationData) => this.steering = acceleration.y,

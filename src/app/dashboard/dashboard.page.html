@@ -1,8 +1,8 @@
 
 <div #gas style="position: relative; top: 0; left:0;width:150px;height:0px" >
     <linear-gauge id="linear-ps" width="120" height="300"
-    [attr.value]="GasValue"
-        units="GAS"
+        [attr.value]="GasValue"
+        [attr.color-bar-progress]="ProgressBarValue"
         title=""
         number-side="left"
         tick-side="left"
@@ -10,6 +10,7 @@
         major-ticks="R,N,D"
         min-value="0"
         max-value="1000"
+        color-bar-progress="#327ac0"
         color-plate="#000"
         color-title="#eee"
         color-units="#ccc"
@@ -21,10 +22,10 @@
         stroke-ticks="fa"
         value-box="false"
         bar-begin-circle="false"
-        value=50
-        animation-rule="linear"
-        animation-duration="0"
-        highlights='[{"from": 50, "to": 100, "color": "rgba(0, 255, 0, .5)"}]'
+        value=500
+        animation-rule="quad"
+        animation-duration="20"
+        
     ></linear-gauge>   
 </div>
 
@@ -47,18 +48,15 @@
         borders="true"    
         minor-ticks="2"
         stroke-ticks="true"
-        animation-rule="linear"
-        animation-duration="100"
-        animated-value="false"
-        highlights='[{"from": 7, "to": 10, "color": "rgba(200, 50, 50, .75)"}]'
+        animation-rule="quad"
+        animation-duration="20"
+        animated-value="true"
+        value=0
+        value-dec=0
+        highlights='[{"from": 700, "to": 1000, "color": "rgba(200, 50, 50, .75)"}]'
     ></radial-gauge>
 </div>
-<ion-header>
-    <ion-toolbar>
-        <ion-title slot="start"> {{connectedDevice.name}}</ion-title>
-        <ion-label slot="end" color="danger" class="disconnect" (click)="disconnect(connectedDevice)">Disconnect</ion-label>
-    </ion-toolbar>
-</ion-header>
+
 
 <ion-content class="ion-no-margin">
    
@@ -85,10 +83,10 @@
         <ion-row>
             <ion-col>
                 <div class="progress-bar-level">
-                    <ion-label class="level">{{potentioLevel}}% </ion-label>
+                    <ion-label class="level">{{gasLevel}}% </ion-label>
                 </div>
 
-                <round-progress class="round-progress-bar" [current]="potentioLevel" [max]="100" [color]="'#3880ff'" [background]="'#ffffff'" [radius]="120" [stroke]="20" [semicircle]="false" [rounded]="false" [clockwise]="true"></round-progress>
+                <round-progress class="round-progress-bar" [current]="gasLevel" [max]="100" [color]="'#3880ff'" [background]="'#ffffff'" [radius]="120" [stroke]="20" [semicircle]="false" [rounded]="false" [clockwise]="true"></round-progress>
             </ion-col>
         </ion-row>
     </ion-grid>
@@ -98,12 +96,12 @@
     <ion-grid>
         <ion-row>
             <ion-col>
-                <ion-label class="level"> {{batteryLevel}}%</ion-label>
+                <ion-label class="level"> {{gasLevel}}%</ion-label>
             </ion-col>
         </ion-row>
         <ion-row>
             <ion-col>
-                <ion-progress-bar color="primary" value="{{batteryLevel/100}}"></ion-progress-bar>
+                <ion-progress-bar color="primary" value="{{gasLevel/100}}"></ion-progress-bar>
             </ion-col>
         </ion-row>
     </ion-grid>
