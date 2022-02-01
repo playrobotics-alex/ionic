@@ -8,7 +8,7 @@
             <div #gas style="position: relative; top:-10px; left:0" >
                 <linear-gauge id="linear-ps" width="120" height="355" 
                     [attr.value]="GasValue"
-                    [attr.color-bar-progress]="ProgressBarValue"
+                    [attr.color-bar-progress]="ProgressBarColor"
                     title=""
                     number-side="left"
                     tick-side="left"
@@ -30,7 +30,7 @@
                     bar-begin-circle="false"
                     value=500
                     animation-rule="quad"
-                    animation-duration="20"
+                    [attr.animation-duration]="AnimationDuration"
                     highlights='[{"from": 0, "to": 0, "color": "rgba(200, 50, 50, .75)"}]'    
                 ></linear-gauge>   
             </div>
@@ -57,7 +57,7 @@
                     minor-ticks="2"
                     stroke-ticks="true"
                     animation-rule="quad"
-                    animation-duration="20"
+                    [attr.animation-duration]="AnimationDuration"
                     animated-value="true"
                     font-units-weight="700"
                     value=0
@@ -80,7 +80,7 @@
                 <ion-col>
                     <div style="position: relative; top: 20px; left:-40px;width:150px;height:150px;">
                         <radial-gauge id="gauge-ps" width="150" height="150"
-                        [attr.value]="RPMValue"
+                            [attr.value]="TempValue"
                             units="TEMP"
                             title=""
                             color-needle="#FF0000"
@@ -88,7 +88,7 @@
                             major-ticks="0,90 ,180"
                             min-value="0"
                             max-value="180"
-                            color-plate="#000"
+                            [attr.color-plate]="TempColor"
                             color-title="#eee"
                             color-units="#ccc"
                             color-numbers="#eee"
@@ -98,13 +98,12 @@
                             minor-ticks="4"
                             stroke-ticks="true"
                             animation-rule="quad"
-                            animation-duration="20"
+                            [attr.animation-duration]="AnimationDuration"
                             animated-value="true"
                             start-angle="90"
                             ticks-angle="180"
-                            value-box="false"
+                            value-box="true"
                             needle-type="arrow"
-                            value=95
                             font-numbers-size="50"
                             font-units-size="40"
                             font-units-weight="700"
@@ -119,11 +118,10 @@
                 <ion-col>
                     <div style="position: relative; top: 10px; left:-40px;width:150px;height:150px;">
                         <radial-gauge id="gauge-ps" width="150" height="150"
-                        [attr.value]="RPMValue"
+                            [attr.value]="FuelValue"
                             units="FUEL"
                             title=""
-                            color-needle="#FF0000"
-                
+                            color-needle="#FF0000"            
                             data-type="radial-gauge"
                             major-ticks="E, ,F"
                             min-value="0"
@@ -138,13 +136,12 @@
                             minor-ticks="2"
                             stroke-ticks="true"
                             animation-rule="quad"
-                            animation-duration="20"
+                            [attr.animation-duration]="AnimationDuration"
                             animated-value="true"
                             start-angle="60"
                             ticks-angle="240"
                             value-box="false"
                             needle-type="arrow"
-                            value=660
                             font-numbers-size="50"
                             font-units-size="40"
                             font-units-weight="700"

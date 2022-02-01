@@ -26,10 +26,19 @@ const isLogEnabled = true
 export class DashboardPage implements AfterViewInit {
   @ViewChild('gas', { static: true, read: ElementRef }) gas: ElementRef;
 
-  GasValue : number = 150;
-  RPMValue : number = 0;
+  //Gauges variable
+  
+  //Slide should be at the middle
   gasLevel : number = 150;
-  declare ProgressBarValue : string;
+  GasValue : number = 150;
+
+  RPMValue : number = 0;
+  TempValue  : number = 0;
+  FuelValue  : number = 0;
+  
+  AnimationDuration : number = 700; 
+  ProgressBarColor : string = "#ffffff";
+  TempColor  : string = "#000";
 
 
   get_duration_interval: any;
@@ -37,15 +46,6 @@ export class DashboardPage implements AfterViewInit {
   gauge_interval: any;
 
   connectedDevice : any = {}; 
-
-  button1State : number = 0;
-  button2State : number = 0;
-  button3State : number = 0;
-  button4State : number = 0;
-
-  led3IsOn : boolean = false;
-  led4IsOn : boolean = false;
-
   
   steeringLevel : number = 0;
   private gesture;
@@ -64,7 +64,9 @@ export class DashboardPage implements AfterViewInit {
                 private ngZone: NgZone ) 
                 {
                   RPMValue : String;
-                  myValueProperty : String;                  
+                  TempColor : String;
+                  myValueProperty : String;  
+                  AnimationDuration : String;                
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
                     });
@@ -79,6 +81,8 @@ export class DashboardPage implements AfterViewInit {
                       () => this.onNotConnected(device)
                     );  
                   });
+
+
                 }
 
                 ngAfterViewInit(): void {
@@ -92,7 +96,31 @@ export class DashboardPage implements AfterViewInit {
                   }, true);
                 
                   this.gesture.enable();
-                  this.get_duration_interval= setInterval(()=> { this.sendBLE() }, 100);
+                  
+                  //Gauge needle animations
+                  setTimeout(() => {
+                    this.AnimationDuration=700;
+                    this.RPMValue=1000;
+                    this.FuelValue=1000;
+                    this.TempValue=180;                    
+                  },500);
+
+                  setTimeout(() => 
+                  {                
+                    this.RPMValue=0;
+                    this.FuelValue=0;
+                    this.TempValue=0;
+                  },1400);
+                  
+                  setTimeout(() => 
+                  {
+                    this.AnimationDuration=20;
+                    this.get_duration_interval= setInterval(()=> 
+                    {
+                       this.sendBLE(); 
+                    }, 100);
+                    },2000);
+                  
 
                 }       
     onMove(ev){
@@ -133,7 +161,7 @@ export class DashboardPage implements AfterViewInit {
     this.ngZone.run(() => { 
 
       this.connectedDevice = device;
-      this.get_duration_interval= setInterval(()=> { this.sendBLE() }, 50);
+      //this.get_duration_interval= setInterval(()=> { this.sendBLE() }, 50);
     });
   } 
 
@@ -159,6 +187,40 @@ export class DashboardPage implements AfterViewInit {
  
   sendBLE() : any
   {
+    
+    // overheating
+    if (this.TempValue>160)
+      this.TempColor = "#FF2B00";
+    else
+      if (this.TempValue>130)
+        this.TempColor = "#FF8300";
+      else
+        this.TempColor = "#000";
+
+    if ((this.RPMValue>700)&&(this.TempValue<175))
+      this.TempValue = this.TempValue + 0.25;
+    else
+      if ((this.RPMValue>500)&&(this.TempValue<175))
+        this.TempValue = this.TempValue + 0.1;
+      else  
+        if ((this.RPMValue<300)&&(this.TempValue>90))
+          this.TempValue = this.TempValue - 0.2;
+        else
+          if ((this.RPMValue<500)&&(this.TempValue>90))
+            this.TempValue = this.TempValue - 0.2;
+
+            
+    //Init Heat
+    if(this.TempValue<25)
+      this.TempValue =  this.TempValue+2;
+    else
+      if(this.TempValue<90)
+        this.TempValue = this.TempValue + 0.1;
+
+    
+    //if(this.RPMValue>700)
+      //this.TempValue = this.TempValue + 0.25;
+
     //Map Gas slider
     
     //Limit slider only to possitive values
@@ -173,7 +235,7 @@ export class DashboardPage implements AfterViewInit {
 
     if (this.gasLevel<150)
     { //Forward
-      this.ProgressBarValue = "#327ac0"; 
+      this.ProgressBarColor = "#327ac0"; 
       this.RPMValue =  (500 - this.gasLevel*3.3)*2;
       //this.RPMValue = this.gasLevel;
     }  
@@ -183,16 +245,21 @@ export class DashboardPage implements AfterViewInit {
       
       if (this.gasLevel==150)
       {
-        this.ProgressBarValue = "#ffffff";
+        this.ProgressBarColor = "#ffffff";
         this.RPMValue = 0;        
       }  
       else
       {
-        //this.RPMValue = this.gasLevel;
-        this.RPMValue =   (500 - this.gasLevel*3.3)*-2
+
+
+        //Limit to 1000
+        if (((500 - this.gasLevel*3.3)*-2)>1000)
+          this.RPMValue = 1000;
+        else
+          this.RPMValue =   (500 - this.gasLevel*3.3)*-2
         
         //this.RPMValue = this.gasLevel;
-        this.ProgressBarValue = "#FF0000";
+        this.ProgressBarColor = "#FF0000";
       }
     }      
 
