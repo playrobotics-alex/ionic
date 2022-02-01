@@ -26,6 +26,15 @@ const isLogEnabled = true
 export class DashboardPage implements AfterViewInit {
   @ViewChild('gas', { static: true, read: ElementRef }) gas: ElementRef;
 
+  //Timer Varaibles
+  public timeBegan = null
+  public timeStopped:any = null
+  public stoppedDuration:any = 0
+  public started = null
+  public running = false
+  public blankTime = "00.00"
+  public time = "00.00"
+
   //Gauges variable
   
   //Slide should be at the middle
@@ -35,10 +44,16 @@ export class DashboardPage implements AfterViewInit {
   RPMValue : number = 0;
   TempValue  : number = 0;
   FuelValue  : number = 0;
+
+  LapTime : number = 0;
+  BestLapTime : number = 0;
+  
+  CompleteAnimationFlag  : number = 0;
   
   AnimationDuration : number = 700; 
   ProgressBarColor : string = "#ffffff";
   TempColor  : string = "#000";
+  FuelColor  : string = "#000";
 
 
   get_duration_interval: any;
@@ -63,10 +78,6 @@ export class DashboardPage implements AfterViewInit {
                 private gestureCtrl: GestureController,
                 private ngZone: NgZone ) 
                 {
-                  RPMValue : String;
-                  TempColor : String;
-                  myValueProperty : String;  
-                  AnimationDuration : String;                
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
                     });
@@ -187,40 +198,81 @@ export class DashboardPage implements AfterViewInit {
  
   sendBLE() : any
   {
-    
-    // overheating
-    if (this.TempValue>160)
-      this.TempColor = "#FF2B00";
-    else
-      if (this.TempValue>130)
-        this.TempColor = "#FF8300";
+              
+    //Init Animation
+    //Fuel
+    if (this.CompleteAnimationFlag==0)
+    {
+      if(this.FuelValue<1000)
+        this.FuelValue =  this.FuelValue+20;
       else
-        this.TempColor = "#000";
-
-    if ((this.RPMValue>700)&&(this.TempValue<175))
-      this.TempValue = this.TempValue + 0.25;
-    else
-      if ((this.RPMValue>500)&&(this.TempValue<175))
-        this.TempValue = this.TempValue + 0.1;
-      else  
-        if ((this.RPMValue<300)&&(this.TempValue>90))
-          this.TempValue = this.TempValue - 0.2;
-        else
-          if ((this.RPMValue<500)&&(this.TempValue>90))
-            this.TempValue = this.TempValue - 0.2;
-
-            
-    //Init Heat
+        this.CompleteAnimationFlag=1;
+    }
+    //Temp
     if(this.TempValue<25)
       this.TempValue =  this.TempValue+2;
     else
       if(this.TempValue<90)
         this.TempValue = this.TempValue + 0.1;
-
     
-    //if(this.RPMValue>700)
-      //this.TempValue = this.TempValue + 0.25;
 
+    //====Fuel and temp managment======        
+    
+    if (this.RPMValue>700)
+    {
+      this.FuelValue = this.FuelValue - 10.5;      
+      if (this.TempValue<175)
+        this.TempValue = this.TempValue + 0.25;
+    }  
+    else
+    {
+      if (this.RPMValue>500)
+      {
+        this.FuelValue = this.FuelValue - 0.3;      
+        if (this.TempValue<175)
+          this.TempValue = this.TempValue + 0.1;
+      }  
+      else  
+      {
+        if (this.RPMValue<300)
+        {
+          this.FuelValue = this.FuelValue - 0.2;      
+          if(this.TempValue>90)
+            this.TempValue = this.TempValue - 0.2;
+        }  
+        else
+        {
+          if (this.RPMValue<500)
+          {
+            if (this.RPMValue>50)
+              this.FuelValue = this.FuelValue - 0.1;      
+            if (this.TempValue>90)
+              this.TempValue = this.TempValue - 0.2;
+          }
+        }  
+      }   
+    }
+    
+    
+    //====Alerts======
+
+    // Overheating
+    if (this.TempValue>150)
+      this.TempColor = "#FF2B00";
+    else
+      if (this.TempValue>120)
+        this.TempColor = "#FF8300";
+      else
+        this.TempColor = "#000";
+    
+    // Low fuel
+    if ((this.CompleteAnimationFlag==1)&&(this.FuelValue<100))
+      this.FuelColor = "#FF2B00";    
+    else
+    this.FuelColor = "#000";    
+    
+    
+    
     //Map Gas slider
     
     //Limit slider only to possitive values
@@ -228,7 +280,6 @@ export class DashboardPage implements AfterViewInit {
       this.GasValue = 0;
     else
       this.GasValue =  1000 - this.gasLevel*3.3;
-
 
 
     //Map rpm gauge
@@ -339,7 +390,12 @@ export class DashboardPage implements AfterViewInit {
     toast.present();
   }
 
-  // show alert
+  async FuelCick()
+  {
+    this.CompleteAnimationFlag=0;
+  }
+
+ 
   async showAlert(title, message) 
   {               
     let alert = await this.alertCtrl.create({
@@ -349,10 +405,69 @@ export class DashboardPage implements AfterViewInit {
           cssClass : 'alert'
           })         
     await alert.present()
-  }  
-  
+  }   
 
-  /*
+  start() 
+  {
+    if(this.running) return;
+    if (this.timeBegan === null) {
+        this.reset();
+        this.timeBegan = new Date();
+    }
+    if (this.timeStopped !== null) {
+      let newStoppedDuration:any = (+new Date() - this.timeStopped)
+      this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
+    }
+    this.started = setInterval(this.clockRunning.bind(this), 108);
+    this.running = true;
+  }
+  zeroPrefix(num, digit) 
+  {
+      let zero = '';     
+
+      let ReturnString = zero + num;
+
+      if (digit==1)
+        ReturnString = ReturnString.substring(0, ReturnString.length - 1);
+
+      if (ReturnString.length<2)
+      { 
+        if(digit==1)
+          ReturnString = ReturnString + '0';
+        else
+          ReturnString = '0' + ReturnString;
+      } 
+
+      return (ReturnString);        
+  }
+
+  stop() 
+  {
+      this.running = false;
+      this.timeStopped = new Date();
+      clearInterval(this.started);
+  }
+  reset() 
+  {
+    this.running = false;
+    clearInterval(this.started);
+    this.stoppedDuration = 0;
+    this.timeBegan = null;
+    this.timeStopped = null;
+    this.time = this.blankTime;
+  }
+  clockRunning()
+  {
+    let currentTime:any = new Date()
+    let timeElapsed:any = new Date(currentTime - this.timeBegan - this.stoppedDuration)
+
+    let sec = timeElapsed.getUTCSeconds()
+    let ms = timeElapsed.getUTCMilliseconds();
+    this.time =
+    this.zeroPrefix(sec, 0) + "." +
+    this.zeroPrefix(ms, 1);
+  };    
+/*
   getCoordinates(event)
   {
       // This output's the X coord of the click

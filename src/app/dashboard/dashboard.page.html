@@ -39,7 +39,7 @@
             <!-- RPM Gauge -->
             <div style="position: relative; top: 40px; left:-20px;width:300px;height:150px;">
                 <radial-gauge id="gauge-ps" width="300" height="300"
-                [attr.value]="RPMValue"
+                    [attr.value]="RPMValue"
                     units="RPM/1000"
                     title=""
                     color-needle="#FF0000"
@@ -67,7 +67,7 @@
             </div>
         </ion-col> 
         <ion-col >          
-            <ion-label color="light" style="margin-left: -120px;">00:00</ion-label>
+            <ion-label class="fixedLabel" position="fixed" color="light" style="margin-left: -120px;">{{time}}</ion-label>
         </ion-col>
         <ion-col>          
             <ion-fab-button color="danger" style="position: absolute;margin-left:-75px;bottom:30px;height:35px"  >
@@ -103,6 +103,8 @@
                             start-angle="90"
                             ticks-angle="180"
                             value-box="true"
+                            font-value-size="35"
+                            font-value-weight="500"
                             needle-type="arrow"
                             font-numbers-size="50"
                             font-units-size="40"
@@ -126,7 +128,7 @@
                             major-ticks="E, ,F"
                             min-value="0"
                             max-value="1000"
-                            color-plate="#000"
+                            [attr.color-plate]="FuelColor"
                             color-title="#eee"
                             color-units="#ccc"
                             color-numbers="#eee"
@@ -167,7 +169,7 @@
     </ion-row>
 </ion-fab>   
 
-<ion-fab vertical="top" horizontal="end" slot="fixed">           
+<ion-fab vertical="top" horizontal="end" slot="fixed" style="margin-right:10px">           
     <ion-row>
         <ion-col>     
             <ion-label color="medium">12:04</ion-label>
@@ -175,17 +177,17 @@
     </ion-row>
 </ion-fab>
 
-<!-- ICONS-->
+<!-- ICONS -->
 
-<ion-fab vertical="bottom" horizontal="end" slot="fixed">             
+<ion-fab vertical="bottom" horizontal="end" slot="fixed" style="margin-right:10px">             
     <ion-fab-button style="--background:rgb(0, 98, 255);margin-bottom:30px;">
         <ion-icon src="/assets/icon/nitro.svg" style="font-size: 45px"></ion-icon>
     </ion-fab-button>   
-    <ion-fab-button style="--background:rgb(231, 162, 0);margin-bottom:30px;" >
+    <ion-fab-button style="--background:rgb(231, 162, 0);margin-bottom:30px;" (touchstart) = "FuelCick()" >
         <ion-icon src="/assets/icon/gas.svg"  style="font-size: 45px;font-weight:700;" ></ion-icon>
     </ion-fab-button> 
     <ion-fab-button style="--background:#1d8400;margin-bottom:30px;" >
-        <ion-icon src="/assets/icon/lap.svg"  style="font-size: 45px;font-weight:700;" ></ion-icon>
+        <ion-icon src="/assets/icon/lap.svg"  style="font-size: 45px;font-weight:700;"  (touchstart) = "start()" ></ion-icon>
     </ion-fab-button> 
 </ion-fab>
 
