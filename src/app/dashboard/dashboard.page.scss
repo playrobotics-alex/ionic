@@ -39,14 +39,14 @@ ion-label {
   padding-left: 5px;
   padding-right: 5px;
   height: 40px;
-  line-height: 40px;
-  font-size: 40px;
-  font-weight: 500;
-  font-family: Seven Segment;
-  letter-spacing: 0;
+  line-height: 35px;
+  font-size: 25px;
+  font-weight: 900;
+  font-family: "DSEG";
+  font-variant-numeric: tabular-nums;
 }
 .fixedLabel {
-  min-width: 110px;
+  min-width: 120px;
   display: block;
   text-align: center;
 }

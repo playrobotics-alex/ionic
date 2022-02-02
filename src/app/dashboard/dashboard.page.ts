@@ -7,6 +7,8 @@ import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plu
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Gesture, GestureController } from '@ionic/angular';
+import { Vibration } from '@ionic-native/vibration/ngx';
+
 
 declare const NavigationBar: any;
 //NavigationBar.backgroundColorByHexString("#FF0000", true);
@@ -33,7 +35,9 @@ export class DashboardPage implements AfterViewInit {
   public started = null
   public running = false
   public blankTime = "00.00"
-  public time = "00.00"
+  public time = "LAP"
+  public BestLapTimeString = "BEST"
+  public LapTimeString = ""
 
   //Gauges variable
   
@@ -47,6 +51,7 @@ export class DashboardPage implements AfterViewInit {
 
   LapTime : number = 0;
   BestLapTime : number = 0;
+  LapsCount : number = 1;
   
   CompleteAnimationFlag  : number = 0;
   
@@ -57,8 +62,6 @@ export class DashboardPage implements AfterViewInit {
 
 
   get_duration_interval: any;
-
-  gauge_interval: any;
 
   connectedDevice : any = {}; 
   
@@ -76,6 +79,7 @@ export class DashboardPage implements AfterViewInit {
                 public  platform: Platform,
                 private screenOrientation: ScreenOrientation,
                 private gestureCtrl: GestureController,
+                private vibration: Vibration,
                 private ngZone: NgZone ) 
                 {
                   this.platform.ready().then(() => {
@@ -234,21 +238,20 @@ export class DashboardPage implements AfterViewInit {
       }  
       else  
       {
-        if (this.RPMValue<300)
+        if (this.RPMValue < 300)
         {
-          this.FuelValue = this.FuelValue - 0.2;      
+          if(this.RPMValue > 0)
+            this.FuelValue = this.FuelValue - 0.1;      
           if(this.TempValue>90)
             this.TempValue = this.TempValue - 0.2;
         }  
         else
         {
-          if (this.RPMValue<500)
-          {
-            if (this.RPMValue>50)
-              this.FuelValue = this.FuelValue - 0.1;      
-            if (this.TempValue>90)
-              this.TempValue = this.TempValue - 0.2;
-          }
+            //between 300 -> 500
+            if (this.RPMValue > 50)
+              this.FuelValue = this.FuelValue - 0.2;      
+            if (this.TempValue > 90)
+              this.TempValue = this.TempValue - 0.3;
         }  
       }   
     }
@@ -409,7 +412,44 @@ export class DashboardPage implements AfterViewInit {
 
   start() 
   {
-    if(this.running) return;
+    if(this.running) 
+    {
+      //Ignore fake laps
+      if (parseFloat(this.time)<2)
+        return;
+      //Check for best lap
+      if ((parseFloat(this.time) < this.BestLapTime)||(this.BestLapTime==0))
+      {
+        this.BestLapTime= parseFloat(this.time);
+        this.BestLapTimeString= this.time;
+        this.doVibrationFor(200);
+        setTimeout(() => {
+          this.doVibrationFor(200);
+        },200);
+        
+      }
+      else
+        this.doVibrationFor(200);
+
+      this.reset();
+      //Race still on
+      if (this.LapsCount<2)
+      {
+        this.timeBegan = new Date();
+        this.started = setInterval(this.clockRunning.bind(this), 108);
+        this.running = true;
+        this.LapsCount++;
+      }  
+      else
+      {
+        //Race finished        
+        this.LapTimeString = this.time;
+        this.doVibrationFor(2000);
+        this.stop();
+        this.time = "FINSH";
+      }
+      return;
+    }  
     if (this.timeBegan === null) {
         this.reset();
         this.timeBegan = new Date();
@@ -420,6 +460,7 @@ export class DashboardPage implements AfterViewInit {
     }
     this.started = setInterval(this.clockRunning.bind(this), 108);
     this.running = true;
+    this.LapsCount=1;
   }
   zeroPrefix(num, digit) 
   {
@@ -467,6 +508,12 @@ export class DashboardPage implements AfterViewInit {
     this.zeroPrefix(sec, 0) + "." +
     this.zeroPrefix(ms, 1);
   };    
+
+  doVibrationFor(ms) {
+    // Vibrate the device for given milliseconds
+    // Duration is ignored on iOS and limited to 1 second.
+    this.vibration.vibrate(ms);
+  }
 /*
   getCoordinates(event)
   {
