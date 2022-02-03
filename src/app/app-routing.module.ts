@@ -7,8 +7,8 @@ const routes: Routes = [
     loadChildren: () => import('./scanner/scanner.module').then( m => m.ScannerPageModule)
   },
   {
-    path: '',
-    redirectTo: 'dashboard',
+    path: '', 
+    redirectTo: 'scanner', //this is home
     pathMatch: 'full'
   },
   {

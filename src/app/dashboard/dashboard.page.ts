@@ -69,8 +69,9 @@ export class DashboardPage implements AfterViewInit {
   steeringLevel : number = 0;
   private gesture;
 
-  speed : number = 0;
   steering : number = 0;
+  revSteering : number = 0;
+
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
                 public  navCtrl: NavController,  
@@ -86,7 +87,6 @@ export class DashboardPage implements AfterViewInit {
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
                     });
-                  this.speed=90;
                   this.route.queryParams.subscribe(params => {
                     let device = JSON.parse(params['device']);
     
@@ -325,9 +325,9 @@ export class DashboardPage implements AfterViewInit {
       (error: any) => console.log(error)
     );
 
-    let data = new Uint8Array(this.speed);
-    let net_sp =  this.speed-9;
-    let string = this.speed +'S' + this.steering.toFixed(2);
+
+    this.revSteering = this.steering*-1
+    let string = this.GasValue/5.55 +'S' + this.revSteering.toFixed(2);
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
       array[i] = string.charCodeAt(i);

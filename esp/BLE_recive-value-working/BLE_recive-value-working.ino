@@ -3,6 +3,12 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 #include <ESP32Servo.h>
+#include <FastLED.h>
+
+// How many leds in your strip?
+#define NUM_LEDS 1
+#define DATA_PIN 27
+CRGB leds[NUM_LEDS];
 
 Servo servo1;
 Servo servo2;
@@ -10,8 +16,8 @@ Servo servo2;
 int minUs = 1000;
 int maxUs = 2000;
 //pins
-int servo1Pin = 13;
-int servo2Pin = 15;
+int ServoSpeed = 18;
+int ServoSteering = 19;
 int pos = 0;      // position in degrees
 ESP32PWM pwm;
 
@@ -79,7 +85,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         Serial.println(speed_value);
         Serial.print("Steering");
         Serial.println(steering_value);
-        Serial.println(counter);
+        //Serial.println(counter);
 
         servo1.write(speed_value);
         servo2.write(steering_value);
@@ -91,7 +97,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 void setup() {
   Serial.begin(115200);
-
+  FastLED.addLeds<WS2812B, 27>(leds, NUM_LEDS);  // GRB ordering is assumed
+  FastLED.setBrightness(50);
+  leds[0] = CRGB::Blue;
+  FastLED.show();
   // Create the BLE Device
   BLEDevice::init("ESP32"); // Name must not be longer than 5 chars!!!
   
@@ -138,14 +147,14 @@ void setup() {
   //servo1.setPeriodHertz(50);      // Standard 50hz servo
   servo2.setPeriodHertz(50);      // Standard 50hz servo
   servo1.setPeriodHertz(50);      // Standard 50hz servo
-  servo1.attach(servo1Pin, minUs, maxUs);
-  servo2.attach(servo2Pin, minUs, maxUs);
+  servo1.attach(ServoSpeed, minUs, maxUs);
+  servo2.attach(ServoSteering, minUs, maxUs);
   pwm.attachPin(27, 10000);//10khz
-  servo1.write(0);
-  delay(1000);
   servo1.write(90);
-  delay(1000);
-  servo1.write(180);
+  //delay(1000);
+  //servo1.write(90);
+  //delay(1000);
+  //servo1.write(180);
 
   
   
