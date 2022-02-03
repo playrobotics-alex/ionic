@@ -59,6 +59,7 @@ export class DashboardPage implements AfterViewInit {
   ProgressBarColor : string = "#ffffff";
   TempColor  : string = "#000";
   FuelColor  : string = "#000";
+  bgColor  : string = "#000";
 
 
   get_duration_interval: any;
@@ -442,7 +443,8 @@ export class DashboardPage implements AfterViewInit {
       }  
       else
       {
-        //Race finished        
+        //Race finished      
+        this.doBlinkColor("#FFF","#000");          
         this.LapTimeString = this.time;
         this.doVibrationFor(2000);
         this.stop();
@@ -450,17 +452,46 @@ export class DashboardPage implements AfterViewInit {
       }
       return;
     }  
-    if (this.timeBegan === null) {
-        this.reset();
-        this.timeBegan = new Date();
-    }
-    if (this.timeStopped !== null) {
-      let newStoppedDuration:any = (+new Date() - this.timeStopped)
-      this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
-    }
-    this.started = setInterval(this.clockRunning.bind(this), 108);
-    this.running = true;
-    this.LapsCount=1;
+
+    //If we are here the race is new! Lets do countdown
+    //3
+    this.doVibrationFor(200);
+    this.time = "-3-";
+    //2
+    setTimeout(() => {
+      this.doVibrationFor(200);
+      this.time = "-2-";
+    },1200);
+    //1
+    setTimeout(() => {
+      this.doVibrationFor(200);
+      this.time = "-1-";
+    },2400);
+    //GO!
+    setTimeout(() => {
+      this.doVibrationFor(400);
+      if (this.RPMValue==0)
+      {
+        if (this.timeBegan === null) {
+          this.reset();
+          this.timeBegan = new Date();
+        }
+        if (this.timeStopped !== null) {
+          let newStoppedDuration:any = (+new Date() - this.timeStopped)
+          this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
+        }
+        this.started = setInterval(this.clockRunning.bind(this), 108);
+        this.running = true;
+        this.LapsCount=1;
+      }
+      else
+      {
+        this.time = "DISQ";
+        this.doBlinkColor("#FF0000","#000");        
+      }  
+    },3600);
+
+
   }
   zeroPrefix(num, digit) 
   {
@@ -513,6 +544,39 @@ export class DashboardPage implements AfterViewInit {
     // Vibrate the device for given milliseconds
     // Duration is ignored on iOS and limited to 1 second.
     this.vibration.vibrate(ms);
+  }
+
+  doBlinkColor(color1,color2){
+    //Blink red color
+    this.bgColor = color1;
+    this.doVibrationFor(1800);
+    setTimeout(() => {
+      this.bgColor = color2;
+    },200);
+    setTimeout(() => {
+      this.bgColor = color1;
+    },400);  
+    setTimeout(() => {
+      this.bgColor = color2;
+    },600);  
+    setTimeout(() => {
+      this.bgColor = color1;
+    },800);  
+    setTimeout(() => {
+      this.bgColor = color2;
+    },1000);   
+    setTimeout(() => {
+      this.bgColor = color1;
+    },1200);  
+    setTimeout(() => {
+      this.bgColor = color2;
+    },1400);  
+    setTimeout(() => {
+      this.bgColor = color1;
+    },1600);  
+    setTimeout(() => {
+      this.bgColor = color2;
+    },1800);                                        
   }
 /*
   getCoordinates(event)

@@ -27,6 +27,7 @@
     "@ionic-native/ble": "^5.31.1",
     "@ionic-native/core": "^5.0.0",
     "@ionic-native/diagnostic": "^5.31.1",
+    "@ionic-native/native-audio": "^5.36.0",
     "@ionic-native/native-storage": "^5.31.1",
     "@ionic-native/screen-orientation": "^5.36.0",
     "@ionic-native/splash-screen": "^5.0.0",
@@ -62,6 +63,7 @@
     "cordova-plugin-device-motion": "^2.0.1",
     "cordova-plugin-ionic-keyboard": "^2.2.0",
     "cordova-plugin-ionic-webview": "^4.2.1",
+    "cordova-plugin-nativeaudio": "^3.0.9",
     "cordova-plugin-navigationbar-color": "github:fagundes/cordova-plugin-navigationbar",
     "cordova-plugin-screen-orientation": "^3.0.2",
     "cordova-plugin-splashscreen": "^5.0.2",
@@ -100,7 +102,8 @@
       "cordova-plugin-device-motion": {},
       "cordova-plugin-screen-orientation": {},
       "cordova-plugin-navigationbar-color": {},
-      "cordova-plugin-vibration": {}
+      "cordova-plugin-vibration": {},
+      "cordova-plugin-nativeaudio": {}
     },
     "platforms": [
       "android"

@@ -1,4 +1,4 @@
-<ion-content >
+<ion-content [style.--background]="bgColor" >
 
 
 <ion-fab vertical="top" horizontal="start" slot="fixed">
@@ -17,7 +17,7 @@
                     min-value="0"
                     max-value="1000"
                     color-bar-progress="#327ac0"
-                    color-plate="#000"
+                    [attr.color-plate]="bgColor"
                     color-title="#eee"
                     color-units="#ccc"
                     color-numbers="#eee"
