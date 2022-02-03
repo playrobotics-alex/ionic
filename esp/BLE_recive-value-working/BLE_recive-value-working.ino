@@ -69,28 +69,28 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
 
-      if (rxValue.length() > 0) {
-        counter++;
-        //Serial.println("AAAA*********");
-        //Serial.println(rxValue.c_str());
+        
 
+        
         String speed_string = getValue(rxValue.c_str(), 'S', 0);
-        speed_value = speed_string.toInt();
+        speed_value = speed_string.toInt()*10;
 
         String acc_string = getValue(rxValue.c_str(), 'S', 1);
+
+        
         float acc_float = acc_string.toFloat() ;
-        int acc_int = acc_float*100; 
-        steering_value = map(acc_int, -1000, 1000, 0, 180);
-        Serial.print("speed");
+        int acc_int = acc_float; 
+        steering_value = map(acc_int, -100, 100, 0, 180);
+        Serial.print("speed: ");
         Serial.println(speed_value);
-        Serial.print("Steering");
+        Serial.print("Steering: ");
         Serial.println(steering_value);
         //Serial.println(counter);
 
         servo1.write(speed_value);
         servo2.write(steering_value);
 
-      }
+  
     }
 };
 
