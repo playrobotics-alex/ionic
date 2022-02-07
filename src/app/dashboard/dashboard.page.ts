@@ -52,6 +52,8 @@ export class DashboardPage implements AfterViewInit {
   LapTime : number = 0;
   BestLapTime : number = 0;
   LapsCount : number = 1;
+  wheelRotate : number = 0;
+  
   
   CompleteAnimationFlag  : number = 0;
   
@@ -103,7 +105,7 @@ export class DashboardPage implements AfterViewInit {
 
                 ngAfterViewInit(): void {
                   this.gesture = this.gestureCtrl.create({
-                    gestureName: 'doubleTap',
+                    gestureName: 'gas',
                     el: this.gas.nativeElement,
                     threshold: 0,
                     onMove: ev => { this.onMove(ev); },
@@ -112,6 +114,9 @@ export class DashboardPage implements AfterViewInit {
                   }, true);
                 
                   this.gesture.enable();
+
+
+                  
                   
                   //Gauge needle animations
                   setTimeout(() => {
@@ -140,19 +145,44 @@ export class DashboardPage implements AfterViewInit {
 
                 }       
     onMove(ev){
-      console.log(ev.currentY);
-      this.gasLevel = ev.currentY;
-      //this.RPMValue = 1000-ev.currentY*3;
+      //console.log(ev.currentY); 
+      //Gas
+      if (ev.currentX>650)
+        this.gasLevel = ev.currentY;
+      else
+        this.gasLevel = 150;
+
+      //Steering
+      if ((ev.currentX<170)&&(ev.currentX>0)&&(ev.currentY>230))
+      {
+        this.wheelRotate = ev.currentX-90;
+         console.log(ev.currentY); 
+      }  
+      else
+        this.wheelRotate = 0;
     }
     onStart(ev){
-      console.log(ev.currentY);
-      this.gasLevel =  ev.currentY;
-      //this.RPMValue =  1000-ev.currentY*3;
+      //Gas
+      if (ev.currentX>650)
+        this.gasLevel =  ev.currentY;
+      else
+        this.gasLevel = 150;
+
+      //Steering   
+      if ((ev.currentX<170)&&(ev.currentX>0)&&(ev.currentY>230))
+      {                   
+        //console.log(ev.currentY);
+        this.wheelRotate = ev.currentX-90;
+      }        
+      else
+        this.wheelRotate = 0;      
     }   
     onEnd(ev){
-      console.log("00");
-      this.gasLevel = 150;
-    }         
+        this.gasLevel = 150;
+        this.wheelRotate = 0;      
+    }        
+    
+    
     getCurrentCoordinates() 
     {
         // Get the device current acceleration
@@ -320,13 +350,15 @@ export class DashboardPage implements AfterViewInit {
 
    
     // Get the device current acceleration
+    // sreering with accelerometer , not used currently
+    /*
     this.deviceMotion.getCurrentAcceleration().then(
       (acceleration: DeviceMotionAccelerationData) => this.steering = acceleration.y,
       (error: any) => console.log(error)
     );
+    */
 
-
-    this.revSteering = this.steering*10;
+    this.revSteering = this.steering;
 
     let string = (this.GasValue/55.5).toFixed(0) +'S' + this.revSteering.toFixed(0);
     let array = new Uint8Array(string.length);
