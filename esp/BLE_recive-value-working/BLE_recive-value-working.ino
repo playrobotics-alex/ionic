@@ -76,16 +76,18 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         speed_value = speed_string.toInt()*10;
 
         String acc_string = getValue(rxValue.c_str(), 'S', 1);
-
+        Serial.println(acc_string);
         
-        float acc_float = acc_string.toFloat() ;
-        int acc_int = acc_float; 
-        steering_value = map(acc_int, -100, 100, 0, 180);
+        int acc_int = acc_string.toInt() ;
+        //float acc_float = acc_string.toFloat() ;
+        //int acc_int = acc_float; 
+                
+
+        steering_value = map(acc_int*1, -100, 100, 0, 180);
         Serial.print("speed: ");
         Serial.println(speed_value);
         Serial.print("Steering: ");
         Serial.println(steering_value);
-        //Serial.println(counter);
 
         servo1.write(speed_value);
         servo2.write(steering_value);

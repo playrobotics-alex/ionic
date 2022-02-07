@@ -326,7 +326,7 @@ export class DashboardPage implements AfterViewInit {
     );
 
 
-    this.revSteering = this.steering*-10;
+    this.revSteering = this.steering*10;
 
     let string = (this.GasValue/55.5).toFixed(0) +'S' + this.revSteering.toFixed(0);
     let array = new Uint8Array(string.length);
