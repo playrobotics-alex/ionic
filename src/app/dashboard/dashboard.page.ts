@@ -1,14 +1,13 @@
 import { Component, ElementRef, AfterViewInit, NgZone, ViewChild } from '@angular/core';
-import { NavController, AlertController, ToastController, GestureConfig} from '@ionic/angular';
+import { NavController, AlertController, ToastController} from '@ionic/angular';
 import { ActivatedRoute} from "@angular/router";
 import { Platform } from '@ionic/angular'; 
 import { BLE } from '@ionic-native/ble/ngx';
 import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plugins/device-motion/ngx';
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
-import { Gesture, GestureController } from '@ionic/angular';
 import { Vibration } from '@ionic-native/vibration/ngx';
-
+import 'hammerjs';
 
 declare const NavigationBar: any;
 //NavigationBar.backgroundColorByHexString("#FF0000", true);
@@ -26,7 +25,6 @@ const isLogEnabled = true
   styleUrls: ['./dashboard.page.scss'],
 })
 export class DashboardPage implements AfterViewInit {
-  @ViewChild('gas', { static: true, read: ElementRef }) gas: ElementRef;
 
   //Timer Varaibles
   public timeBegan = null
@@ -69,7 +67,6 @@ export class DashboardPage implements AfterViewInit {
   connectedDevice : any = {}; 
   
   steeringLevel : number = 0;
-  private gesture;
 
   steering : number = 0;
   revSteering : number = 0;
@@ -82,7 +79,6 @@ export class DashboardPage implements AfterViewInit {
                 private toastCtrl: ToastController,
                 public  platform: Platform,
                 private screenOrientation: ScreenOrientation,
-                private gestureCtrl: GestureController,
                 private vibration: Vibration,
                 private ngZone: NgZone ) 
                 {
@@ -103,84 +99,66 @@ export class DashboardPage implements AfterViewInit {
 
                 }
 
-                ngAfterViewInit(): void {
-                  this.gesture = this.gestureCtrl.create({
-                    gestureName: 'gas',
-                    el: this.gas.nativeElement,
-                    threshold: 0,
-                    onMove: ev => { this.onMove(ev); },
-                    onStart: ev => { this.onStart(ev); },
-                    onEnd: ev => { this.onEnd(ev); },
-                  }, true);
-                
-                  this.gesture.enable();
+      ngAfterViewInit(): void {        
 
+        this.gasLevel = 90;
+        this.GasValue = 500;
+        this.RPMValue = 0;             
+        this.wheelRotate = 0;   
+        this.steering = 90;      
+        
+        //Gauge needle animations
+        setTimeout(() => {
+          this.AnimationDuration=700;
+          this.RPMValue=1000;
+          this.FuelValue=1000;
+          this.TempValue=180;                    
+        },500);
 
-                  
-                  
-                  //Gauge needle animations
-                  setTimeout(() => {
-                    this.AnimationDuration=700;
-                    this.RPMValue=1000;
-                    this.FuelValue=1000;
-                    this.TempValue=180;                    
-                  },500);
+        setTimeout(() => 
+        {                
+          this.RPMValue=0;
+          this.FuelValue=0;
+          this.TempValue=0;
+        },1400);
+        
+        setTimeout(() => 
+        {
+          this.AnimationDuration=20;
+          this.get_duration_interval= setInterval(()=> 
+          {
+              this.sendBLE(); 
+          }, 100);
+          },2000);
+        
 
-                  setTimeout(() => 
-                  {                
-                    this.RPMValue=0;
-                    this.FuelValue=0;
-                    this.TempValue=0;
-                  },1400);
-                  
-                  setTimeout(() => 
-                  {
-                    this.AnimationDuration=20;
-                    this.get_duration_interval= setInterval(()=> 
-                    {
-                       this.sendBLE(); 
-                    }, 100);
-                    },2000);
-                  
+      }       
+    
+      onMoveGas(ev){
+        this.gasLevel = 180-(ev.center.y)/2;
+        
+        //console.log(ev.center.y);
 
-                }       
-    onMove(ev){
-      //console.log(ev.currentY); 
-      //Gas
-      if (ev.currentX>650)
-        this.gasLevel = ev.currentY;
-      else
-        this.gasLevel = 150;
+      }
+            
+     onMoveSteering(ev)
+     {
+      //console.log("XM", ev.center.x);
+      this.wheelRotate = ev.center.x-90;
+      this.steering = ev.center.x;
 
-      //Steering
-      if ((ev.currentX<170)&&(ev.currentX>0)&&(ev.currentY>230))
-      {
-        this.wheelRotate = ev.currentX-90;
-         console.log(ev.currentY); 
-      }  
-      else
-        this.wheelRotate = 0;
     }
-    onStart(ev){
-      //Gas
-      if (ev.currentX>650)
-        this.gasLevel =  ev.currentY;
-      else
-        this.gasLevel = 150;
-
-      //Steering   
-      if ((ev.currentX<170)&&(ev.currentX>0)&&(ev.currentY>230))
-      {                   
-        //console.log(ev.currentY);
-        this.wheelRotate = ev.currentX-90;
-      }        
-      else
-        this.wheelRotate = 0;      
-    }   
-    onEnd(ev){
-        this.gasLevel = 150;
-        this.wheelRotate = 0;      
-    }        
+    onEndGas(ev){
+        //console.log("END");
+        this.gasLevel = 90;
+        this.GasValue = 500;
+        this.RPMValue = 0;             
+    } 
+    
+    onEndSteering(ev){    
+        this.wheelRotate = 0;   
+        this.steering = 90;           
+    }          
     
     
     getCurrentCoordinates() 
@@ -310,25 +288,26 @@ export class DashboardPage implements AfterViewInit {
     //Map Gas slider
     
     //Limit slider only to possitive values
-    if ((1000 - this.gasLevel*3.3)<0)
+
+    if (this.gasLevel<0)
       this.GasValue = 0;
     else
-      this.GasValue =  1000 - this.gasLevel*3.3;
+      this.GasValue =  this.gasLevel*5.5;
 
 
     //Map rpm gauge
 
-    if (this.gasLevel<150)
+    if (this.gasLevel<90)
     { //Forward
       this.ProgressBarColor = "#327ac0"; 
-      this.RPMValue =  (500 - this.gasLevel*3.3)*2;
+      this.RPMValue =  180-(this.gasLevel-90)*5.5*2;
       //this.RPMValue = this.gasLevel;
     }  
     else  
     {  
       //Backward      
       
-      if (this.gasLevel==150)
+      if (this.gasLevel==90)
       {
         this.ProgressBarColor = "#ffffff";
         this.RPMValue = 0;        
@@ -338,10 +317,10 @@ export class DashboardPage implements AfterViewInit {
 
 
         //Limit to 1000
-        if (((500 - this.gasLevel*3.3)*-2)>1000)
+        if ((this.gasLevel-90)*5.5*2>1000)
           this.RPMValue = 1000;
         else
-          this.RPMValue =   (500 - this.gasLevel*3.3)*-2
+          this.RPMValue =   (this.gasLevel-90)*5.5*2;
         
         //this.RPMValue = this.gasLevel;
         this.ProgressBarColor = "#FF0000";
@@ -358,23 +337,24 @@ export class DashboardPage implements AfterViewInit {
     );
     */
 
-    this.revSteering = this.steering;
+    this.revSteering = 180-(this.steering*1)-5;
 
-    let string = (this.GasValue/55.5).toFixed(0) +'S' + this.revSteering.toFixed(0);
+    let string = 180-(this.gasLevel) +'S' + this.revSteering.toFixed(0);
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
       array[i] = string.charCodeAt(i);
     }
-    console.log(array.buffer);
+    console.log(string);
 
 
       this.ble.writeWithoutResponse(this.connectedDevice.id, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
         () => {           
-          if(isLogEnabled) 
-            console.log(array.buffer);
+          //if(isLogEnabled) 
+            //console.log(array.buffer);
         },
         error => { if(isLogEnabled) console.error('Error writing the new leds states to the BLE leds states characteristic.', error);}
       );   
+      
   }  
 
   // on error disconnecting from device

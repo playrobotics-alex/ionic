@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
+import { BrowserModule,HammerModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
 import { IonicModule, IonicRouteStrategy } from '@ionic/angular';
@@ -17,7 +17,16 @@ import { AppRoutingModule } from './app-routing.module';
 import { DeviceMotion } from '@awesome-cordova-plugins/device-motion/ngx';
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
+import { HammerGestureConfig, HAMMER_GESTURE_CONFIG  } from "@angular/platform-browser";
+import * as Hammer from 'hammerjs';
 
+export class IonicGestureConfig extends HammerGestureConfig {
+
+  overrides = {
+    'pan': {threshold:0}
+  }
+
+}
 
 @NgModule({
   declarations: [AppComponent],
@@ -26,7 +35,8 @@ import { Vibration } from '@ionic-native/vibration/ngx';
           BrowserModule, 
           IonicModule.forRoot(), 
           AppRoutingModule,
-          RoundProgressModule
+          RoundProgressModule,
+          HammerModule
         ],
   providers: [
     StatusBar,
@@ -38,6 +48,10 @@ import { Vibration } from '@ionic-native/vibration/ngx';
       provide: RouteReuseStrategy, 
       useClass: IonicRouteStrategy 
     },    
+    {
+      provide: HAMMER_GESTURE_CONFIG,
+      useClass: IonicGestureConfig
+    },
     BLE, Diagnostic, NativeStorage, DeviceMotion
   ], 
   bootstrap: [AppComponent]

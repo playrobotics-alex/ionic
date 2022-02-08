@@ -1,207 +1,140 @@
-<ion-content [style.--background]="bgColor" #gas >
-    <!-- ICONS -->
-    <ion-fab vertical="top" horizontal="start" slot="fixed" style="">             
-        <ion-fab-button style="--background:rgb(0, 98, 255);margin-bottom:30px;">
-            <ion-icon src="/assets/icon/nitro.svg" style="font-size: 45px"></ion-icon>
-        </ion-fab-button>   
-        <ion-fab-button style="--background:rgb(231, 162, 0);margin-bottom:30px;margin-top: -10px;" (touchstart) = "FuelCick()" >
-            <ion-icon src="/assets/icon/gas.svg"  style="font-size: 45px;font-weight:700;" ></ion-icon>
-        </ion-fab-button> 
-        <ion-fab-button style="--background:#1d8400;margin-bottom:30px;margin-top: -10px;" >
-            <ion-icon src="/assets/icon/lap.svg"  style="font-size: 45px;font-weight:700;;margin-top: -10px;"  (touchstart) = "start()" ></ion-icon>
-        </ion-fab-button> 
-    </ion-fab>
-     <!-- Steering Wheel -->
-    <ion-fab vertical="bottom" horizontal="start" slot="fixed"  style="margin-left:20px;transform: rotate({{wheelRotate}}deg);"  >    
-            <img src="/assets/steering-wheel.png" width="120px;">
+<body style="background-color: black;">
+<!-- Steering Wheel -->
+<img src="/assets/steering-wheel.png" width="120px;" (pan)="onMoveSteering($event)" (panend)="onEndSteering($event)" 
+style="margin-left:20px;transform: rotate({{wheelRotate}}deg);
+position:absolute;bottom:10px;left:10px;" 
+> 
 
-    </ion-fab>
+ <!-- RPM Gauge -->
+ <div style="position: absolute; top: 50px; left:150px;width:300px;height:150px;">
+    <radial-gauge id="gauge-ps" width="300" height="300"
+        [attr.value]="RPMValue"
+        units="RPM/1000"
+        title=""
+        color-needle="#FF0000"
+        data-type="radial-gauge"
+        major-ticks="0,1,2,3,4,5,6,7,8,9,10"
+        min-value="0"
+        max-value="1000"
+        color-plate="#000"
+        color-title="#eee"
+        color-units="#ccc"
+        color-numbers="#eee"
+        color-major-ticks="#ddd"
+        color-minor-ticks="#ddd"
+        borders="true"    
+        minor-ticks="2"
+        stroke-ticks="true"
+        animation-rule="quad"
+        [attr.animation-duration]="AnimationDuration"
+        animated-value="true"
+        font-units-weight="700"
+        value=0
+        value-dec=0
+        highlights='[{"from": 700, "to": 1000, "color": "rgba(200, 50, 50, .75)"}]'
+    ></radial-gauge>
+</div>
 
-    <ion-fab vertical="top" horizontal="start" slot="fixed">
-        <ion-row >
+ <!-- Temp Gauge -->
+<div style="position: absolute; bottom: 10px; left:440px;width:150px;height:150px;">
+    <radial-gauge id="gauge-ps" width="150" height="150"
+        [attr.value]="TempValue"
+        units="TEMP"
+        title=""
+        color-needle="#FF0000"
+        data-type="radial-gauge"
+        major-ticks="0,90 ,180"
+        min-value="0"
+        max-value="180"
+        [attr.color-plate]="TempColor"
+        color-title="#eee"
+        color-units="#ccc"
+        color-numbers="#eee"
+        color-major-ticks="#ddd"
+        color-minor-ticks="#ddd"
+        borders="true"    
+        minor-ticks="4"
+        stroke-ticks="true"
+        animation-rule="quad"
+        [attr.animation-duration]="AnimationDuration"
+        animated-value="true"
+        start-angle="90"
+        ticks-angle="180"
+        value-box="true"
+        font-value-size="35"
+        font-value-weight="500"
+        needle-type="arrow"
+        font-numbers-size="50"
+        font-units-size="40"
+        font-units-weight="700"
+        value-dec=0
+        highlights='[{"from": 150, "to": 180, "color": "rgba(200, 0, 0, .75)"},{"from": 120, "to": 150, "color": "rgba(255, 131, 0, .75)"}]'
+    ></radial-gauge>
+</div>
 
-            <ion-col>
-                <!-- RPM Gauge -->
-                <div style="position: relative; top: 50px; left:130px;width:300px;height:150px;">
-                    <radial-gauge id="gauge-ps" width="300" height="300"
-                        [attr.value]="RPMValue"
-                        units="RPM/1000"
-                        title=""
-                        color-needle="#FF0000"
-                        data-type="radial-gauge"
-                        major-ticks="0,1,2,3,4,5,6,7,8,9,10"
-                        min-value="0"
-                        max-value="1000"
-                        color-plate="#000"
-                        color-title="#eee"
-                        color-units="#ccc"
-                        color-numbers="#eee"
-                        color-major-ticks="#ddd"
-                        color-minor-ticks="#ddd"
-                        borders="true"    
-                        minor-ticks="2"
-                        stroke-ticks="true"
-                        animation-rule="quad"
-                        [attr.animation-duration]="AnimationDuration"
-                        animated-value="true"
-                        font-units-weight="700"
-                        value=0
-                        value-dec=0
-                        highlights='[{"from": 700, "to": 1000, "color": "rgba(200, 50, 50, .75)"}]'
-                    ></radial-gauge>
-                </div>
-            </ion-col> 
+ <!-- Fuel Gauge -->
+<div style="position: absolute; bottom: 160px; left:440px;width:150px;height:150px;">
+    <radial-gauge id="gauge-ps" width="150" height="150"
+        [attr.value]="FuelValue"
+        units="FUEL"
+        title=""
+        color-needle="#FF0000"            
+        data-type="radial-gauge"
+        major-ticks="E, ,F"
+        min-value="0"
+        max-value="1000"
+        [attr.color-plate]="FuelColor"
+        color-title="#eee"
+        color-units="#ccc"
+        color-numbers="#eee"
+        color-major-ticks="#ddd"
+        color-minor-ticks="#ddd"
+        borders="true"    
+        minor-ticks="2"
+        stroke-ticks="true"
+        animation-rule="quad"
+        [attr.animation-duration]="AnimationDuration"
+        animated-value="true"
+        start-angle="60"
+        ticks-angle="240"
+        value-box="false"
+        needle-type="arrow"
+        font-numbers-size="50"
+        font-units-size="40"
+        font-units-weight="700"
+        value-dec=0
+        highlights='[{"from": 900, "to": 1000, "color": "rgba(0, 200, 0, .75)"},{"from": 0, "to": 100, "color": "rgba(200, 0, 0, .75)"}]'
+    ></radial-gauge>
+</div>
 
-            <ion-col>          
-                <ion-fab-button color="danger" style="position: absolute;margin-left:-60px;bottom:180px;height:35px"  >
-                    <ion-icon name="power"></ion-icon>
-                </ion-fab-button>            
-            </ion-col>
+<span style="position: absolute;  right:0px;"   (pan)="onMoveGas($event)" (panend)="onEndGas($event)">
+    <linear-gauge id="linear-ps" width="120" height="355" 
+    [attr.value]="GasValue"
+    [attr.color-bar-progress]="ProgressBarColor"
+    title=""
+    number-side="left"
+    tick-side="left"
+    needle-side="left"
+    major-ticks="R,N,D"
+    min-value="0"
+    max-value="1000"
+    color-bar-progress="#327ac0"
+    [attr.color-plate]="bgColor"
+    color-title="#eee"
+    color-units="#ccc"
+    color-numbers="#eee"
+    color-major-ticks="#ddd"
+    color-minor-ticks="#ddd"
+    borders="false"    
+    minor-ticks="2"
+    stroke-ticks="fa"
+    value-box="false"
+    bar-begin-circle="false"
+    value=500
+    animation-rule="quad"
+    [attr.animation-duration]="AnimationDuration"
+    highlights='[{"from": 0, "to": 0, "color": "rgba(200, 50, 50, .75)"}]'    
+    ></linear-gauge> 
+</span>
 
-            <ion-col>
-                <!-- Temp Gauge -->
-                <ion-row>
-                    <ion-col>
-                        <div style="position: relative; top: 50px; left:100px;width:150px;height:150px;">
-                            <radial-gauge id="gauge-ps" width="150" height="150"
-                                [attr.value]="TempValue"
-                                units="TEMP"
-                                title=""
-                                color-needle="#FF0000"
-                                data-type="radial-gauge"
-                                major-ticks="0,90 ,180"
-                                min-value="0"
-                                max-value="180"
-                                [attr.color-plate]="TempColor"
-                                color-title="#eee"
-                                color-units="#ccc"
-                                color-numbers="#eee"
-                                color-major-ticks="#ddd"
-                                color-minor-ticks="#ddd"
-                                borders="true"    
-                                minor-ticks="4"
-                                stroke-ticks="true"
-                                animation-rule="quad"
-                                [attr.animation-duration]="AnimationDuration"
-                                animated-value="true"
-                                start-angle="90"
-                                ticks-angle="180"
-                                value-box="true"
-                                font-value-size="35"
-                                font-value-weight="500"
-                                needle-type="arrow"
-                                font-numbers-size="50"
-                                font-units-size="40"
-                                font-units-weight="700"
-                                value-dec=0
-                                highlights='[{"from": 150, "to": 180, "color": "rgba(200, 0, 0, .75)"},{"from": 120, "to": 150, "color": "rgba(255, 131, 0, .75)"}]'
-                            ></radial-gauge>
-                        </div>
-                    </ion-col>
-                </ion-row>
-                <!-- Fuel Gauge -->
-                <ion-row>
-                    <ion-col>
-                        <div style="position: relative; top: 40px; left:100px;width:150px;height:150px;">
-                            <radial-gauge id="gauge-ps" width="150" height="150"
-                                [attr.value]="FuelValue"
-                                units="FUEL"
-                                title=""
-                                color-needle="#FF0000"            
-                                data-type="radial-gauge"
-                                major-ticks="E, ,F"
-                                min-value="0"
-                                max-value="1000"
-                                [attr.color-plate]="FuelColor"
-                                color-title="#eee"
-                                color-units="#ccc"
-                                color-numbers="#eee"
-                                color-major-ticks="#ddd"
-                                color-minor-ticks="#ddd"
-                                borders="true"    
-                                minor-ticks="2"
-                                stroke-ticks="true"
-                                animation-rule="quad"
-                                [attr.animation-duration]="AnimationDuration"
-                                animated-value="true"
-                                start-angle="60"
-                                ticks-angle="240"
-                                value-box="false"
-                                needle-type="arrow"
-                                font-numbers-size="50"
-                                font-units-size="40"
-                                font-units-weight="700"
-                                value-dec=0
-                                highlights='[{"from": 900, "to": 1000, "color": "rgba(0, 200, 0, .75)"},{"from": 0, "to": 100, "color": "rgba(200, 0, 0, .75)"}]'
-                            ></radial-gauge>
-                        </div>
-                    </ion-col>
-                </ion-row>            
-            </ion-col>   
-            <ion-col >
-                <!-- GAS Slider -->
-
-            </ion-col>    
-        </ion-row>
-
-    </ion-fab>
-
-
-    <!-- LAP stats-->
-    <ion-fab vertical="top" horizontal="end" slot="fixed">           
-        <ion-row>
-            <ion-col>     
-                <div style="position: relative; top:0px;" >            
-                    <linear-gauge id="linear-ps" width="120" height="355" 
-                        [attr.value]="GasValue"
-                        [attr.color-bar-progress]="ProgressBarColor"
-                        title=""
-                        number-side="left"
-                        tick-side="left"
-                        needle-side="left"
-                        major-ticks="R,N,D"
-                        min-value="0"
-                        max-value="1000"
-                        color-bar-progress="#327ac0"
-                        [attr.color-plate]="bgColor"
-                        color-title="#eee"
-                        color-units="#ccc"
-                        color-numbers="#eee"
-                        color-major-ticks="#ddd"
-                        color-minor-ticks="#ddd"
-                        borders="false"    
-                        minor-ticks="2"
-                        stroke-ticks="fa"
-                        value-box="false"
-                        bar-begin-circle="false"
-                        value=500
-                        animation-rule="quad"
-                        [attr.animation-duration]="AnimationDuration"
-                        highlights='[{"from": 0, "to": 0, "color": "rgba(200, 50, 50, .75)"}]'    
-                    ></linear-gauge> 
-                </div>
-            </ion-col>
-        </ion-row>
-    </ion-fab>   
-
-    <!-- LAP stats-->
-    <ion-fab vertical="top" horizontal="start" slot="fixed">           
-        <ion-row>
-            <ion-col>     
-                <ion-label color="light" class="fixedLabel" position="fixed"  style="margin-left:70px;">{{LapsCount}}/10</ion-label>
-            </ion-col>
-            <ion-col>          
-                <ion-label class="fixedLabel" position="fixed" color="light" style="margin-left: 105px;">{{time}}</ion-label>
-            </ion-col>        
-        </ion-row>
-    </ion-fab>   
-
-    <ion-fab vertical="top" horizontal="end" slot="fixed" style="margin-right:120px">           
-        <ion-row>
-            <ion-col>     
-                <ion-label class="fixedLabel" position="fixed"  color="medium">{{BestLapTimeString}}</ion-label>
-            </ion-col>
-        </ion-row>
-    </ion-fab>
-
-</ion-content>
+</body>
