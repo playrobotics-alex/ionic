@@ -4,6 +4,8 @@ import { ActivatedRoute} from "@angular/router";
 import { Platform } from '@ionic/angular'; 
 import { BLE } from '@ionic-native/ble/ngx';
 import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plugins/device-motion/ngx';
+import { NavigationExtras } from "@angular/router";
+
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
@@ -17,7 +19,7 @@ NavigationBar.hide();
 const CUSTOM_SERVICE_UUID       = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
 const LEDS_STATES_CHAR_UUID     = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
 
-const isLogEnabled = true
+const isLogEnabled = true;
 
 @Component({
   selector: 'app-dashboard',
@@ -32,6 +34,7 @@ export class DashboardPage implements AfterViewInit {
   public stoppedDuration:any = 0
   public started = null
   public running = false
+  public nitro = false
   public blankTime = "00.00"
   public time = "LAP"
   public BestLapTimeString = "BEST"
@@ -137,7 +140,7 @@ export class DashboardPage implements AfterViewInit {
       onMoveGas(ev){
         this.gasLevel = 180-(ev.center.y)/2;
         
-        //console.log(ev.center.y);
+        //console.log(this.gasLevel/2+45);
 
       }
             
@@ -207,7 +210,29 @@ export class DashboardPage implements AfterViewInit {
     if(isLogEnabled) console.info('navigating back to [scanner] page.');
     this.navCtrl.navigateBack('scanner');
   }
- 
+  BLEDisconnect():any
+  {
+    this.ble.disconnect(this.connectedDevice.id).then(
+      () => {           
+        if(isLogEnabled) 
+          console.info('Disconnect success');
+
+          this.ngZone.run(()=> {
+            let navigationExtras: NavigationExtras = {
+              queryParams: { 
+                device: JSON.stringify(device)
+              }
+            }; 
+            this.navCtrl.navigateForward(['scanner'], navigationExtras);
+          });
+
+
+
+
+      },
+      error => { if(isLogEnabled) console.error('Error while disconnecting.', error);}
+    );   
+  }
  
   sendBLE() : any
   {
@@ -294,34 +319,38 @@ export class DashboardPage implements AfterViewInit {
     else
       this.GasValue =  this.gasLevel*5.5;
 
+    let NitroMultiplier = 1;
+    if (this.nitro==false)
+      NitroMultiplier = 0.5;
+
 
     //Map rpm gauge
 
     if (this.gasLevel<90)
-    { //Forward
-      this.ProgressBarColor = "#327ac0"; 
-      this.RPMValue =  180-(this.gasLevel-90)*5.5*2;
+    { //BACK
+      this.ProgressBarColor = "#3111c0"; 
+      //Limit to 1000
+      if (180-(this.gasLevel-90)*5.5*2>1000)
+        this.RPMValue = 1000;
+      else
+        this.RPMValue =  180-(this.gasLevel-90)*5.5*2*NitroMultiplier;
       //this.RPMValue = this.gasLevel;
     }  
     else  
     {  
-      //Backward      
-      
+      //FORWARD            
       if (this.gasLevel==90)
       {
         this.ProgressBarColor = "#ffffff";
         this.RPMValue = 0;        
       }  
       else
-      {
-
-
+      {        
         //Limit to 1000
         if ((this.gasLevel-90)*5.5*2>1000)
           this.RPMValue = 1000;
         else
-          this.RPMValue =   (this.gasLevel-90)*5.5*2;
-        
+          this.RPMValue =   (this.gasLevel-90)*5.5*2*NitroMultiplier;
         //this.RPMValue = this.gasLevel;
         this.ProgressBarColor = "#FF0000";
       }
@@ -339,7 +368,11 @@ export class DashboardPage implements AfterViewInit {
 
     this.revSteering = 180-(this.steering*1)-5;
 
-    let string = 180-(this.gasLevel) +'S' + this.revSteering.toFixed(0);
+    let NitroGas = 180-(this.gasLevel);
+    if (this.nitro==false)
+      NitroGas = (NitroGas/2) + 45;
+
+    let string = NitroGas +'S' + this.revSteering.toFixed(0);
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
       array[i] = string.charCodeAt(i);
@@ -407,11 +440,25 @@ export class DashboardPage implements AfterViewInit {
     toast.present();
   }
 
-  async FuelCick()
+  async FuelClick()
   {
     this.CompleteAnimationFlag=0;
   }
 
+  async NitroClick()
+  {
+    if (this.nitro)
+    {
+      this.bgColor = "rgb(0, 0, 0)";
+      this.nitro=false;
+
+    }
+    else
+    {
+      this.bgColor = "rgb(0, 0, 51)";
+      this.nitro=true;
+    }  
+  }
  
   async showAlert(title, message) 
   {               
@@ -447,7 +494,7 @@ export class DashboardPage implements AfterViewInit {
 
       this.reset();
       //Race still on
-      if (this.LapsCount<2)
+      if (this.LapsCount<5)
       {
         this.timeBegan = new Date();
         this.started = setInterval(this.clockRunning.bind(this), 108);
