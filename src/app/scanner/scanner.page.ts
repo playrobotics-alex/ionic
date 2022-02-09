@@ -153,12 +153,28 @@ async startBleScan()
   // connect to a device
   connectToDevice(device) 
   {    
+    console.log('connect to device to '+device.name+'.');
     this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
     this.ble.connect(device.id).subscribe(
       () => this.onConnected(device),
       (error) => this.onErrorConecting(device, error)
     );
+    setTimeout(() => {
+      this.isConnected(device);
+    },3000);
+
   } 
+
+  isConnected(device): any {
+    console.log('checking for connection on device: ' + device.id);
+    this.ble.isConnected(device.id)
+      .then(function (success) {
+        console.log('yes');
+      }, function (error) {
+        console.log(error);
+        console.log('no');
+      });
+  }
 
   // on connected 
   onConnected(device)
@@ -181,10 +197,11 @@ async startBleScan()
   // on error connecting
   onErrorConecting(device, error)
   {
-    this.showToast('Unexpectedly disconnected from '+device.name+'.', 'danger', 2000, 'bottom');
-    if(isLogEnabled) console.error('Unexpectedly disconnected from '+device.name+'.', error);
-    if(isLogEnabled) console.info('navigating to the [scanner] page');
-    this.navCtrl.navigateBack(['scanner']);
+    if(isLogEnabled) console.info('connection error');
+    //this.showToast('Unexpectedly disconnected from '+device.name+'.', 'danger', 2000, 'bottom');
+    //if(isLogEnabled) console.error('Unexpectedly disconnected from '+device.name+'.', error);
+    //if(isLogEnabled) console.info('navigating to the [scanner] page');
+    //this.navCtrl.navigateBack(['scanner']);
   }  
 
   // show alert

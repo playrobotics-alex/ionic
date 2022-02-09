@@ -204,36 +204,14 @@ export class DashboardPage implements AfterViewInit {
   // on error connected
   onErrorConneted(device)
   {
+    clearInterval(this.get_duration_interval);
     if(isLogEnabled) console.error('Error connecting to '+device.name+'.');
     this.showToast('Error connecting to '+device.name,'danger',2000,'bottom');
    
     if(isLogEnabled) console.info('navigating back to [scanner] page.');
     this.navCtrl.navigateBack('scanner');
   }
-  BLEDisconnect():any
-  {
-    this.ble.disconnect(this.connectedDevice.id).then(
-      () => {           
-        if(isLogEnabled) 
-          console.info('Disconnect success');
 
-          this.ngZone.run(()=> {
-            let navigationExtras: NavigationExtras = {
-              queryParams: { 
-                device: JSON.stringify(device)
-              }
-            }; 
-            this.navCtrl.navigateForward(['scanner'], navigationExtras);
-          });
-
-
-
-
-      },
-      error => { if(isLogEnabled) console.error('Error while disconnecting.', error);}
-    );   
-  }
- 
   sendBLE() : any
   {
               
@@ -377,7 +355,6 @@ export class DashboardPage implements AfterViewInit {
     for (let i = 0, l = string.length; i < l; i ++) {
       array[i] = string.charCodeAt(i);
     }
-    console.log(string);
 
 
       this.ble.writeWithoutResponse(this.connectedDevice.id, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
@@ -385,7 +362,12 @@ export class DashboardPage implements AfterViewInit {
           //if(isLogEnabled) 
             //console.log(array.buffer);
         },
-        error => { if(isLogEnabled) console.error('Error writing the new leds states to the BLE leds states characteristic.', error);}
+        error => { 
+          if(isLogEnabled) 
+            console.error('Error sending date, disconnecting.', error);
+          clearInterval(this.get_duration_interval);
+          this.navCtrl.navigateBack('scanner');
+          }
       );   
       
   }  
@@ -418,12 +400,15 @@ export class DashboardPage implements AfterViewInit {
   }
 
   // Function to disconnect from the device
-  disconnect(device)
+  disconnect()
   {
-    this.ble.disconnect(device.id).then(
-      () => this.onDisconnecting(device),
-      error => this.onErrorDisconnecting(device, error)
+    this.ble.disconnect(this.connectedDevice.id).then(
+      () => this.onDisconnecting(this.connectedDevice),
+      error => this.onErrorDisconnecting(this.connectedDevice, error)
     );
+    if(isLogEnabled) 
+    console.info('Disconnect success');
+
   }
   
   // show toast

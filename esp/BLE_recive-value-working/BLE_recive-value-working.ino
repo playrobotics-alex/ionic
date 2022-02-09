@@ -55,13 +55,28 @@ String getValue(String data, char separator, int index)
 
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
-              Serial.println("Connected");
-
-      deviceConnected = true;
+          Serial.println("Connected");
+          leds[0] = CRGB::Blue;
+          FastLED.show();
+          deviceConnected = true;
     };
 
     void onDisconnect(BLEServer* pServer) {
       deviceConnected = false;
+      leds[0] = CRGB::White;
+      FastLED.show();
+      delay(500); // give the bluetooth stack the chance to get things ready
+      pServer->startAdvertising(); // restart advertising
+      Serial.println("start advertising");
+
+        // Start the service
+      //pService->start();
+      //pServer->getAdvertising()->addServiceUUID(SERVICE_UUID);
+      // Start advertising
+      //pServer->getAdvertising()->start();
+      //Serial.println(pService->getUUID().toString().c_str());
+      Serial.println("Waiting a client connection to not166ify...");
+  
     }
 };
 
@@ -101,7 +116,7 @@ void setup() {
   Serial.begin(115200);
   FastLED.addLeds<WS2812B, 27>(leds, NUM_LEDS);  // GRB ordering is assumed
   FastLED.setBrightness(50);
-  leds[0] = CRGB::Blue;
+  leds[0] = CRGB::White;
   FastLED.show();
   // Create the BLE Device
   BLEDevice::init("ESP32"); // Name must not be longer than 5 chars!!!
