@@ -1,3 +1,15 @@
+/*
+      this.storage.get("NitroMultiplier").then((value) => {
+        this.NitroMultiplierStorage = value;
+        this.NitroMultiplier = this.NitroMultiplierStorage/100;
+
+    });
+
+
+
+*/
+
+
 import { Component, ElementRef, AfterViewInit, NgZone, ViewChild } from '@angular/core';
 import { NavController, AlertController, ToastController} from '@ionic/angular';
 import { ActivatedRoute} from "@angular/router";
@@ -5,7 +17,7 @@ import { Platform } from '@ionic/angular';
 import { BLE } from '@ionic-native/ble/ngx';
 import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plugins/device-motion/ngx';
 import { NavigationExtras } from "@angular/router";
-
+import { Storage } from '@ionic/storage-angular';
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
@@ -50,12 +62,16 @@ export class DashboardPage implements AfterViewInit {
   TempValue  : number = 0;
   FuelValue  : number = 0;
 
+  BLEcounter  : number = 0;
+
   LapTime : number = 0;
   BestLapTime : number = 0;
   LapsCount : number = 1;
   wheelRotate : number = 0;
-  
-  
+
+  NitroMultiplierStorage :  number = 0;  
+  NitroMultiplier:number =0;
+ 
   CompleteAnimationFlag  : number = 0;
   
   AnimationDuration : number = 700; 
@@ -83,6 +99,7 @@ export class DashboardPage implements AfterViewInit {
                 public  platform: Platform,
                 private screenOrientation: ScreenOrientation,
                 private vibration: Vibration,
+                private storage: Storage,                
                 private ngZone: NgZone ) 
                 {
                   this.platform.ready().then(() => {
@@ -108,8 +125,7 @@ export class DashboardPage implements AfterViewInit {
         this.GasValue = 500;
         this.RPMValue = 0;             
         this.wheelRotate = 0;   
-        this.steering = 90;      
-        
+        this.steering = 90;              
         //Gauge needle animations
         setTimeout(() => {
           this.AnimationDuration=700;
@@ -140,7 +156,7 @@ export class DashboardPage implements AfterViewInit {
       onMoveGas(ev){
         this.gasLevel = 180-(ev.center.y)/2;
         
-        //console.log(this.gasLevel/2+45);
+        console.log(this.gasLevel/2+45);
 
       }
             
@@ -214,7 +230,8 @@ export class DashboardPage implements AfterViewInit {
 
   sendBLE() : any
   {
-              
+    //Check local storage every two seconds
+
     //Init Animation
     //Fuel
     if (this.CompleteAnimationFlag==0)
@@ -297,22 +314,18 @@ export class DashboardPage implements AfterViewInit {
     else
       this.GasValue =  this.gasLevel*5.5;
 
-    let NitroMultiplier = 1;
-    if (this.nitro==false)
-      NitroMultiplier = 0.5;
 
 
     //Map rpm gauge
-
+    let RpmToDisplay = 0;
     if (this.gasLevel<90)
     { //BACK
       this.ProgressBarColor = "#3111c0"; 
       //Limit to 1000
       if (180-(this.gasLevel-90)*5.5*2>1000)
-        this.RPMValue = 1000;
+        RpmToDisplay = 1000;
       else
-        this.RPMValue =  180-(this.gasLevel-90)*5.5*2*NitroMultiplier;
-      //this.RPMValue = this.gasLevel;
+        RpmToDisplay =  180-(this.gasLevel-90)*5.5*2;
     }  
     else  
     {  
@@ -320,20 +333,25 @@ export class DashboardPage implements AfterViewInit {
       if (this.gasLevel==90)
       {
         this.ProgressBarColor = "#ffffff";
-        this.RPMValue = 0;        
+          RpmToDisplay=0;
       }  
       else
       {        
         //Limit to 1000
         if ((this.gasLevel-90)*5.5*2>1000)
-          this.RPMValue = 1000;
+          RpmToDisplay = 1000;
         else
-          this.RPMValue =   (this.gasLevel-90)*5.5*2*NitroMultiplier;
-        //this.RPMValue = this.gasLevel;
+          RpmToDisplay =   (this.gasLevel-90)*5.5*2;
+
         this.ProgressBarColor = "#FF0000";
       }
-    }      
 
+    }     
+
+    if (this.nitro==false)
+      this.RPMValue =RpmToDisplay/2;
+    else
+      this.RPMValue =RpmToDisplay;
    
     // Get the device current acceleration
     // sreering with accelerometer , not used currently
@@ -346,11 +364,17 @@ export class DashboardPage implements AfterViewInit {
 
     this.revSteering = 180-(this.steering*1)-5;
 
-    let NitroGas = 180-(this.gasLevel);
-    if (this.nitro==false)
-      NitroGas = (NitroGas/2) + 45;
+    let Mapped180Gas = 180-(this.gasLevel);
+    let NitroGas=0;
 
+    if (this.nitro==true)
+      NitroGas = Mapped180Gas;
+    else  
+      NitroGas = Mapped180Gas*0.5 + 45;
+    
     let string = NitroGas +'S' + this.revSteering.toFixed(0);
+    console.log(string);
+
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
       array[i] = string.charCodeAt(i);
@@ -622,6 +646,13 @@ export class DashboardPage implements AfterViewInit {
     setTimeout(() => {
       this.bgColor = color2;
     },1800);                                        
+  }
+
+  goToSettings()
+  {
+      if(isLogEnabled) console.info('Navigating to the [settings] page');
+      this.navCtrl.navigateForward(['settings']);
+ 
   }
 /*
   getCoordinates(event)

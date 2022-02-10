@@ -6,6 +6,7 @@ import { BLE } from '@ionic-native/ble/ngx';
 import { NativeStorage } from '@ionic-native/native-storage/ngx';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
+import { Storage } from '@ionic/storage-angular';
 
 
 
@@ -31,6 +32,7 @@ export class ScannerPage  {
               private alertCtrl: AlertController,
               private screenOrientation: ScreenOrientation,
               private loadingController: LoadingController,
+              private storage: Storage,
               private ngZone: NgZone ) 
               {
                 this.platform.ready().then(() => {
@@ -40,44 +42,19 @@ export class ScannerPage  {
 
               ngOnInit() {
                 //$("#myValues").speedometer({divFact:10,eventListenerType:'keyup'});
+                this.storage.create();
               }
-  // app view about to display this page (scanner)
-  ionViewWillEnter() 
-  {
-    this.nativeStorage.getItem('intro-done').then(
-    (done) => 
-    {
-      if(!done) 
-      {
-        this.onIntroNotYetDone();
-      }
-      else 
-      {  
-        if(isLogEnabled) console.info('intro done!')
-      }     
-    },   
-    (error) => 
-    {
-      if(isLogEnabled) console.error('Error getting the (intro-done) value from the native storage.', error);
-      this.onIntroNotYetDone();
-    }); 
-  }
 
-  // on into page not yet displayed (done)
-  onIntroNotYetDone()
-  {
-    if(isLogEnabled) console.warn('intro not yet done! Navigating to [intro] page.')
-    if(isLogEnabled) console.info('Navigating to the [intro] page.')
-    this.navCtrl.navigateRoot('intro');
-  }
 
 // start the BLE scan
 async startBleScan()
 { 
+
+ 
   let scanSpinner = await this.loadingController.create({
       spinner : "bubbles",
       animated : true,
-      message : "Scanning ...",
+      message : "Scanning ....",
       duration : 3000,
       translucent : true
     });

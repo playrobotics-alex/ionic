@@ -1,0 +1,45 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-back-button  defaultHref="dashboard"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <!-- Nitro boost-->
+  <div style="  display: flex;flex-direction: column;padding: 0px;width: 100%;padding-left: 20%;padding-right: 20%;">
+    <pre style="margin-bottom:-15px;"><b>Nitro Mode Boost (%) {{time}}</b></pre>
+    <ion-range value={{NitroMultiplier}} min="20" max="60" step="10"  snaps="true"  pin="true"  (ionChange)="onNitroChange($event)">
+    </ion-range>
+    <ul class="tick-marks">
+      <li 
+        *ngFor="let number of [20, 30, 40, 50, 60]"
+        [class.selected]="number === currentValue"
+      >
+      {{number}}
+      </li>
+    </ul>
+  </div>
+
+  <!-- Lights-->
+  <div style=" width: 100%;padding-left: 20%;padding-right: 20%;">
+    <ion-list>
+      <ion-item>
+        <ion-label>Indoor lights</ion-label>
+        <ion-toggle ></ion-toggle>
+      </ion-item>
+    
+      <ion-item>
+        <ion-label>Gas consumption</ion-label>
+        <ion-toggle [(ngModel)]="sausage"></ion-toggle>
+      </ion-item>
+    
+      <ion-item>
+        <ion-label>Overheating</ion-label>
+        <ion-toggle [(ngModel)]="mushrooms"></ion-toggle>
+      </ion-item>
+    </ion-list>
+  </div>
+
+</ion-content>

@@ -19,6 +19,8 @@ import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG  } from "@angular/platform-browser";
 import * as Hammer from 'hammerjs';
+import { IonicStorageModule } from '@ionic/storage-angular';
+
 
 export class IonicGestureConfig extends HammerGestureConfig {
 
@@ -36,7 +38,9 @@ export class IonicGestureConfig extends HammerGestureConfig {
           IonicModule.forRoot(), 
           AppRoutingModule,
           RoundProgressModule,
-          HammerModule
+          HammerModule,
+          IonicStorageModule.forRoot()
+
         ],
   providers: [
     StatusBar,
