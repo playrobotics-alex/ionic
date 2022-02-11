@@ -8,20 +8,62 @@ import { Storage } from '@ionic/storage-angular';
 })
 export class SettingsPage implements OnInit {
   public NitroMultiplier = 50;
+  public IndoorLightsToggle = true;
+  public SlowHeatToggle = true;
+  public SlowFuelToggle = true;
+
 
   constructor(private storage: Storage) { }
 
   ngOnInit() {
-    this.storage.get("NitroMultiplier").then((value) => {
-      this.NitroMultiplier = value;
-      console.log('NitroMultiplierStorage', this.NitroMultiplier);
+    this.storage.get("IndoorLightsToggle").then((value) => {
+      this.IndoorLightsToggle = value;
+      console.log('IndoorLightsToggle', this.IndoorLightsToggle);
 
-  });
+    });
+    this.storage.get("SlowFuelToggle").then((value) => {
+      this.SlowFuelToggle = value;
+      console.log('SlowFuelToggle', this.SlowFuelToggle);
+
+    });
+    this.storage.get("SlowHeatToggle").then((value) => {
+      this.SlowHeatToggle = value;
+      console.log('SlowHeatToggle', this.SlowHeatToggle);
+
+    });  
   }
 
 
-  onNitroChange(event){
-    this.storage.set('NitroMultiplier', event.target.value); 
-    console.log(event.target.value);
+  OnIndoorLightsToggleChange(event,toggleValue){
+    console.log('IndoorLightsToggle toggleValue._value: ', toggleValue);
+    let i=true;
+    if(toggleValue==true){
+      i=true;
+    }else if(toggleValue==false){
+      i=false;
+    }
+    this.storage.set('IndoorLightsToggle', i); 
   }
+
+  OnSlowFuelToggleChange(event,toggleValue){
+    console.log('SlowFuelToggle toggleValue._value: ', toggleValue);
+    let i=true;
+    if(toggleValue==true){
+      i=true;
+    }else if(toggleValue==false){
+      i=false;
+    }
+    this.storage.set('SlowFuelToggle', i);     
+  }
+  
+  OnSlowHeatToggleChange(event,toggleValue){
+      console.log('SlowHeatToggle toggleValue._value: ', toggleValue);
+    let i=true;
+    if(toggleValue==true){
+      i=true;
+    }else if(toggleValue==false){
+      i=false;
+    }
+    this.storage.set('SlowHeatToggle', i);         
+  }  
 }

@@ -85,27 +85,45 @@ class MyCallbacks: public BLECharacteristicCallbacks {
       std::string rxValue = pCharacteristic->getValue();
 
         
+        if (rxValue[0]=='X')
+        {
+          //Settings transmition
+          if (rxValue[1]=='1')
+          {
+            //Lights on
+            leds[0] = CRGB::Blue;
+            FastLED.show();
+          }
+          else
+          {
+            //Lights off
+            leds[0] = CRGB::Black;
+            FastLED.show();
+          }
+        }
+        else
+        {
+          //Driving data transmition
+          String speed_string = getValue(rxValue.c_str(), 'S', 0);
+          speed_value = speed_string.toInt();
+          Serial.print("speed: ");
+          Serial.println(speed_value);
+          servo1.write(speed_value);
 
-        
-        String speed_string = getValue(rxValue.c_str(), 'S', 0);
-        speed_value = speed_string.toInt();
-        Serial.print("speed: ");
-        Serial.println(speed_value);
-        servo1.write(speed_value);
+          
+          String steering_string = getValue(rxValue.c_str(), 'S', 1);
+          Serial.println(steering_string);
+          
+          int steering_int = steering_string.toInt() ;
 
-        
-        String steering_string = getValue(rxValue.c_str(), 'S', 1);
-        Serial.println(steering_string);
-        
-        int steering_int = steering_string.toInt() ;
+          //maybe map steering?
+          //steering_value = map(acc_int*1, -100, 100, 0, 180);
 
-        //maybe map steering?
-        //steering_value = map(acc_int*1, -100, 100, 0, 180);
+          Serial.print("Steering: ");
+          Serial.println(steering_int);
 
-        Serial.print("Steering: ");
-        Serial.println(steering_int);
-
-        servo2.write(steering_int);
+          servo2.write(steering_int);
+        }          
 
   
     }

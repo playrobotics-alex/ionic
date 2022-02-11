@@ -62,7 +62,11 @@ export class DashboardPage implements AfterViewInit {
   TempValue  : number = 0;
   FuelValue  : number = 0;
 
+  //Varaibles to pull the settings from storage
   BLEcounter  : number = 0;
+  IndoorLightsToggle : boolean;
+  SlowFuelToggle : boolean;
+  SlowHeatToggle : boolean;
 
   LapTime : number = 0;
   BestLapTime : number = 0;
@@ -120,6 +124,19 @@ export class DashboardPage implements AfterViewInit {
                 }
 
       ngAfterViewInit(): void {        
+
+        //Check if this is the first time we are running the app
+        this.storage.get("FirstTimeApp").then((value) => {
+          if ( !value ) {            
+            console.log('App Runing for the first time, setting storage default values');
+            this.storage.set('SlowHeatToggle', true); 
+            this.storage.set('SlowFuelToggle', true); 
+            this.storage.set('IndoorLightsToggle', true); 
+            this.storage.set('FirstTimeApp', 'NO'); 
+          }            
+          else
+            console.log('App NOT Runing for the first time');
+        });
 
         this.gasLevel = 90;
         this.GasValue = 500;
@@ -230,6 +247,51 @@ export class DashboardPage implements AfterViewInit {
 
   sendBLE() : any
   {
+    //Get settings from storage every 2 seconds
+    this.BLEcounter++;
+    if ((this.BLEcounter==1)||(this.BLEcounter%20==0))
+    {
+      this.storage.get("IndoorLightsToggle").then((value) => {
+        this.IndoorLightsToggle=value;
+        console.log('IndoorLightsToggle: ', value);
+        //Send settings to car
+        let string = 'X'
+        if  (this.IndoorLightsToggle)
+          string = string + '1';
+        else
+          string = string + '0';
+        console.log('sending settings to car',string);
+    
+        let array = new Uint8Array(string.length);
+        for (let i = 0, l = string.length; i < l; i ++) {
+          array[i] = string.charCodeAt(i);
+        } 
+        this.ble.writeWithoutResponse(this.connectedDevice.id, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
+          () => {           
+            //if(isLogEnabled) 
+              //console.log(sending settings to car',);
+          },
+          error => { 
+            if(isLogEnabled) 
+              console.error('Error sending date, disconnecting.', error);
+            clearInterval(this.get_duration_interval);
+            this.navCtrl.navigateBack('scanner');
+            }
+        );   
+      });
+      this.storage.get("SlowHeatToggle").then((value) => {
+        this.SlowHeatToggle=value;
+        console.log('SlowHeatToggle: ', value);
+      });
+      this.storage.get("SlowFuelToggle").then((value) => {
+        this.SlowFuelToggle=value;
+        console.log('SlowFuelToggle: ', value);
+      });     
+      
+      
+
+    }
+
     //Check local storage every two seconds
 
     //Init Animation
@@ -249,43 +311,64 @@ export class DashboardPage implements AfterViewInit {
         this.TempValue = this.TempValue + 0.1;
     
 
-    //====Fuel and temp managment======        
-    
-    if (this.RPMValue>700)
+    //====Fuel managment======        
+    if (this.SlowFuelToggle==true)
     {
-      this.FuelValue = this.FuelValue - 10.5;      
-      if (this.TempValue<175)
-        this.TempValue = this.TempValue + 0.25;
-    }  
-    else
-    {
-      if (this.RPMValue>500)
+      if (this.RPMValue>700)
+        this.FuelValue = this.FuelValue - 10.5;      
+      else
       {
-        this.FuelValue = this.FuelValue - 0.3;      
-        if (this.TempValue<175)
-          this.TempValue = this.TempValue + 0.1;
-      }  
-      else  
-      {
-        if (this.RPMValue < 300)
+        if (this.RPMValue>500)
+          this.FuelValue = this.FuelValue - 0.3;      
+        else  
         {
-          if(this.RPMValue > 0)
-            this.FuelValue = this.FuelValue - 0.1;      
-          if(this.TempValue>90)
-            this.TempValue = this.TempValue - 0.2;
-        }  
-        else
-        {
-            //between 300 -> 500
-            if (this.RPMValue > 50)
-              this.FuelValue = this.FuelValue - 0.2;      
-            if (this.TempValue > 90)
-              this.TempValue = this.TempValue - 0.3;
-        }  
-      }   
+          if (this.RPMValue < 300)
+          {
+            if(this.RPMValue > 0)
+              this.FuelValue = this.FuelValue - 0.1;      
+          }  
+          else
+          {
+              //between 300 -> 500
+              if (this.RPMValue > 50)
+                this.FuelValue = this.FuelValue - 0.2;      
+          }  
+        }   
+      }    
     }
-    
-    
+
+    //====Temp managment======        
+
+    if (this.SlowHeatToggle==true)
+    {
+      if (this.RPMValue>700)
+      {
+        if (this.TempValue<175)
+          this.TempValue = this.TempValue + 0.25;
+      }  
+      else
+      {
+        if (this.RPMValue>500)
+        {
+          if (this.TempValue<175)
+            this.TempValue = this.TempValue + 0.1;
+        }  
+        else  
+        {
+          if (this.RPMValue < 300)
+          {
+            if(this.TempValue>90)
+              this.TempValue = this.TempValue - 0.2;
+          }  
+          else
+          {
+              //between 300 -> 500
+              if (this.TempValue > 90)
+                this.TempValue = this.TempValue - 0.3;
+          }  
+        }   
+      }          
+    }
     //====Alerts======
 
     // Overheating
@@ -361,8 +444,21 @@ export class DashboardPage implements AfterViewInit {
       (error: any) => console.log(error)
     );
     */
+   //mapping steering to 0->90 | 0->-90 instead of 0-180
 
-    this.revSteering = 180-(this.steering*1)-5;
+    let netSteering = this.steering-90;
+      let steeringMultiplier = 0.75; 
+
+    //now back to 0-180
+     netSteering = netSteering*steeringMultiplier +90;
+
+    
+
+
+
+
+    this.revSteering = 180-(netSteering*1)-5;
+
 
     let Mapped180Gas = 180-(this.gasLevel);
     let NitroGas=0;
