@@ -67,6 +67,7 @@ export class DashboardPage implements AfterViewInit {
   IndoorLightsToggle : boolean;
   SlowFuelToggle : boolean;
   SlowHeatToggle : boolean;
+  TrimValue : number = 0;
 
   LapTime : number = 0;
   BestLapTime : number = 0;
@@ -133,6 +134,7 @@ export class DashboardPage implements AfterViewInit {
             this.storage.set('SlowFuelToggle', true); 
             this.storage.set('IndoorLightsToggle', true); 
             this.storage.set('FirstTimeApp', 'NO'); 
+            this.storage.set('TrimValue', '0'); 
           }            
           else
             console.log('App NOT Runing for the first time');
@@ -287,12 +289,15 @@ export class DashboardPage implements AfterViewInit {
         this.SlowFuelToggle=value;
         console.log('SlowFuelToggle: ', value);
       });     
+      this.storage.get("TrimValue").then((value) => {
+        this.TrimValue=value;
+        console.log('TrimValue: ', value);
+      });          
       
       
 
     }
 
-    //Check local storage every two seconds
 
     //Init Animation
     //Fuel
@@ -457,7 +462,7 @@ export class DashboardPage implements AfterViewInit {
 
 
 
-    this.revSteering = 180-(netSteering*1)-5;
+    this.revSteering = 180-(netSteering*1)+this.TrimValue;
 
 
     let Mapped180Gas = 180-(this.gasLevel);

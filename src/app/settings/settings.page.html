@@ -1,5 +1,7 @@
 <ion-header>
   <ion-toolbar>
+    <ion-title>Settings</ion-title>
+
     <ion-buttons slot="start">
       <ion-back-button  defaultHref="dashboard"></ion-back-button>
     </ion-buttons>
@@ -14,20 +16,33 @@
   <div style=" width: 100%;padding-left: 20%;padding-right: 20%;">
     <ion-list>
       <ion-item>
-        <ion-label>Indoor lights</ion-label>
+        <ion-label>Indoor Lights On</ion-label>
           <ion-toggle [checked]="IndoorLightsToggle"  [(ngModel)]="IndoorLightsToggle" (ionChange)="OnIndoorLightsToggleChange($event, IndoorLightsToggle)"  ></ion-toggle>
         
       </ion-item>
     
       <ion-item>
-        <ion-label>Slow down when fuel ends</ion-label>
+        <ion-label>Enable Fuel Consumption</ion-label>
         <ion-toggle [checked]="SlowFuelToggle"  [(ngModel)]="SlowFuelToggle"  (ionChange)="OnSlowFuelToggleChange($event, SlowFuelToggle)"  > </ion-toggle>
       </ion-item>
     
       <ion-item>
-        <ion-label>Slow down on Overheating</ion-label>
+        <ion-label>Enable Overheating</ion-label>
         <ion-toggle [checked]="SlowHeatToggle"  [(ngModel)]="SlowHeatToggle"  (ionChange)="OnSlowHeatToggleChange($event, SlowHeatToggle)" > </ion-toggle>
       </ion-item>
+
+      <ion-item>
+        <ion-label>Steering Trim</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>{{TrimValue}}</ion-label>
+        <ion-range min="-30" max="30" pin="true" snaps="true" step="2" value="0" (ionChange)="onRangeChange($event)" [value]="TrimValue">
+          <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+
+        </ion-range>
+      </ion-item>
+
     </ion-list>
   </div>
 

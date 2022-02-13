@@ -12,6 +12,8 @@ export class SettingsPage implements OnInit {
   public SlowHeatToggle = true;
   public SlowFuelToggle = true;
 
+  public TrimValue = 0;
+
 
   constructor(private storage: Storage) { }
 
@@ -31,9 +33,17 @@ export class SettingsPage implements OnInit {
       console.log('SlowHeatToggle', this.SlowHeatToggle);
 
     });  
+    this.storage.get("TrimValue").then((value) => {
+      this.TrimValue = value;
+      console.log('TrimValue', this.TrimValue);
+    });      
   }
 
-
+  onRangeChange(event:any){
+    console.log('TrimValue changed: ', event.detail.value);
+    this.storage.set('TrimValue', event.detail.value); 
+    this.TrimValue = event.detail.value;
+  }
   OnIndoorLightsToggleChange(event,toggleValue){
     console.log('IndoorLightsToggle toggleValue._value: ', toggleValue);
     let i=true;
