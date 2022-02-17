@@ -37,7 +37,7 @@ export class IntroPage  {
               if(isLogEnabled) console.info('Checking Location status ...');
 
               if(isLogEnabled) console.info('Location authorisation was granted!');
-              this.nativeStorage.setItem('intro-done', true).then(
+              this.nativeStorage.setItem('intro-done', false).then(
                 () => 
                 {
                   if(isLogEnabled) console.info('intro done!')

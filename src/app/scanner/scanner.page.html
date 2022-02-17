@@ -1,10 +1,10 @@
-<ion-header>
-    <ion-toolbar>
-        <ion-title slot="start">Scanner</ion-title>
-        <ion-icon style="font-size: 24px; padding-right: 4px;" slot="end" name="search" (click)="startBleScan()" color="primary"></ion-icon>
+<ion-header color="dark" style="border-bottom: 1px solid grey;">
+    <ion-toolbar color="dark">
+        <ion-title slot="start">Garage</ion-title>
+        <ion-icon style="font-size: 30px;margin-right:15px; padding-right: 4px;" slot="end" name="search" (click)="startBleScan()" color="primary"></ion-icon>
     </ion-toolbar>
 </ion-header>
-<ion-content>
+<ion-content color="dark">
     <div *ngIf="scannedDevices.length; else noDevicesScanned">
         <div class="device" *ngFor="let scannedDevice of scannedDevices">
             <ion-grid>
@@ -35,10 +35,11 @@
 
     <ng-template #noDevicesScanned>
         <div style="padding-top: 30vh; text-align:center">
-            <ion-icon style="font-size: 72px;" name="search-outline" color="medium"></ion-icon>
+            <ion-icon style="font-size: 82px;color:gray;" name="car-sport-outline" ></ion-icon>
             <br>
             <br>
-            <span>No BLE devices were scanned.ll</span>
-        </div>
+            <span style="font-size: 22px;">No cars in your garage yet...</span>
+            
+            <ion-button expand="block" style="margin-top:30px;margin-left:10%;margin-right:10%;font-size: 25px;height:50px;" (click)="startBleScan()" >Start Scanning</ion-button>        </div>
     </ng-template>
 </ion-content>

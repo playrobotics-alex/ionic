@@ -1,5 +1,5 @@
-<ion-header>
-  <ion-toolbar>
+<ion-header color="dark" style="border-bottom: 1px solid grey;">
+  <ion-toolbar  color="dark">
     <ion-title>Settings</ion-title>
 
     <ion-buttons slot="start">
@@ -8,14 +8,14 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content  color="dark">
   <!-- Nitro boost-->
 
 
   <!-- Lights-->
   <div style=" width: 100%;padding-left: 20%;padding-right: 20%;">
-    <ion-list>
-      <ion-item>
+    <ion-list style="background-color: transparent;" color="dark">
+      <ion-item  color="dark">
         <ion-label>Indoor Lights On</ion-label>
           <ion-toggle [checked]="IndoorLightsToggle"  [(ngModel)]="IndoorLightsToggle" (ionChange)="OnIndoorLightsToggleChange($event, IndoorLightsToggle)"  ></ion-toggle>
         

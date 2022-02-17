@@ -54,7 +54,7 @@ async startBleScan()
   let scanSpinner = await this.loadingController.create({
       spinner : "bubbles",
       animated : true,
-      message : "Scanning ....",
+      message : "Scanning for cars....",
       duration : 3000,
       translucent : true
     });
