@@ -452,17 +452,12 @@ export class DashboardPage implements AfterViewInit {
    //mapping steering to 0->90 | 0->-90 instead of 0-180
 
     let netSteering = this.steering-90;
-      let steeringMultiplier = 0.75; 
+    let steeringMultiplier = 0.75; 
 
     //now back to 0-180
-     netSteering = netSteering*steeringMultiplier +90;
-
-    
-
-
-
-
-    this.revSteering = 180-(netSteering*1)+this.TrimValue;
+    netSteering = netSteering*steeringMultiplier +90;
+    this.revSteering = Math.round(180-(netSteering*1));
+    this.revSteering =  this.revSteering + this.TrimValue;
 
 
     let Mapped180Gas = 180-(this.gasLevel);
@@ -473,7 +468,7 @@ export class DashboardPage implements AfterViewInit {
     else  
       NitroGas = Mapped180Gas*0.5 + 45;
     
-    let string = NitroGas +'S' + this.revSteering.toFixed(0);
+    let string = NitroGas +'S' + this.revSteering;
     console.log(string);
 
     let array = new Uint8Array(string.length);

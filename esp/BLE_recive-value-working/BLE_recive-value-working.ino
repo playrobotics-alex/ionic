@@ -84,7 +84,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
 
-        
+        Serial.println("AAAA*********");
+        Serial.println(rxValue.c_str());
         if (rxValue[0]=='X')
         {
           //Settings transmition
