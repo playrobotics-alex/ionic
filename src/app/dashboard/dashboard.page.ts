@@ -31,6 +31,10 @@ NavigationBar.hide();
 const CUSTOM_SERVICE_UUID       = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
 const LEDS_STATES_CHAR_UUID     = '6E400002-B5A3-F393-E0A9-E50E24DCCA9E';
 
+const TRAINER_CHAR_UUID     = '7E400002-B5A3-F393-E0A9-E50E24DCCA9E';
+const TRAINER_SERVICE_UUID      = '7E400001-B5A3-F393-E0A9-E50E24DCCA9E';
+
+
 const isLogEnabled = true;
 
 @Component({
@@ -51,6 +55,9 @@ export class DashboardPage implements AfterViewInit {
   public time = "LAP"
   public BestLapTimeString = "BEST"
   public LapTimeString = ""
+
+
+  trainID  : string = "";
 
   //Gauges variable
   
@@ -94,6 +101,8 @@ export class DashboardPage implements AfterViewInit {
 
   steering : number = 0;
   revSteering : number = 0;
+  netSteering : number = 0;
+  steeringMultiplier : number = 0;
 
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
@@ -112,6 +121,7 @@ export class DashboardPage implements AfterViewInit {
                     });
                   this.route.queryParams.subscribe(params => {
                     let device = JSON.parse(params['device']);
+                    this.trainID = JSON.parse(params['deviceTrain']);
     
                     if(isLogEnabled) console.log('Route navigationExtra: device = '+JSON.stringify(device)); 
     
@@ -139,6 +149,19 @@ export class DashboardPage implements AfterViewInit {
           else
             console.log('App NOT Runing for the first time');
         });
+
+
+        this.storage.get("TrimValue").then((value) => {
+          if ( !value ) {            
+            console.log('setting trim');
+            this.storage.set('TrimValue', '0'); 
+          }        
+          else   
+          { 
+            console.log('trim set');
+            console.log(value);
+          }  
+        });        
 
         this.gasLevel = 90;
         this.GasValue = 500;
@@ -223,6 +246,7 @@ export class DashboardPage implements AfterViewInit {
     this.ngZone.run(() => { 
 
       this.connectedDevice = device;
+      
       //this.get_duration_interval= setInterval(()=> { this.sendBLE() }, 50);
     });
   } 
@@ -253,7 +277,20 @@ export class DashboardPage implements AfterViewInit {
     this.BLEcounter++;
     if ((this.BLEcounter==1)||(this.BLEcounter%20==0))
     {
-      this.storage.get("IndoorLightsToggle").then((value) => {
+        //Test readying characteristic
+        // read data from a characteristic, do something with output data
+        console.log("trainID");
+        console.log(this.trainID);
+        if ( this.trainID.length>0 )
+        {
+          // Read the current value of the temperature characteristic
+          this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
+            data => this.onNotify(data),
+            () => this.showAlert('Unexpected Error', 'Failed to subscribe')
+          )
+          
+        }
+        this.storage.get("IndoorLightsToggle").then((value) => {
         this.IndoorLightsToggle=value;
         console.log('IndoorLightsToggle: ', value);
         //Send settings to car
@@ -292,9 +329,8 @@ export class DashboardPage implements AfterViewInit {
       this.storage.get("TrimValue").then((value) => {
         this.TrimValue=value;
         console.log('TrimValue: ', value);
-      });          
-      
-      
+      });                
+
 
     }
 
@@ -578,45 +614,32 @@ export class DashboardPage implements AfterViewInit {
 
   start() 
   {
-    if(this.running) 
-    {
-      //Ignore fake laps
-      if (parseFloat(this.time)<2)
-        return;
-      //Check for best lap
-      if ((parseFloat(this.time) < this.BestLapTime)||(this.BestLapTime==0))
-      {
-        this.BestLapTime= parseFloat(this.time);
-        this.BestLapTimeString= this.time;
-        this.doVibrationFor(200);
-        setTimeout(() => {
-          this.doVibrationFor(200);
-        },200);
-        
-      }
-      else
-        this.doVibrationFor(200);
 
-      this.reset();
-      //Race still on
-      if (this.LapsCount<5)
-      {
-        this.timeBegan = new Date();
-        this.started = setInterval(this.clockRunning.bind(this), 108);
-        this.running = true;
-        this.LapsCount++;
-      }  
-      else
-      {
-        //Race finished      
-        this.doBlinkColor("#FFF","#000");          
-        this.LapTimeString = this.time;
-        this.doVibrationFor(2000);
-        this.stop();
-        this.time = "FINSH";
-      }
-      return;
-    }  
+    //Send start command to trainer if connected
+    if ( this.trainID.length>0 )
+    {
+        // Z -> start race
+        // Y -> end race
+        let string = 'Z';
+    
+        let array = new Uint8Array(string.length);
+        for (let i = 0, l = string.length; i < l; i ++) {
+          array[i] = string.charCodeAt(i);
+        } 
+
+        this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
+          () => {           
+              console.log("sending settings to trainer");
+              console.log(this.trainID);
+          },
+          error => { 
+            if(isLogEnabled) 
+              console.error('Error sending date, disconnecting.', error);
+            clearInterval(this.get_duration_interval);
+            this.navCtrl.navigateBack('scanner');
+            }
+        );   
+    }
 
     //If we are here the race is new! Lets do countdown
     //3
@@ -749,6 +772,105 @@ export class DashboardPage implements AfterViewInit {
       if(isLogEnabled) console.info('Navigating to the [settings] page');
       this.navCtrl.navigateForward(['settings']);
  
+  }
+  onNotify(buffer:ArrayBuffer){
+    this.ble.read(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").then(
+      data => this.ReadLapData(data),
+      () => this.showAlert('Unexpected Error', 'Failed to subscribe')
+    )
+  }
+  ReadLapData(buffer:ArrayBuffer) {
+    // Temperature is a 4 byte floating point value
+    var data = new Uint8Array(buffer);
+    console.log('Array we got from BLE: ',data);
+    //Transfor the buff array to a 5 digit number
+    
+    var lapData= data[2]*256*256+data[1]*256+data[0];
+   // lap-number|| lap second X 10  || lap second X 1 || lap second / 10 ||   lap second / 100 ||
+    var lapBLE = Math.round(lapData/10000)
+    console.log('Lap: ',lapBLE);
+    
+    var lapTimeBLE = Math.round(lapData%10000)
+    console.log('Time: ',lapTimeBLE);
+
+    var lapType = 'B';
+
+    //Now we need to check best lap time and do some other things
+    if((this.running)&&(lapBLE > this.LapsCount))
+    {
+      //There was a lap recoreded by the trainer
+      this.LapsCount = lapBLE;
+      //Check for best lap
+      if ((parseFloat(this.time) < this.BestLapTime)||(this.BestLapTime==0))
+      {
+        this.BestLapTime= parseFloat(this.time);
+        this.BestLapTimeString= this.time;
+        this.doVibrationFor(200);
+        setTimeout(() => {
+          this.doVibrationFor(200);
+        },200);    
+        lapType = 'B';  
+      }
+      else
+      {
+        this.doVibrationFor(200);
+        lapType = 'R';  
+      }  
+
+      //Send score lights command to trainer
+      if ( this.trainID.length>0 )
+      {
+          // Z -> start race
+          // Y -> end race
+          // L -> Leds command
+          let string = 'L';
+          string = string +  this.LapsCount + lapType;
+
+          let array = new Uint8Array(string.length);
+          for (let i = 0, l = string.length; i < l; i ++) {
+            array[i] = string.charCodeAt(i);
+          } 
+  
+          this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
+            () => {           
+                console.log("sending settings to trainer");
+                console.log(this.trainID);
+            },
+            error => { 
+              if(isLogEnabled) 
+                console.error('Error sending date, disconnecting.', error);
+              clearInterval(this.get_duration_interval);
+              this.navCtrl.navigateBack('scanner');
+              }
+          );   
+      }        
+
+      this.reset();
+      //Race still on
+      if (this.LapsCount<9)
+      {
+        this.timeBegan = new Date();
+        this.started = setInterval(this.clockRunning.bind(this), 108);
+        this.running = true;
+        //this.LapsCount++;
+      }  
+      else
+      {
+        //Race finished      
+        this.doBlinkColor("#FFF","#000");          
+        this.LapTimeString = this.time;
+        this.doVibrationFor(2000);
+        this.stop();
+        this.time = "FINSH";
+        this.LapsCount = 8;
+        this.running = false;
+
+      }
+      return;
+    }  
+
+
+
   }
 /*
   getCoordinates(event)

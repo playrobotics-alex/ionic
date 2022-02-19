@@ -22,6 +22,7 @@ const defaultDeviceName =  "ESP32";
 export class ScannerPage  {
 
   scannedDevices: any[] = [];
+  trainID  : string = "";
 
   constructor(private ble: BLE,
               private diagnostic: Diagnostic,
@@ -118,7 +119,8 @@ async startBleScan()
     }; 
   
     this.ngZone.run(() => {
-      if(device.name === defaultDeviceName)
+      //if(device.name === defaultDeviceName)
+      if((device.name === defaultDeviceName)||(device.name === "train"))
       {
         this.scannedDevices.push(scannedDevice);
       }
@@ -144,6 +146,11 @@ async startBleScan()
 
   isConnected(device): any {
     console.log('checking for connection on device: ' + device.id);
+    //Check if this is train, if yes save the id
+    if (device.name === "train")
+    {
+      this.trainID = device.id;
+    }
     this.ble.isConnected(device.id)
       .then(function (success) {
         console.log('yes');
@@ -158,17 +165,21 @@ async startBleScan()
   {
     if(isLogEnabled) console.log('Connected to '+device.name+'.');
     this.showToast('Connected to '+device.name+'.', 'success', 2000, 'bottom');
-    this.ngZone.run(()=> {
-      let navigationExtras: NavigationExtras = {
-        queryParams: { 
-          device: JSON.stringify(device)
-        }
-      }; 
-      if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-      if(isLogEnabled) console.log('Navigation extras: device = '+JSON.stringify(device));
-      this.scannedDevices = [];
-      this.navCtrl.navigateForward(['dashboard'], navigationExtras);
-    });
+    if (device.name!="train")
+    {
+      this.ngZone.run(()=> {
+        let navigationExtras: NavigationExtras = {
+          queryParams: { 
+            device: JSON.stringify(device),
+            deviceTrain: JSON.stringify(this.trainID)
+          }
+        }; 
+        if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+        if(isLogEnabled) console.log('Navigation extras: device = '+JSON.stringify(device));
+        this.scannedDevices = [];
+        this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+      });
+    }
   }
 
   // on error connecting
