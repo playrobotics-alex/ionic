@@ -56,7 +56,7 @@ async startBleScan()
       spinner : "bubbles",
       animated : true,
       message : "Scanning for cars....",
-      duration : 3000,
+      duration : 1000,
       translucent : true
     });
   
@@ -78,7 +78,7 @@ async startBleScan()
               if(isLogEnabled) console.info('Scanning ....');
               
               // start the BLE scanning.
-              this.ble.scan([], 3).subscribe(
+              this.ble.scan([], 1).subscribe(
                 (device) => 
                 {
                   this.onDiscoveredDevice(device);
@@ -119,8 +119,13 @@ async startBleScan()
     }; 
   
     this.ngZone.run(() => {
-      //if(device.name === defaultDeviceName)
-      if((device.name === defaultDeviceName)||(device.name === "train"))
+      if(device.name === "train")
+      {
+        //If we found the trainer just connect to it automatically
+        this.connectToDevice(device);
+
+      }
+      if(device.name === defaultDeviceName)
       {
         this.scannedDevices.push(scannedDevice);
       }

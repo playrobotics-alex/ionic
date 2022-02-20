@@ -56,6 +56,7 @@ export class DashboardPage implements AfterViewInit {
   public BestLapTimeString = "BEST"
   public LapTimeString = ""
 
+  public SubscribedToNotifyBLE = false
 
   trainID  : string = "";
 
@@ -281,11 +282,15 @@ export class DashboardPage implements AfterViewInit {
         // read data from a characteristic, do something with output data
         console.log("trainID");
         console.log(this.trainID);
-        if ( this.trainID.length>0 )
+        //If trainer is connected and we are not subscrbied to notifications lets subscribe
+        if (( this.trainID.length>0 )&&(this.SubscribedToNotifyBLE==false))
         {
-          // Read the current value of the temperature characteristic
+          console.log("-==subscribing==-");
           this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
-            data => this.onNotify(data),
+            data => {
+              this.onNotify(data),
+              this.SubscribedToNotifyBLE = true;
+            },
             () => this.showAlert('Unexpected Error', 'Failed to subscribe')
           )
           
@@ -558,12 +563,22 @@ export class DashboardPage implements AfterViewInit {
   // Function to disconnect from the device
   disconnect()
   {
+    //Disconnect CAR
     this.ble.disconnect(this.connectedDevice.id).then(
       () => this.onDisconnecting(this.connectedDevice),
       error => this.onErrorDisconnecting(this.connectedDevice, error)
     );
     if(isLogEnabled) 
-    console.info('Disconnect success');
+    console.info('Disconnect car success');
+
+    console.info('Disconnecting from trainer');
+    console.info(this.trainID);
+    //Disconnect Trainer
+    this.ble.disconnect(this.trainID).then(
+      () => console.info('Disconnect trainer success'),
+      error =>  console.info('Disconnect trainer ERROR')
+    );
+
 
   }
   
@@ -614,7 +629,7 @@ export class DashboardPage implements AfterViewInit {
 
   start() 
   {
-
+    this.reset();
     //Send start command to trainer if connected
     if ( this.trainID.length>0 )
     {
@@ -658,21 +673,7 @@ export class DashboardPage implements AfterViewInit {
     //GO!
     setTimeout(() => {
       this.doVibrationFor(400);
-      if (this.RPMValue==0)
-      {
-        if (this.timeBegan === null) {
-          this.reset();
-          this.timeBegan = new Date();
-        }
-        if (this.timeStopped !== null) {
-          let newStoppedDuration:any = (+new Date() - this.timeStopped)
-          this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
-        }
-        this.started = setInterval(this.clockRunning.bind(this), 108);
-        this.running = true;
-        this.LapsCount=1;
-      }
-      else
+      if (this.RPMValue>0)
       {
         this.time = "DISQ";
         this.doBlinkColor("#FF0000","#000");        
@@ -790,9 +791,23 @@ export class DashboardPage implements AfterViewInit {
     var lapBLE = Math.round(lapData/10000)
     console.log('Lap: ',lapBLE);
     
-    var lapTimeBLE = Math.round(lapData%10000)
+    var lapTimeBLE = Math.round(lapData%10000)/100;
     console.log('Time: ',lapTimeBLE);
-
+    //Start the clock only once the car passes the start line
+    if (lapBLE==1)
+    {      
+      if (this.timeBegan === null) {
+        this.reset();
+        this.timeBegan = new Date();
+      }
+      if (this.timeStopped !== null) {
+        let newStoppedDuration:any = (+new Date() - this.timeStopped)
+        this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
+      }
+      this.started = setInterval(this.clockRunning.bind(this), 108);
+      this.running = true;
+      this.LapsCount=1;
+    }   
     var lapType = 'B';
 
     //Now we need to check best lap time and do some other things
@@ -801,10 +816,12 @@ export class DashboardPage implements AfterViewInit {
       //There was a lap recoreded by the trainer
       this.LapsCount = lapBLE;
       //Check for best lap
-      if ((parseFloat(this.time) < this.BestLapTime)||(this.BestLapTime==0))
+      
+      //if ((parseFloat(this.time) < this.BestLapTime)||(this.BestLapTime==0))
+      if ((lapTimeBLE < this.BestLapTime)||(this.BestLapTime==0))
       {
-        this.BestLapTime= parseFloat(this.time);
-        this.BestLapTimeString= this.time;
+        this.BestLapTime= lapTimeBLE;
+        this.BestLapTimeString= lapTimeBLE.toString();
         this.doVibrationFor(200);
         setTimeout(() => {
           this.doVibrationFor(200);

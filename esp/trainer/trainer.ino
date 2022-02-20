@@ -4,6 +4,12 @@
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
+#include <TM1637TinyDisplay.h>
+// Define Digital Pins
+#define CLK 23
+#define DIO 4
+TM1637TinyDisplay display(CLK, DIO);
+
 #include "FastLED.h"
 #define NUM_LEDS 60
 #define DATA_PIN 33
@@ -109,6 +115,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //Start sequence
 
           //==4==
+          display.showString("-3-");
           for(int i=0;i<16;i++)
             leds[i] = CRGB::Red;
           FastLED.show();
@@ -119,12 +126,14 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
                     
           //==3==
+          display.showString("-2-");
           String notes3[] = { "B4" };
           melody = MelodyFactory.load("Nice Melody", 175, notes3, 1);
           player.playAsync(melody);
           delay(1000);
           
           //==2==
+          display.showString("-1-");
           for(int i=0;i<16;i++)
             leds[i] = CRGB::Yellow;
           FastLED.show();
@@ -142,9 +151,19 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           player.playAsync(melody);
 
           //Start the time
-          startMillis = millis();   
+          startMillis = millis();
+          // Demo Horizontal Level Meter
+          for (int count = 0; count < 3; count++) {
+            for (int x = 0; x <= 100; x = x + 10) {
+              display.showLevel(x, true);
+              delay(1);
+            }
+            for (int x = 100; x >= 0; x = x - 10) {
+              display.showLevel(x, true);
+              delay(1);
+            }
+          }
 
-          delay(1000);  
 
           //Lights off during the race
           for(int i=0;i<16;i++)
@@ -189,9 +208,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 
 void setup() {
-   Serial.begin(9600);
-
-
+   Serial.begin(9600);      
   
   // Create the BLE Device
     BLEDevice::init("train"); // Name must not be longer than 5 chars!!!
@@ -233,7 +250,7 @@ void setup() {
     // Start advertising
     pServer->getAdvertising()->start();
     Serial.println(pService->getUUID().toString().c_str());
-    Serial.println("Waiting a client");
+    Serial.println("Waiting a client1");
 
 
   
@@ -244,6 +261,11 @@ void setup() {
     Melody melody = MelodyFactory.load("Nice Melody", 175, notes, 8);
     player.playAsync(melody);
     Serial.println("The end!");
+
+    //Startup blink animation
+    display.setBrightness(BRIGHT_7);
+    display.showString("HELLO PLAYROBOTICS");
+
 
     for(int j=0;j<3;j++)
     {
@@ -256,8 +278,11 @@ void setup() {
       FastLED.show();
         delay(400);
     }
-    
+    Serial.println("fast");
+
     delay(1000);
+    //display.clear();
+    display.showString("PLAY");
 }
 
 int searchAnimationCounter =16;
@@ -317,6 +342,9 @@ void loop() {
         
         pCharacteristic->setValue(moshe);
         pCharacteristic->notify();
+        int elapsedSeconds = elapsedMillis/10;
+        if (lap_counter>1)
+          display.showNumberDec(elapsedSeconds, (0x80 >> 1), false);
         
       }
 
