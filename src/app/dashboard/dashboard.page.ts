@@ -146,6 +146,7 @@ export class DashboardPage implements AfterViewInit {
             this.storage.set('IndoorLightsToggle', true); 
             this.storage.set('FirstTimeApp', 'NO'); 
             this.storage.set('TrimValue', '0'); 
+            this.TrimValue = 0;
           }            
           else
             console.log('App NOT Runing for the first time');
@@ -156,6 +157,7 @@ export class DashboardPage implements AfterViewInit {
           if ( !value ) {            
             console.log('setting trim');
             this.storage.set('TrimValue', '0'); 
+            this.TrimValue = 0;
           }        
           else   
           { 
@@ -332,7 +334,7 @@ export class DashboardPage implements AfterViewInit {
         console.log('SlowFuelToggle: ', value);
       });     
       this.storage.get("TrimValue").then((value) => {
-        this.TrimValue=value;
+        this.TrimValue=parseInt(value);
         console.log('TrimValue: ', value);
       });                
 

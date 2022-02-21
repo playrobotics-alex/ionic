@@ -7,6 +7,7 @@ import { NativeStorage } from '@ionic-native/native-storage/ngx';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Storage } from '@ionic/storage-angular';
+import { NativeAudio } from '@ionic-native/native-audio/ngx';
 
 
 
@@ -34,6 +35,7 @@ export class ScannerPage  {
               private screenOrientation: ScreenOrientation,
               private loadingController: LoadingController,
               private storage: Storage,
+              private nativeAudio: NativeAudio,
               private ngZone: NgZone ) 
               {
                 this.platform.ready().then(() => {
@@ -51,7 +53,15 @@ export class ScannerPage  {
 async startBleScan()
 { 
 
- 
+  this.nativeAudio.preloadSimple('uniqueId1', 'assets/sounds/car.wav');
+  this.nativeAudio.play('uniqueId1').then(() => {
+    console.log('Successfully played');
+  }).catch((err) => {
+    console.log('error', err);
+  });
+
+
+
   let scanSpinner = await this.loadingController.create({
       spinner : "bubbles",
       animated : true,

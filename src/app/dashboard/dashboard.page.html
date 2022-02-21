@@ -21,7 +21,7 @@
             <ion-icon src="/assets/icon/nitro.svg" style="font-size: 45px;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
     </div>   
     <div style="position: absolute;top:95px;left:10px;width:70px;border-radius: 15px;background-color: rgb(231, 162, 0);color:white;"  (touchstart) = "FuelClick()">        
-        <ion-icon src="/assets/icon/gas.svg" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
+        <ion-icon src="/assets/icon/road.svg" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px;color:white; "></ion-icon>
     </div>   
     <div style="position: absolute;top:165px;left:10px;width:70px;border-radius: 15px;background-color: #1d8400;color:white;"  (touchstart) = "start()" >        
         <ion-icon src="/assets/icon/lap.svg" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
@@ -107,7 +107,7 @@
     </div>
 
     <!-- Fuel Gauge -->
-    <div style="position: absolute; bottom: 150px; left:440px;width:150px;height:150px;">
+    <div style="position: absolute; bottom: 150px; left:440px;width:150px;height:150px;" (touchstart) = "FuelClick()">
         <radial-gauge id="gauge-ps" width="150" height="150"
             [attr.value]="FuelValue"
             units="FUEL"

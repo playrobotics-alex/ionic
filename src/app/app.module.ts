@@ -20,6 +20,8 @@ import { Vibration } from '@ionic-native/vibration/ngx';
 import { HammerGestureConfig, HAMMER_GESTURE_CONFIG  } from "@angular/platform-browser";
 import * as Hammer from 'hammerjs';
 import { IonicStorageModule } from '@ionic/storage-angular';
+import { NativeAudio } from '@ionic-native/native-audio/ngx';
+
 
 
 export class IonicGestureConfig extends HammerGestureConfig {
@@ -46,6 +48,7 @@ export class IonicGestureConfig extends HammerGestureConfig {
     StatusBar,
     SplashScreen,
     Vibration,
+    NativeAudio, { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
     ScreenOrientation,
     { 
