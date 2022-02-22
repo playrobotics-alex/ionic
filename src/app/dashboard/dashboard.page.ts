@@ -285,7 +285,7 @@ export class DashboardPage implements AfterViewInit {
         console.log("trainID");
         console.log(this.trainID);
         //If trainer is connected and we are not subscrbied to notifications lets subscribe
-        if (( this.trainID.length>0 )&&(this.SubscribedToNotifyBLE==false))
+        if (( this.trainID.length>2 )&&(this.SubscribedToNotifyBLE==false))
         {
           console.log("-==subscribing==-");
           this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
@@ -633,7 +633,7 @@ export class DashboardPage implements AfterViewInit {
   {
     this.reset();
     //Send start command to trainer if connected
-    if ( this.trainID.length>0 )
+    if ( this.trainID.length>2 )
     {
         // Z -> start race
         // Y -> end race
@@ -837,7 +837,7 @@ export class DashboardPage implements AfterViewInit {
       }  
 
       //Send score lights command to trainer
-      if ( this.trainID.length>0 )
+      if ( this.trainID.length>2 )
       {
           // Z -> start race
           // Y -> end race

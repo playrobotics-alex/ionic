@@ -8,6 +8,8 @@ import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Storage } from '@ionic/storage-angular';
 import { NativeAudio } from '@ionic-native/native-audio/ngx';
+import { AudioManagement } from '@ionic-native/audio-management/ngx';
+import { Vibration } from '@ionic-native/vibration/ngx';
 
 
 
@@ -20,47 +22,83 @@ const defaultDeviceName =  "ESP32";
   styleUrls: ['./scanner.page.scss'],
 })
 
-export class ScannerPage  {
-
+export class ScannerPage   {
   scannedDevices: any[] = [];
   trainID  : string = "";
+  public alertMode = "";
 
   constructor(private ble: BLE,
               private diagnostic: Diagnostic,
               private nativeStorage : NativeStorage,
               public  navCtrl: NavController,   
-              public  platform: Platform,        
+              public  platform: Platform,  
               private toastCtrl: ToastController,  
               private alertCtrl: AlertController,
               private screenOrientation: ScreenOrientation,
               private loadingController: LoadingController,
               private storage: Storage,
+              private vibration: Vibration,
               private nativeAudio: NativeAudio,
+              private audio: AudioManagement,
               private ngZone: NgZone ) 
-              {
+              {                
                 this.platform.ready().then(() => {
                   this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.PORTRAIT);
                   });
+                  this.setRingtone();  
               }
 
               ngOnInit() {
+                this.alertMode="";
                 //$("#myValues").speedometer({divFact:10,eventListenerType:'keyup'});
                 this.storage.create();
               }
 
 
-// start the BLE scan
-async startBleScan()
-{ 
 
+doVibrationFor(ms) {
+  // Vibrate the device for given milliseconds
+  // Duration is ignored on iOS and limited to 1 second.
+  this.vibration.vibrate(ms);
+}
+
+
+setRingtone() {
+  // Preload the audio track 
   this.nativeAudio.preloadSimple('uniqueId1', 'assets/sounds/car.wav');
+}
+
+getAudioMode() {
+  return new Promise(async (resolve, reject) => {
+    this.audio.getAudioMode().then((value) => {
+      if (value.audioMode == 0 || value.audioMode == 1) { // this will cause vibration in silent mode as well
+        this.alertMode = 'Vibrate';
+        resolve(false);
+      } else {
+        this.alertMode = 'Ring';
+        resolve(true);
+      }
+    }).catch((error) => {
+      resolve(false);
+    })
+  });
+}             
+
+playSingle() {
   this.nativeAudio.play('uniqueId1').then(() => {
     console.log('Successfully played');
   }).catch((err) => {
     console.log('error', err);
   });
 
+}
 
+
+// start the BLE scan
+async startBleScan()
+{ 
+
+  this.getAudioMode();
 
   let scanSpinner = await this.loadingController.create({
       spinner : "bubbles",
@@ -149,39 +187,60 @@ async startBleScan()
   {    
     console.log('connect to device to '+device.name+'.');
     this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
+    console.log('this.ble now');
     this.ble.connect(device.id).subscribe(
-      () => this.onConnected(device),
-      (error) => this.onErrorConecting(device, error)
+      () => {
+        console.log('INSIDE this.ble now');
+        this.onConnected(device);
+      },
+      (error) => {
+        console.log('INSIDE ble error ');
+        this.onErrorConecting(device, error)
+      }
     );
-    setTimeout(() => {
-      this.isConnected(device);
-    },3000);
+    console.log('try2');
+    this.ble.connect(device.id).subscribe(
+      () => {
+        console.log('INSIDE this.ble now');
+        this.onConnected(device);
+      },
+      (error) => {
+        console.log('INSIDE ble error ');
+        this.onErrorConecting(device, error)
+      }
+    );
+    console.log('try3');
+    this.ble.connect(device.id).subscribe(
+      () => {
+        console.log('INSIDE this.ble now');
+        this.onConnected(device);
+      },
+      (error) => {
+        console.log('INSIDE ble error ');
+        this.onErrorConecting(device, error)
+      }
+    );    
+
 
   } 
 
-  isConnected(device): any {
-    console.log('checking for connection on device: ' + device.id);
-    //Check if this is train, if yes save the id
-    if (device.name === "train")
-    {
-      this.trainID = device.id;
-    }
-    this.ble.isConnected(device.id)
-      .then(function (success) {
-        console.log('yes');
-      }, function (error) {
-        console.log(error);
-        console.log('no');
-      });
-  }
 
   // on connected 
   onConnected(device)
   {
     if(isLogEnabled) console.log('Connected to '+device.name+'.');
-    this.showToast('Connected to '+device.name+'.', 'success', 2000, 'bottom');
+    //this.showToast('Connected to '+device.name+'.', 'success', 2000, 'bottom');
+    console.log('checking device name');
     if (device.name!="train")
     {
+      console.log('checking device name-completed');
+
+      if (this.alertMode== 'Ring') 
+        this.playSingle();
+      else
+        this.doVibrationFor(200);
+
+      console.log('before ng-zone');
       this.ngZone.run(()=> {
         let navigationExtras: NavigationExtras = {
           queryParams: { 
@@ -194,7 +253,46 @@ async startBleScan()
         this.scannedDevices = [];
         this.navCtrl.navigateForward(['dashboard'], navigationExtras);
       });
+
     }
+  }
+  isConnected(device): any {
+    console.log('checking for connection on device: ' + device.id);
+    //Check if this is train, if yes save the id
+    if (device.name === "train")
+    {
+      this.trainID = device.id;
+    }
+    this.ble.isConnected(device.id)
+      .then(function (success) {
+        console.log('yes - run onconnecteds code here as well');
+
+        if(isLogEnabled) 
+          console.log('Connected to '+device.name+'.');
+
+        if (device.name!="train")
+        {  
+
+            let navigationExtras: NavigationExtras = {
+              queryParams: { 
+                device: JSON.stringify(device),
+                deviceTrain: JSON.stringify(this.trainID)
+              }
+            }; 
+            if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+            if(isLogEnabled) console.log('Navigation extras: device = '+JSON.stringify(device));
+            this.scannedDevices = [];
+            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+
+
+    }
+
+
+
+      }, function (error) {
+        console.log(error);
+        console.log('no');
+      });
   }
 
   // on error connecting
