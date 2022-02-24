@@ -16,6 +16,8 @@ import { Vibration } from '@ionic-native/vibration/ngx';
 const isLogEnabled = true;
 const defaultDeviceName =  "ESP32";
 
+
+
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.page.html',

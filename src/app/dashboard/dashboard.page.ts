@@ -55,6 +55,7 @@ export class DashboardPage implements AfterViewInit {
   public time = "LAP"
   public BestLapTimeString = "BEST"
   public LapTimeString = ""
+  public menuShow = false;
 
   public SubscribedToNotifyBLE = false
 
@@ -629,8 +630,9 @@ export class DashboardPage implements AfterViewInit {
     await alert.present()
   }   
 
-  start() 
+  start_best_lap() 
   {
+    this.menuShow = false;
     this.reset();
     //Send start command to trainer if connected
     if ( this.trainID.length>2 )

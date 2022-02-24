@@ -8,7 +8,7 @@ const routes: Routes = [
   },
   {
     path: '', 
-    redirectTo: 'scanner', //this is home
+    redirectTo: 'dashboard', //this is home
     pathMatch: 'full'
   },
   {
@@ -18,7 +18,8 @@ const routes: Routes = [
   {
     path: 'dashboard',
     loadChildren: () => import('./dashboard/dashboard.module').then( m => m.DashboardPageModule)
-  },  {
+  },
+  {
     path: 'settings',
     loadChildren: () => import('./settings/settings.module').then( m => m.SettingsPageModule)
   },

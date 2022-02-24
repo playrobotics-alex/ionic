@@ -1,6 +1,46 @@
 <body style="background-color: {{bgColor}};"  >
+<div style="border:0px solid red; color:white;height:100%" *ngIf="menuShow">
+ 
+    <ion-header color="dark" style="border-bottom: 1px solid grey;">
+        <ion-toolbar color="dark">
+            <ion-title slot="start">Choose a game</ion-title>
+            <ion-icon style="font-size: 30px;margin-right:15px; padding-right: 4px;margin-left:10%;" slot="end" name="close" (click)="menuShow=!menuShow" ></ion-icon>
+        </ion-toolbar>
+    </ion-header>
 
+        <div class="services" style="margin-top:8%;text-align: center;">
+           <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
+              <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/lap.svg" (touchstart) = "start_best_lap()"></ion-icon>
+              <h2 style="color:dodgerblue;">
+                 BEST LAP
+              </h2>
+              <p>
+                 You will have 8 laps to set a best lap record.
+              </p>
 
+           </div>
+           <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
+                <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/road.svg" (click)="menuShow=!menuShow" ></ion-icon>
+                <h2 style="color:dodgerblue;">
+                DRAG RACE
+                </h2>
+                <p>
+                    straight line race until the finish line.
+                </p>
+           </div>
+           <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
+                <ion-icon style="font-size: 50px;" slot="end" name="hourglass-outline" (click)="menuShow=!menuShow" ></ion-icon>
+                <h2 style="color:dodgerblue;">
+                COUNTDOWN
+                </h2>
+                <p>
+                   With every lap you complete there is less time to complete the next lap.
+                </p>
+           </div>
+        </div>
+
+</div>
+<div *ngIf="!menuShow" >
     <!-- LAP stats-->
     <div style="position: absolute;top:20px;left:20px;width:70px;" >        
         <ion-label color="light" class="fixedLabel" position="fixed"  style="margin-left:100px;">{{LapsCount}}/8</ion-label>
@@ -20,10 +60,10 @@
     <div style="position: absolute;top:20px;left:10px;width:70px;border-radius: 15px;background-color: rgb(0, 98, 255);color:white;"  (touchstart) = "NitroClick()">        
             <ion-icon src="/assets/icon/nitro.svg" style="font-size: 45px;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
     </div>   
-    <div style="position: absolute;top:95px;left:10px;width:70px;border-radius: 15px;background-color: rgb(231, 162, 0);color:white;"  (touchstart) = "FuelClick()">        
-        <ion-icon src="/assets/icon/road.svg" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px;color:white; "></ion-icon>
+    <div style="position: absolute;top:95px;left:10px;width:70px;border-radius: 15px;background-color: rgb(231, 162, 0);color:white;"  (touchstart) = "goToSettings()">        
+        <ion-icon name="hammer-outline" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px;color:white; "></ion-icon>
     </div>   
-    <div style="position: absolute;top:165px;left:10px;width:70px;border-radius: 15px;background-color: #1d8400;color:white;"  (touchstart) = "start()" >        
+    <div style="position: absolute;top:165px;left:10px;width:70px;border-radius: 15px;background-color: #1d8400;color:white;"  (touchstart) = "menuShow = true" >        
         <ion-icon src="/assets/icon/lap.svg" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
     </div>                  
     <!-- Steering Wheel -->
@@ -37,7 +77,7 @@
         <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:110px;" (touchstart) = "disconnect()" >        
             <ion-icon name="power" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
         </span>
-        <span style="width:40px;border-radius: 50px;background-color: rgba(0, 19, 231, 0.639);color:white;position:absolute;top:70px;left:160px;" (touchstart) = "goToSettings()" >        
+        <span style="width:40px;border-radius: 50px;background-color: rgba(0, 19, 231, 0.639);color:white;position:absolute;top:70px;left:160px;"  >        
             <ion-icon name="hammer-outline" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
         </span>        
         <radial-gauge id="gauge-ps" width="300" height="300"
@@ -171,5 +211,5 @@
         ></linear-gauge> 
     </span>
 
-
+</div>
 </body>
