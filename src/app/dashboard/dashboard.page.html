@@ -10,7 +10,7 @@
 
         <div class="services" style="margin-top:8%;text-align: center;">
            <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
-              <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/lap.svg" (touchstart) = "start_best_lap()"></ion-icon>
+              <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/lap.svg" (touchstart) = "start('lap')"></ion-icon>
               <h2 style="color:dodgerblue;">
                  BEST LAP
               </h2>
@@ -20,7 +20,7 @@
 
            </div>
            <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
-                <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/road.svg" (click)="menuShow=!menuShow" ></ion-icon>
+                <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/road.svg" (touchstart) = "start('drag')"></ion-icon>
                 <h2 style="color:dodgerblue;">
                 DRAG RACE
                 </h2>
@@ -29,7 +29,7 @@
                 </p>
            </div>
            <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
-                <ion-icon style="font-size: 50px;" slot="end" name="hourglass-outline" (click)="menuShow=!menuShow" ></ion-icon>
+                <ion-icon style="font-size: 50px;" slot="end" name="hourglass-outline" (touchstart) = "start('countdown')"></ion-icon>
                 <h2 style="color:dodgerblue;">
                 COUNTDOWN
                 </h2>
@@ -43,7 +43,7 @@
 <div *ngIf="!menuShow" >
     <!-- LAP stats-->
     <div style="position: absolute;top:20px;left:20px;width:70px;" >        
-        <ion-label color="light" class="fixedLabel" position="fixed"  style="margin-left:100px;">{{LapsCount}}/8</ion-label>
+        <ion-label color="light" class="fixedLabel" position="fixed"  style="margin-left:100px;">{{LapsCount}}/{{TotalLaps}}</ion-label>
     </div>
 
     <div style="position: absolute;top:20px;left:200px;width:70px;" >        
@@ -74,12 +74,9 @@
     <!-- RPM Gauge -->
     <div style="position: absolute; bottom: -5px; left:150px;width:300px;">
 
-        <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:110px;" (touchstart) = "disconnect()" >        
+        <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:130px;" (touchstart) = "disconnect()" >        
             <ion-icon name="power" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
-        </span>
-        <span style="width:40px;border-radius: 50px;background-color: rgba(0, 19, 231, 0.639);color:white;position:absolute;top:70px;left:160px;"  >        
-            <ion-icon name="hammer-outline" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
-        </span>        
+        </span> 
         <radial-gauge id="gauge-ps" width="300" height="300"
             [attr.value]="RPMValue"
             units="RPM/1000"

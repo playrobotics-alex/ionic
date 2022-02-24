@@ -26,7 +26,7 @@ const defaultDeviceName =  "ESP32";
 
 export class ScannerPage   {
   scannedDevices: any[] = [];
-  trainID  : string = "";
+  trainID  : string = " ";
   public alertMode = "";
 
   constructor(private ble: BLE,
@@ -54,6 +54,7 @@ export class ScannerPage   {
                 this.alertMode="";
                 //$("#myValues").speedometer({divFact:10,eventListenerType:'keyup'});
                 this.storage.create();
+                this.trainID =" ";
               }
 
 
@@ -190,84 +191,64 @@ async startBleScan()
     console.log('connect to device to '+device.name+'.');
     this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
     console.log('this.ble now');
+    this.isConnected(device,this.trainID);
     this.ble.connect(device.id).subscribe(
       () => {
         console.log('INSIDE this.ble now');
-        this.onConnected(device);
+        if (device.name == "train")
+        {
+          //If train save id
+          this.trainID = device.id;
+          console.log('Connected to TRAIN saving id: '+device.id+'.');
+        }
+        else
+        {
+          //if not train, play sound / vibration and redirect
+          if (this.alertMode== 'Ring') 
+            this.playSingle();
+          else
+            this.doVibrationFor(200);
+    
+          console.log('before ng-zone');
+          this.ngZone.run(()=> {
+            let navigationExtras: NavigationExtras = {
+              queryParams: { 
+                device: JSON.stringify(device),
+                deviceTrain: JSON.stringify(this.trainID)
+              }
+            }; 
+            if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+            if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
+            this.scannedDevices = [];
+            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+          });
+        }
       },
       (error) => {
         console.log('INSIDE ble error ');
         this.onErrorConecting(device, error)
       }
     );
-    console.log('try2');
-    this.ble.connect(device.id).subscribe(
-      () => {
-        console.log('INSIDE this.ble now');
-        this.onConnected(device);
-      },
-      (error) => {
-        console.log('INSIDE ble error ');
-        this.onErrorConecting(device, error)
-      }
-    );
-    console.log('try3');
-    this.ble.connect(device.id).subscribe(
-      () => {
-        console.log('INSIDE this.ble now');
-        this.onConnected(device);
-      },
-      (error) => {
-        console.log('INSIDE ble error ');
-        this.onErrorConecting(device, error)
-      }
-    );    
+    
 
 
   } 
 
 
-  // on connected 
-  onConnected(device)
-  {
-    if(isLogEnabled) console.log('Connected to '+device.name+'.');
-    //this.showToast('Connected to '+device.name+'.', 'success', 2000, 'bottom');
-    console.log('checking device name');
-    if (device.name!="train")
-    {
-      console.log('checking device name-completed');
 
-      if (this.alertMode== 'Ring') 
-        this.playSingle();
-      else
-        this.doVibrationFor(200);
-
-      console.log('before ng-zone');
-      this.ngZone.run(()=> {
-        let navigationExtras: NavigationExtras = {
-          queryParams: { 
-            device: JSON.stringify(device),
-            deviceTrain: JSON.stringify(this.trainID)
-          }
-        }; 
-        if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-        if(isLogEnabled) console.log('Navigation extras: device = '+JSON.stringify(device));
-        this.scannedDevices = [];
-        this.navCtrl.navigateForward(['dashboard'], navigationExtras);
-      });
-
-    }
-  }
-  isConnected(device): any {
+  isConnected(device,trainID): any {
     console.log('checking for connection on device: ' + device.id);
     //Check if this is train, if yes save the id
-    if (device.name === "train")
+    if (device.name == "train")
     {
       this.trainID = device.id;
+      console.log('Connected to TRAINID: '+device.id+'.');
     }
-    this.ble.isConnected(device.id)
-      .then(function (success) {
-        console.log('yes - run onconnecteds code here as well');
+    else
+    {
+      this.ble.isConnected(device.id).then(function (success) 
+      {
+        console.log('YES already conencted, redirecting');
 
         if(isLogEnabled) 
           console.log('Connected to '+device.name+'.');
@@ -278,23 +259,19 @@ async startBleScan()
             let navigationExtras: NavigationExtras = {
               queryParams: { 
                 device: JSON.stringify(device),
-                deviceTrain: JSON.stringify(this.trainID)
+                deviceTrain: JSON.stringify(trainID)
               }
             }; 
             if(isLogEnabled) console.info('Navigating to the [dashboard] page');
             if(isLogEnabled) console.log('Navigation extras: device = '+JSON.stringify(device));
-            this.scannedDevices = [];
+            //this.scannedDevices = [];
             this.navCtrl.navigateForward(['dashboard'], navigationExtras);
-
-
-    }
-
-
-
+        }
       }, function (error) {
         console.log(error);
-        console.log('no');
+        console.log('NOT connected to car yet');
       });
+    }  
   }
 
   // on error connecting

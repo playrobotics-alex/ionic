@@ -35,13 +35,18 @@
 
     <ng-template #noDevicesScanned >
         <div style="text-align:center;border:0px solid blue;  height: 80vh; vertical-align: middle;">
-        <div style='position: relative; top: 50%; -webkit-transform: translateY(-50%);-ms-transform: translateY(-50%);  transform: translateY(-50%);'>
-            <ion-icon style="font-size: 82px;color:gray;" name="car-sport-outline" ></ion-icon>
-            <br>
-            <br>
-            <span style="font-size: 22px;">No cars in your garage yet...</span>
-            
-            <ion-button expand="block" style="margin-top:30px;margin-left:10%;margin-right:10%;font-size: 25px;height:50px;" (click)="startBleScan()" >Start Scanning</ion-button>        </div>
-        </div>            
+            <div style='position: relative; top: 50%; -webkit-transform: translateY(-50%);-ms-transform: translateY(-50%);  transform: translateY(-50%);'>
+                <ion-icon style="font-size: 82px;color:gray;" name="car-sport-outline" ></ion-icon>
+                <br>
+                <br>
+                <span style="font-size: 22px;">No cars in your garage yet...</span>
+                
+                <ion-button expand="block" style="margin-top:30px;margin-left:10%;margin-right:10%;font-size: 25px;height:50px;" (click)="startBleScan()" >Start Scanning</ion-button>        
+                <div style="font-size: 16px;text-align: center;color: darkgray;padding:15px;">If car's battery is low it will not show in scanning results.</div>                        
+            </div>                      
+
+        </div>     
+        
+       
     </ng-template>
 </ion-content>
