@@ -27,6 +27,7 @@ int sensor_min_value;
 bool raceIsOn = false;
 int lap_counter = 0;
 
+char RaceType = 'A';
 
 unsigned long startMillis;
 unsigned long currentMillis;
@@ -92,13 +93,17 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
         Serial.println("GOT something");
-        // Z -> start race
+          // A -> start race LAP
+          // D -> start race DRAG
+          // C -> start race COUNTDOWN
         // Y -> end race
-        if (rxValue[0]=='Z')
+        if ((rxValue[0]=='A')||(rxValue[0]=='D')||(rxValue[0]=='C'))
         {          
+          RaceType = rxValue[0];
+
           raceIsOn = true;
           lap_counter = 0;
-          Serial.println("GOT DATA Z -> Staring race");
+          Serial.println("GOT DATA -> Staring race");
 
            CarLeaveFinishMillis=0;
           //Calibrate the sensor
@@ -211,7 +216,7 @@ void setup() {
    Serial.begin(9600);      
   
   // Create the BLE Device
-    BLEDevice::init("train"); // Name must not be longer than 5 chars!!!
+    BLEDevice::init("ESP32"); // Name must not be longer than 5 chars!!!
     
     // Create the BLE Server
     BLEServer *pServer = BLEDevice::createServer();
@@ -255,7 +260,7 @@ void setup() {
 
   
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
-    FastLED.setBrightness(10);
+    FastLED.setBrightness(20);
     
     String notes[] = { "B4", "G3", "B5", "A3", "G3", "SILENCE", "B3", "C4" };
     Melody melody = MelodyFactory.load("Nice Melody", 175, notes, 8);
@@ -343,7 +348,8 @@ void loop() {
         pCharacteristic->setValue(moshe);
         pCharacteristic->notify();
         int elapsedSeconds = elapsedMillis/10;
-        if (lap_counter>1)
+        //If this is a drag race we want to show the time during the first lap as well
+        if ((lap_counter>1)||(RaceType=='D'))
           display.showNumberDec(elapsedSeconds, (0x80 >> 1), false);
         
       }

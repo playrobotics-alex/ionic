@@ -28,6 +28,7 @@ export class ScannerPage   {
   scannedDevices: any[] = [];
   trainID  : string = " ";
   public alertMode = "";
+  public alreadyConnected = false;
 
   constructor(private ble: BLE,
               private diagnostic: Diagnostic,
@@ -100,14 +101,12 @@ playSingle() {
 // start the BLE scan
 async startBleScan()
 { 
-
   this.getAudioMode();
-
   let scanSpinner = await this.loadingController.create({
       spinner : "bubbles",
       animated : true,
       message : "Scanning for cars....",
-      duration : 1000,
+      duration : 2000,
       translucent : true
     });
   
@@ -156,7 +155,7 @@ async startBleScan()
       if(isLogEnabled) console.error('Error isBluetoothEnabled.', error);
       this.showBluetoothEnableAlert('Ooops!', 'The Bluetooth is Not enabled. Please enable it and try again.'); 
     });
-  } 
+} 
 
   // con discovered device
   onDiscoveredDevice(device)
@@ -170,12 +169,25 @@ async startBleScan()
     }; 
   
     this.ngZone.run(() => {
+      /*
       if(device.name === "train")
       {
         //If we found the trainer just connect to it automatically
-        this.connectToDevice(device);
-
+        //this.connectToDevice(device);
+        console.log('Connected to TRAIN saving id: '+device.id+'.');
+        this.ble.connect(device.id).subscribe
+        (
+          (success) => {
+                console.log('trainer success');
+                //If train save id
+                this.trainID = device.id;
+          },
+          (error) => {
+            console.log('trainer error');
+          }      
+        )
       }
+      */
       if(device.name === defaultDeviceName)
       {
         this.scannedDevices.push(scannedDevice);
@@ -188,50 +200,154 @@ async startBleScan()
   // connect to a device
   connectToDevice(device) 
   {    
+    this.alreadyConnected=false;
+    this.ble.disconnect(device.id).then(() => {
+      console.debug("Disconnect success");
+     })
+  .catch(error => {
+      console.error("Disconnect  error:", error);
+  });
+  
     console.log('connect to device to '+device.name+'.');
     this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
     console.log('this.ble now');
-    this.isConnected(device,this.trainID);
-    this.ble.connect(device.id).subscribe(
-      () => {
-        console.log('INSIDE this.ble now');
-        if (device.name == "train")
-        {
-          //If train save id
-          this.trainID = device.id;
-          console.log('Connected to TRAIN saving id: '+device.id+'.');
-        }
-        else
-        {
-          //if not train, play sound / vibration and redirect
-          if (this.alertMode== 'Ring') 
-            this.playSingle();
+    setTimeout(() => {
+      console.log('INSIDE this.ble now - attempt 1');
+      this.ble.connect(device.id).subscribe(
+        (success) => {
+          if (device.name == "train")
+          {
+            //If train save id
+            this.trainID = device.id;
+            console.log('Connected to TRAIN saving id: '+device.id+'.');
+          }
           else
-            this.doVibrationFor(200);
-    
-          console.log('before ng-zone');
-          this.ngZone.run(()=> {
-            let navigationExtras: NavigationExtras = {
-              queryParams: { 
-                device: JSON.stringify(device),
-                deviceTrain: JSON.stringify(this.trainID)
-              }
-            }; 
-            if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-            if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
-            this.scannedDevices = [];
-            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
-          });
+          {
+            //if not train, play sound / vibration and redirect
+            if (this.alertMode== 'Ring') 
+              this.playSingle();
+            else
+              this.doVibrationFor(200);
+      
+            console.log('before ng-zone');
+            this.ngZone.run(()=> {
+              let navigationExtras: NavigationExtras = {
+                queryParams: { 
+                  device: JSON.stringify(device),
+                  deviceTrain: JSON.stringify(this.trainID)
+                }
+              }; 
+              if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+              if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
+              this.scannedDevices = [];
+              this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+            });
+          }
+          this.alreadyConnected=true;
+        },
+        (error) => {
+          console.log('INSIDE ble error ');
+          this.onErrorConecting(device, error)
+          this.alreadyConnected=false;
+
         }
-      },
-      (error) => {
-        console.log('INSIDE ble error ');
-        this.onErrorConecting(device, error)
-      }
-    );
+      );             
+    },100);
+
+
     
+      setTimeout(() => 
+      {
+        if (this.alreadyConnected!=true)
+        {
+          console.log('INSIDE this.ble now - attempt 2');
 
+          this.ble.connect(device.id).subscribe(
+            (success) => {
+              if (device.name == "train")
+              {
+                //If train save id
+                this.trainID = device.id;
+                console.log('Connected to TRAIN saving id: '+device.id+'.');
+              }
+              else
+              {
+                //if not train, play sound / vibration and redirect
+                if (this.alertMode== 'Ring') 
+                  this.playSingle();
+                else
+                  this.doVibrationFor(200);
+          
+                console.log('before ng-zone');
+                this.ngZone.run(()=> {
+                  let navigationExtras: NavigationExtras = {
+                    queryParams: { 
+                      device: JSON.stringify(device),
+                      deviceTrain: JSON.stringify(this.trainID)
+                    }
+                  }; 
+                  if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+                  if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
+                  this.scannedDevices = [];
+                  this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+                });
+              }
+              this.alreadyConnected=true;
+            },
+            (error) => {
+              console.log('INSIDE ble error ');
+              this.onErrorConecting(device, error)
+              this.alreadyConnected=false;
+            }
+          );             
+        }  
+      },2000);
+      setTimeout(() => 
+      {
+        if (this.alreadyConnected!=true)
+        {
+          console.log('INSIDE this.ble now - attempt 3');
+          this.ble.connect(device.id).subscribe(
+            (success) => {
+              if (device.name == "train")
+              {
+                //If train save id
+                this.trainID = device.id;
+                console.log('Connected to TRAIN saving id: '+device.id+'.');
+              }
+              else
+              {
+                //if not train, play sound / vibration and redirect
+                if (this.alertMode== 'Ring') 
+                  this.playSingle();
+                else
+                  this.doVibrationFor(200);
+          
+                console.log('before ng-zone');
+                this.ngZone.run(()=> {
+                  let navigationExtras: NavigationExtras = {
+                    queryParams: { 
+                      device: JSON.stringify(device),
+                      deviceTrain: JSON.stringify(this.trainID)
+                    }
+                  }; 
+                  if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+                  if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
+                  this.scannedDevices = [];
+                  this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+                });
+              }
+              this.alreadyConnected=true;
+            },
+            (error) => {
+              console.log('INSIDE ble error ');
+              this.onErrorConecting(device, error)
+              this.alreadyConnected=false;
 
+            }
+          );             
+        }  
+      },4000);
   } 
 
 
@@ -246,7 +362,8 @@ async startBleScan()
     }
     else
     {
-      this.ble.isConnected(device.id).then(function (success) 
+      this.ble.isConnected(device.id).then(
+      (success) =>
       {
         console.log('YES already conencted, redirecting');
 
@@ -267,7 +384,8 @@ async startBleScan()
             //this.scannedDevices = [];
             this.navCtrl.navigateForward(['dashboard'], navigationExtras);
         }
-      }, function (error) {
+      }, 
+      (error) => {
         console.log(error);
         console.log('NOT connected to car yet');
       });

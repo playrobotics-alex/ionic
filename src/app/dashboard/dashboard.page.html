@@ -7,10 +7,14 @@
             <ion-icon style="font-size: 30px;margin-right:15px; padding-right: 4px;margin-left:10%;" slot="end" name="close" (click)="menuShow=!menuShow" ></ion-icon>
         </ion-toolbar>
     </ion-header>
-
-        <div class="services" style="margin-top:8%;text-align: center;">
-           <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
-              <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/lap.svg" (touchstart) = "start('lap')"></ion-icon>
+        <div style="margin-top:4%;">
+            <div style="text-align: center;color:red" *ngIf="!alreadyConnected" (click)="startBleScan()">
+                You need to connect the <b>Smart Finish Line</b> in order to play games. <u>SCAN</u>
+            </div>
+        </div>   
+        <div class="services" style="text-align: center;margin-top:4%;">
+           <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('lap')">
+              <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/lap.svg" ></ion-icon>
               <h2 style="color:dodgerblue;">
                  BEST LAP
               </h2>
@@ -19,8 +23,8 @@
               </p>
 
            </div>
-           <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
-                <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/road.svg" (touchstart) = "start('drag')"></ion-icon>
+           <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('drag')">
+                <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/road.svg" ></ion-icon>
                 <h2 style="color:dodgerblue;">
                 DRAG RACE
                 </h2>
@@ -28,8 +32,8 @@
                     straight line race until the finish line.
                 </p>
            </div>
-           <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;">
-                <ion-icon style="font-size: 50px;" slot="end" name="hourglass-outline" (touchstart) = "start('countdown')"></ion-icon>
+           <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('countdown')">
+                <ion-icon style="font-size: 50px;" slot="end" name="hourglass-outline" ></ion-icon>
                 <h2 style="color:dodgerblue;">
                 COUNTDOWN
                 </h2>
@@ -63,7 +67,7 @@
     <div style="position: absolute;top:95px;left:10px;width:70px;border-radius: 15px;background-color: rgb(231, 162, 0);color:white;"  (touchstart) = "goToSettings()">        
         <ion-icon name="hammer-outline" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px;color:white; "></ion-icon>
     </div>   
-    <div style="position: absolute;top:165px;left:10px;width:70px;border-radius: 15px;background-color: #1d8400;color:white;"  (touchstart) = "menuShow = true" >        
+    <div style="position: absolute;top:165px;left:10px;width:70px;border-radius: 15px;background-color: #1d8400;color:white;"  (touchstart) = "this.startBleScan();menuShow = true" >        
         <ion-icon src="/assets/icon/lap.svg" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
     </div>                  
     <!-- Steering Wheel -->

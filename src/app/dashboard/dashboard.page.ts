@@ -11,12 +11,13 @@
 
 
 import { Component, ElementRef, AfterViewInit, NgZone, ViewChild } from '@angular/core';
-import { NavController, AlertController, ToastController} from '@ionic/angular';
+import { NavController, AlertController, ToastController, LoadingController} from '@ionic/angular';
 import { ActivatedRoute} from "@angular/router";
 import { Platform } from '@ionic/angular'; 
 import { BLE } from '@ionic-native/ble/ngx';
 import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plugins/device-motion/ngx';
 import { NavigationExtras } from "@angular/router";
+import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { Storage } from '@ionic/storage-angular';
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
@@ -37,12 +38,15 @@ const TRAINER_SERVICE_UUID      = '7E400001-B5A3-F393-E0A9-E50E24DCCA9E';
 
 const isLogEnabled = true;
 
+
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.page.html',
   styleUrls: ['./dashboard.page.scss'],
 })
 export class DashboardPage implements AfterViewInit {
+  scannedDevices: any[] = [];
+  public alreadyConnected = false;
 
   //Timer Varaibles
   public timeBegan = null
@@ -59,8 +63,7 @@ export class DashboardPage implements AfterViewInit {
 
   public RaceType = "lap";
 
-  public SubscribedToNotifyBLE = false
-
+  public SubscribedToNotifyBLE = false;
   trainID  : string;
 
   //Gauges variable
@@ -111,6 +114,7 @@ export class DashboardPage implements AfterViewInit {
 
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
+                private diagnostic: Diagnostic,
                 public  navCtrl: NavController,  
                 private route: ActivatedRoute, 
                 private alertCtrl: AlertController,      
@@ -118,7 +122,8 @@ export class DashboardPage implements AfterViewInit {
                 public  platform: Platform,
                 private screenOrientation: ScreenOrientation,
                 private vibration: Vibration,
-                private storage: Storage,                
+                private storage: Storage,  
+                private loadingController: LoadingController,              
                 private ngZone: NgZone ) 
                 {
                   this.platform.ready().then(() => {
@@ -286,18 +291,18 @@ export class DashboardPage implements AfterViewInit {
     {
         //Test readying characteristic
         // read data from a characteristic, do something with output data
-        console.log("trainID");
-        console.log(this.trainID);
+        console.log("trainID: "+this.trainID);
         //If trainer is connected and we are not subscrbied to notifications lets subscribe
-        if (( this.trainID.length>2 )&&(this.SubscribedToNotifyBLE==false)&&(this.BLEcounter==1))
+        if (( this.trainID.length>2 )&&(this.SubscribedToNotifyBLE===false))
         {
+          //this.SubscribedToNotifyBLE = true;
           console.log("-==subscribing==-");
+          this.SubscribedToNotifyBLE = true;
           this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
-            data => {
-              this.onNotify(data),
-              this.SubscribedToNotifyBLE = true;
+            (data) => {
+              this.onNotify(data);              
             },
-            () => this.showAlert('Unexpected Error', 'Failed to subscribe')
+            (error) => console.error('Unexpected Error', 'Failed to subscribe')
           )
           
         }
@@ -634,92 +639,104 @@ export class DashboardPage implements AfterViewInit {
   }   
 
   start(RaceType) 
-  {    
-    this.RaceType = RaceType;
-    console.log("RaceType: "+ this.RaceType);
-    if (this.RaceType=="lap")
-      this.TotalLaps=8;
-    else if (this.RaceType=="drag")
-      this.TotalLaps=1;
-    else if (this.RaceType=="countdown")
-      this.TotalLaps=10;
-    this.menuShow = false;
-    this.reset();
-    //Send start command to trainer if connected
+  {        
     if ( this.trainID.length>2 )
     {
-        // Z -> start race
-        // Y -> end race
-        let string = 'Z';
-    
-        let array = new Uint8Array(string.length);
-        for (let i = 0, l = string.length; i < l; i ++) {
-          array[i] = string.charCodeAt(i);
-        } 
+      this.RaceType = RaceType;
+      console.log("RaceType: "+ this.RaceType);
+      if (this.RaceType=="lap")
+        this.TotalLaps=8;
+      else if (this.RaceType=="drag")
+        this.TotalLaps=1;
+      else if (this.RaceType=="countdown")
+        this.TotalLaps=10;
+      this.menuShow = false;
+      this.reset();
+      //Send start command to trainer if connected
+      if ( this.trainID.length>2 )
+      {
+          // A -> start race LAP
+          // D -> start race DRAG
+          // C -> start race COUNTDOWN
+          // Y -> end race
+          let string = 'A';
+          if (RaceType == "countdown" )
+            string = 'D';
+          if (RaceType == "drag" )
+            string = 'C';
 
-        this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
-          () => {           
-              console.log("sending settings to trainer");
-              console.log(this.trainID);
-          },
-          error => { 
-            if(isLogEnabled) 
-              console.error('Error sending date, disconnecting.', error);
-            clearInterval(this.get_duration_interval);
-            this.navCtrl.navigateBack('scanner');
-            }
-        );   
+          
+      
+          let array = new Uint8Array(string.length);
+          for (let i = 0, l = string.length; i < l; i ++) {
+            array[i] = string.charCodeAt(i);
+          } 
+
+          this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
+            () => {           
+                console.log("sending settings to trainer");
+                console.log(this.trainID);
+            },
+            error => { 
+              if(isLogEnabled) 
+                console.error('Error sending date, disconnecting.', error);
+              clearInterval(this.get_duration_interval);
+              this.navCtrl.navigateBack('scanner');
+              }
+          );   
+      }
+
+      //If we are here the race is new! Lets do countdown
+      //3
+      this.doVibrationFor(200);
+      this.time = "-3-";
+      //2
+      setTimeout(() => {
+        this.doVibrationFor(200);
+        this.time = "-2-";
+      },1200);
+      //1
+      setTimeout(() => {
+        this.doVibrationFor(200);
+        this.time = "-1-";
+      },2400);
+      //GO!
+      setTimeout(() => {
+        this.doVibrationFor(400);
+        this.doBlinkColor("#49fe00","#000"); 
+        /*
+        if (this.RPMValue>0)
+        {
+          this.time = "DISQ";
+          this.doBlinkColor("#FF0000","#000");        
+        } 
+        */ 
+
+        //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
+        if (this.RaceType=="drag")
+        {
+          if (this.timeBegan === null) {
+            this.reset();
+            this.timeBegan = new Date();
+          }
+          if (this.timeStopped !== null) {
+            let newStoppedDuration:any = (+new Date() - this.timeStopped)
+            this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
+          }
+          this.started = setInterval(this.clockRunning.bind(this), 108);
+          this.running = true;
+          this.LapsCount=1;
+        }
+        
+      },3600);      
+    }
+    else
+    {
+      //Trainer not connected
+      this.showAlert("Finish Line Not Found", "In order to start a race the 'Smart Finish Line' should be connected. Turn it on and press SCAN");
     }
 
-    //If we are here the race is new! Lets do countdown
-    //3
-    this.doVibrationFor(200);
-    this.time = "-3-";
-    //2
-    setTimeout(() => {
-      this.doVibrationFor(200);
-      this.time = "-2-";
-    },1200);
-    //1
-    setTimeout(() => {
-      this.doVibrationFor(200);
-      this.time = "-1-";
-    },2400);
-    //GO!
-    setTimeout(() => {
-      this.doVibrationFor(400);
-      this.doBlinkColor("#49fe00","#000"); 
-      /*
-      if (this.RPMValue>0)
-      {
-        this.time = "DISQ";
-        this.doBlinkColor("#FF0000","#000");        
-      } 
-      */ 
-
-      //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
-      if (this.RaceType=="drag")
-      {
-        if (this.timeBegan === null) {
-          this.reset();
-          this.timeBegan = new Date();
-        }
-        if (this.timeStopped !== null) {
-          let newStoppedDuration:any = (+new Date() - this.timeStopped)
-          this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
-        }
-        this.started = setInterval(this.clockRunning.bind(this), 108);
-        this.running = true;
-        this.LapsCount=1;
-      }
-      
-    },3600);
-    
-
-
   }
-
-
 
 
 
@@ -866,6 +883,9 @@ export class DashboardPage implements AfterViewInit {
         {
           this.BestLapTime= lapTimeBLE;
           this.BestLapTimeString= lapTimeBLE.toString();
+          //check if there is no decimal point
+          if ( this.BestLapTimeString.indexOf('.')<1)
+            this.BestLapTimeString =  this.BestLapTimeString + '.00';
           this.doVibrationFor(200);
           setTimeout(() => {
             this.doVibrationFor(200);
@@ -949,20 +969,272 @@ export class DashboardPage implements AfterViewInit {
         this.BestLapTimeString = this.LapTimeString;
         this.LapsCount = 1;
         this.running = false;
+
+
+        //Send score lights command to trainer
+        if ( this.trainID.length>2 )
+        {
+            // L -> Leds command
+            let string = 'L';
+            string = string +  this.LapsCount + lapType;
+
+            let array = new Uint8Array(string.length);
+            for (let i = 0, l = string.length; i < l; i ++) {
+              array[i] = string.charCodeAt(i);
+            } 
+
+            this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
+              () => {           
+                  console.log("sending settings to trainer");
+                  console.log(this.trainID);
+              },
+              error => { 
+                if(isLogEnabled) 
+                  console.error('Error sending date, disconnecting.', error);
+                clearInterval(this.get_duration_interval);
+                this.navCtrl.navigateBack('scanner');
+                }
+            );   
+        }    
+
+
       }
       
     }  
 
   }    
 }
-/*
-  getCoordinates(event)
-  {
-      // This output's the X coord of the click
-      console.log(event.clientX);
 
-      // This output's the Y coord of the click
-      console.log(event.clientY);
+
+// start the BLE scan
+async startBleScan()
+{ 
+  if (this.alreadyConnected==false)
+  {
+    let scanSpinner = await this.loadingController.create({
+        spinner : "bubbles",
+        animated : true,
+        message : "Searching for finish line....",
+        duration : 2000,
+        translucent : true
+      });
+    
+    this.ngZone.run(()=> { 
+        this.scannedDevices = [];
+    });
+
+    // is the Bluetooth enabled?
+    this.ble.isEnabled().then(
+      () =>
+      { // Bluetooth is enabled.
+        // is the location enabled?
+        this.ble.isLocationEnabled().then(
+          () =>
+          { // location is enabled.
+            scanSpinner.present().then(
+              () => 
+              { 
+                if(isLogEnabled) console.info('Scanning ....');
+                
+                // start the BLE scanning.
+                this.ble.scan([], 1).subscribe(
+                  (device) => 
+                  {
+                    this.onDiscoveredDevice(device);
+                  }, 
+                  (error)  =>  
+                  {
+                    if(isLogEnabled) console.error('Error scanning.', error);
+                    scanSpinner.dismiss().then(() => { 
+                              this.showAlert('Error scanning.', error); 
+                    });
+                  }); 
+              });
+          },
+          // location is not enabled.
+          (error) =>
+          {
+            if(isLogEnabled) console.error('Error isLocationEnabled.', error);
+            this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
+          });  
+      },
+      // Bluetooth is not enabled.
+      (error) => 
+      {
+        if(isLogEnabled) console.error('Error isBluetoothEnabled.', error);
+        this.showBluetoothEnableAlert('Ooops!', 'The Bluetooth is Not enabled. Please enable it and try again.'); 
+      });
+    }  
+  } 
+
+// connect to a device
+connectToDevice(device) 
+{    
+  this.alreadyConnected=false;
+  this.ble.disconnect(device.id).then(() => {
+    console.debug("Disconnect success");
+   })
+.catch(error => {
+    console.error("Disconnect  error:", error);
+});
+
+  console.log('connect to device to '+device.name+'.');
+  this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
+  console.log('this.ble now');
+  setTimeout(() => {
+    console.log('INSIDE this.ble now - attempt 1');
+    this.ble.connect(device.id).subscribe(
+      (success) => {
+        if (device.name == "train")
+        {
+          this.trainID = device.id;
+          console.log('Connected to TRAIN saving id: '+device.id+'.');
+        }       
+        this.alreadyConnected=true;
+      },
+      (error) => {
+        console.log('INSIDE ble error ');
+        this.alreadyConnected=false;
+      }
+    );             
+  },100);
+
+    setTimeout(() => 
+    {
+      if (this.alreadyConnected!=true)
+      {
+        console.log('INSIDE this.ble now - attempt 2');
+
+        this.ble.connect(device.id).subscribe(
+          (success) => {
+            if (device.name == "train")
+            {
+              //If train save id
+              this.trainID = device.id;
+              console.log('Connected to TRAIN saving id: '+device.id+'.');
+            }
+            this.alreadyConnected=true;
+          },
+          (error) => {
+            console.log('INSIDE ble error ');
+            this.alreadyConnected=false;
+          }
+        );             
+      }  
+    },2000);
+    setTimeout(() => 
+    {
+      if (this.alreadyConnected!=true)
+      {
+        console.log('INSIDE this.ble now - attempt 3');
+        this.ble.connect(device.id).subscribe(
+          (success) => {
+            if (device.name == "train")
+            {
+              //If train save id
+              this.trainID = device.id;
+              console.log('Connected to TRAIN saving id: '+device.id+'.');
+            }
+            this.alreadyConnected=true;
+          },
+          (error) => {
+            console.log('INSIDE ble error ');
+            this.alreadyConnected=false;
+          }
+        );             
+      }  
+    },4000);
+} 
+
+
+
+
+  // show the location enable alert
+  async showLocationEnableAlert(title, message) 
+  {
+    let alert = await this.alertCtrl.create({
+        header: title,
+        subHeader: message,
+        buttons: [
+          {
+            text: 'Settings',
+            handler: () => {
+              this.diagnostic.switchToLocationSettings();
+            }
+          },
+          {
+            text: 'OK',
+            role: 'cancel',
+            cssClass: 'alert-buttons'
+          }
+        ],
+        cssClass: 'alert',
+        backdropDismiss : false
+    });        
+    alert.present()
   }
-  */
+
+  async showBluetoothEnableAlert(title, message) 
+  {               
+    let alert = await this.alertCtrl.create({
+        header: title,
+        subHeader: message,
+        buttons: [
+          {
+            text: 'Settings',
+            handler: () => {
+              this.diagnostic.switchToBluetoothSettings();
+            }
+          },
+          {
+            text: 'OK',
+            role: 'cancel',
+          }
+        ],
+        cssClass: 'alert',
+        backdropDismiss : false
+    });        
+    alert.present()
+  }
+
+  onDiscoveredDevice(device)
+  {
+    var scannedDevice = 
+    { 
+      name: device.name, 
+      id: device.id, 
+      mac: this.platform.is("android") ? device.id : '', 
+      rssi : device.rssi
+    }; 
+  
+    this.ngZone.run(() => {
+      if(device.name === "train")
+      {
+        //If we found the trainer just connect to it automatically
+        //this.connectToDevice(device);
+        console.log('Connected to TRAIN saving id: '+device.id+'.');
+        this.ble.connect(device.id).subscribe
+        (
+          (success) => {
+                console.log('trainer success');
+                //If train save id
+                this.trainID = device.id;
+          },
+          (error) => {
+            console.log('trainer error');
+          }      
+        )
+      }
+      if(device.name === 'train')
+      {
+        //this.scannedDevices.push(scannedDevice);
+        this.connectToDevice(scannedDevice)
+      }
+    });
+
+    if(isLogEnabled) console.log('Scanned device  : '+ JSON.stringify(scannedDevice));  
+  }
+
+
+
 }
