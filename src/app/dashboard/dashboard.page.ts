@@ -661,9 +661,9 @@ export class DashboardPage implements AfterViewInit {
           // Y -> end race
           let string = 'A';
           if (RaceType == "countdown" )
-            string = 'D';
-          if (RaceType == "drag" )
             string = 'C';
+          if (RaceType == "drag" )
+            string = 'D';
 
           
       
