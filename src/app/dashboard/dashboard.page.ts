@@ -1,15 +1,3 @@
-/*
-      this.storage.get("NitroMultiplier").then((value) => {
-        this.NitroMultiplierStorage = value;
-        this.NitroMultiplier = this.NitroMultiplierStorage/100;
-
-    });
-
-
-
-*/
-
-
 import { Component, ElementRef, AfterViewInit, NgZone, ViewChild } from '@angular/core';
 import { NavController, AlertController, ToastController, LoadingController} from '@ionic/angular';
 import { ActivatedRoute} from "@angular/router";
@@ -65,9 +53,9 @@ export class DashboardPage implements AfterViewInit {
 
   public SubscribedToNotifyBLE = false;
   trainID  : string;
+  carID : string;
 
   //Gauges variable
-  
   //Slide should be at the middle
   gasLevel : number = 150;
   GasValue : number = 150;
@@ -130,14 +118,14 @@ export class DashboardPage implements AfterViewInit {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
                     });
                   this.route.queryParams.subscribe(params => {
-                    let device = JSON.parse(params['device']);
+                    let deviceCar = JSON.parse(params['device']);
                     this.trainID = JSON.parse(params['deviceTrain']);
     
                     if(isLogEnabled) console.log('Route navigationExtra: device = '+JSON.stringify(device)); 
     
-                    this.ble.isConnected(device.id).then(
-                      () => this.onConnected(device),
-                      () => this.onNotConnected(device)
+                    this.ble.isConnected(deviceCar.id).then(
+                      () => this.onConnected(deviceCar),
+                      () => this.onNotConnected(deviceCar)
                     );  
                   });
 
@@ -258,7 +246,8 @@ export class DashboardPage implements AfterViewInit {
     this.ngZone.run(() => { 
 
       this.connectedDevice = device;
-      
+      this.carID = device.id;
+      console.info('CarID: '+this.carID);
       //this.get_duration_interval= setInterval(()=> { this.sendBLE() }, 50);
     });
   } 
@@ -321,10 +310,9 @@ export class DashboardPage implements AfterViewInit {
         for (let i = 0, l = string.length; i < l; i ++) {
           array[i] = string.charCodeAt(i);
         } 
-        this.ble.writeWithoutResponse(this.connectedDevice.id, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
+        this.ble.writeWithoutResponse(this.carID, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
           () => {           
-            //if(isLogEnabled) 
-              //console.log(sending settings to car',);
+              console.log("sending settings to car: "+this.carID);
           },
           error => { 
             if(isLogEnabled) 
@@ -521,25 +509,22 @@ export class DashboardPage implements AfterViewInit {
       NitroGas = Mapped180Gas*0.5 + 45;
     
     let string = NitroGas +'S' + this.revSteering;
-    console.log(string);
+    console.log("String that will be sent"+ string);
 
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
       array[i] = string.charCodeAt(i);
     }
-
-
-      this.ble.writeWithoutResponse(this.connectedDevice.id, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
+      //console.log("before sending attemp:" + this.carID);
+      this.ble.writeWithoutResponse(this.carID, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
         () => {           
-          //if(isLogEnabled) 
-            //console.log(array.buffer);
+         // console.log("sending settings to car: "+this.carID);
         },
         error => { 
-          if(isLogEnabled) 
             console.error('Error sending date, disconnecting.', error);
           clearInterval(this.get_duration_interval);
           this.navCtrl.navigateBack('scanner');
-          }
+        }
       );   
       
   }  
@@ -585,11 +570,13 @@ export class DashboardPage implements AfterViewInit {
     console.info('Disconnecting from trainer');
     console.info(this.trainID);
     //Disconnect Trainer
-    this.ble.disconnect(this.trainID).then(
-      () => console.info('Disconnect trainer success'),
-      error =>  console.info('Disconnect trainer ERROR')
-    );
-
+    if ( this.trainID.length>2 )
+    {
+      this.ble.disconnect(this.trainID).then(
+        () => console.info('Disconnect trainer success'),
+        error =>  console.info('Disconnect trainer ERROR')
+      );
+    }
 
   }
   
@@ -664,9 +651,7 @@ export class DashboardPage implements AfterViewInit {
             string = 'C';
           if (RaceType == "drag" )
             string = 'D';
-
-          
-      
+            
           let array = new Uint8Array(string.length);
           for (let i = 0, l = string.length; i < l; i ++) {
             array[i] = string.charCodeAt(i);
@@ -838,6 +823,7 @@ export class DashboardPage implements AfterViewInit {
       () => this.showAlert('Unexpected Error', 'Failed to subscribe')
     )
   }
+
   ReadLapData(buffer:ArrayBuffer) {
     // Temperature is a 4 byte floating point value
     var data = new Uint8Array(buffer);
@@ -904,7 +890,10 @@ export class DashboardPage implements AfterViewInit {
             // Z -> start race
             // Y -> end race
             // L -> Leds command
+            // F -> like L but Final lap
             let string = 'L';
+            if (this.LapsCount==9)
+              string = 'F'; 
             string = string +  this.LapsCount + lapType;
 
             let array = new Uint8Array(string.length);
@@ -963,10 +952,16 @@ export class DashboardPage implements AfterViewInit {
         //Race finished      
         this.doBlinkColor("#FFF","#000");          
         this.LapTimeString = this.time;
+
+        this.BestLapTime= lapTimeBLE;
+        this.BestLapTimeString= lapTimeBLE.toString();
+        //check if there is no decimal point
+        if ( this.BestLapTimeString.indexOf('.')<1)
+          this.BestLapTimeString =  this.BestLapTimeString + '.00';
+
         this.doVibrationFor(2000);
         this.stop();
         this.time = "FINSH";
-        this.BestLapTimeString = this.LapTimeString;
         this.LapsCount = 1;
         this.running = false;
 
@@ -974,8 +969,8 @@ export class DashboardPage implements AfterViewInit {
         //Send score lights command to trainer
         if ( this.trainID.length>2 )
         {
-            // L -> Leds command
-            let string = 'L';
+            // F -> Final lap
+            let string = 'F';
             string = string +  this.LapsCount + lapType;
 
             let array = new Uint8Array(string.length);
@@ -1208,23 +1203,7 @@ connectToDevice(device)
     }; 
   
     this.ngZone.run(() => {
-      if(device.name === "train")
-      {
-        //If we found the trainer just connect to it automatically
-        //this.connectToDevice(device);
-        console.log('Connected to TRAIN saving id: '+device.id+'.');
-        this.ble.connect(device.id).subscribe
-        (
-          (success) => {
-                console.log('trainer success');
-                //If train save id
-                this.trainID = device.id;
-          },
-          (error) => {
-            console.log('trainer error');
-          }      
-        )
-      }
+
       if(device.name === 'train')
       {
         //this.scannedDevices.push(scannedDevice);

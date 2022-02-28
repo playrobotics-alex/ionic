@@ -3,6 +3,9 @@
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
+#include <Tone32.h>
+#define BUZZER_PIN 14
+#define BUZZER_CHANNEL 1
 
 #include <TM1637TinyDisplay.h>
 // Define Digital Pins
@@ -11,16 +14,13 @@
 TM1637TinyDisplay display(CLK, DIO);
 
 #include "FastLED.h"
-#define NUM_LEDS 60
+#define NUM_LEDS 30
 #define DATA_PIN 33
 
-#include <melody_player.h>
-#include <melody_factory.h>
-int buzzerPin = 14;
-MelodyPlayer player(buzzerPin, HIGH);
 
 // Define the array of leds
 CRGB leds[NUM_LEDS];
+CRGB leds_saving[NUM_LEDS];
 
 int sensor_start_value;
 int sensor_min_value;
@@ -46,6 +46,75 @@ uint8_t txValue = 50;
 #define CHARACTERISTIC_UUID_RX "7E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define CHARACTERISTIC_UUID_TX "7E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
+void showStrip() {
+ #ifdef ADAFRUIT_NEOPIXEL_H
+   // NeoPixel
+   strip.show();
+ #endif
+ #ifndef ADAFRUIT_NEOPIXEL_H
+   // FastLED
+   FastLED.show();
+ #endif
+}
+
+void setPixel(int Pixel, byte red, byte green, byte blue) {
+   // FastLED
+   leds[Pixel].r = red;
+   leds[Pixel].g = green;
+   leds[Pixel].b = blue;
+}
+
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < NUM_LEDS-3; i++ ) {
+    setPixel(i, red, green, blue);
+  }
+  showStrip();
+}
+
+void theaterChase(byte red, byte green, byte blue, int SpeedDelay) {
+  for (int j=0; j<10; j++) {  //do 10 cycles of chasing
+    for (int q=0; q < 3; q++) {
+      for (int i=0; i < NUM_LEDS-3; i=i+3) {
+        setPixel(i+q, red, green, blue);    //turn every third pixel on
+      }
+      showStrip();
+     
+      delay(SpeedDelay);
+     
+      for (int i=0; i < NUM_LEDS-3; i=i+3) {
+        setPixel(i+q, 0,0,0);        //turn every third pixel off
+      }
+    }
+  }
+}
+void FadeInOut(byte red, byte green, byte blue){
+  float r, g, b;
+     
+  for(int k = 0; k < 256; k=k+1) {
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    setAll(r,g,b);
+    showStrip();
+  }
+     
+  for(int k = 255; k >= 0; k=k-2) {
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    setAll(r,g,b);
+    showStrip();
+  }
+}
+
+void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
+  for(uint16_t i=0; i<NUM_LEDS; i++) {
+      setPixel(i, red, green, blue);
+      showStrip();
+      delay(SpeedDelay);
+  }
+}
+
 String getValue(String data, char separator, int index)
 {
     int found = 0;
@@ -64,14 +133,18 @@ String getValue(String data, char separator, int index)
 
 class MyServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) {
-          Serial.println("Connected");
-          for(int i=0;i<16;i++)
-            leds[i] = CRGB::Blue;
-          FastLED.show();
-          deviceConnected = true;
-          String notes[] = { "C2", "G5" };
-          Melody melody = MelodyFactory.load("Nice Melody", 175, notes, 2);
-          player.playAsync(melody);
+      tone(BUZZER_PIN, NOTE_C2, 100, BUZZER_CHANNEL);
+      noTone(BUZZER_PIN, BUZZER_CHANNEL);
+      tone(BUZZER_PIN, NOTE_G5, 100, BUZZER_CHANNEL);
+      noTone(BUZZER_PIN, BUZZER_CHANNEL);
+
+      Serial.println("Connected");
+      for(int i=0;i<16;i++)
+        leds[i] = CRGB::Blue;
+      FastLED.show();
+      deviceConnected = true;
+
+
     };
 
     void onDisconnect(BLEServer* pServer) {
@@ -100,7 +173,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         if ((rxValue[0]=='A')||(rxValue[0]=='D')||(rxValue[0]=='C'))
         {          
           RaceType = rxValue[0];
-
+          Serial.println("Race type: ");
+          Serial.print(RaceType);
           raceIsOn = true;
           lap_counter = 0;
           Serial.println("GOT DATA -> Staring race");
@@ -121,40 +195,43 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
           //==4==
           display.showString("-3-");
+          Serial.println("-3-");
           for(int i=0;i<16;i++)
             leds[i] = CRGB::Red;
           FastLED.show();
-          String notes[] = { "B4" };
-          Melody melody = MelodyFactory.load("Nice Melody", 175, notes, 1);
-          player.playAsync(melody);
-          delay(1000);
+
+          tone(BUZZER_PIN, NOTE_B4, 250, BUZZER_CHANNEL);
+          noTone(BUZZER_PIN, BUZZER_CHANNEL);
+
+
+          delay(750);
 
                     
           //==3==
           display.showString("-2-");
-          String notes3[] = { "B4" };
-          melody = MelodyFactory.load("Nice Melody", 175, notes3, 1);
-          player.playAsync(melody);
-          delay(1000);
+          Serial.println("-2-");
+          tone(BUZZER_PIN, NOTE_B4, 250, BUZZER_CHANNEL);
+          noTone(BUZZER_PIN, BUZZER_CHANNEL);
+          delay(750);
           
           //==2==
           display.showString("-1-");
+          Serial.println("-1-");
           for(int i=0;i<16;i++)
             leds[i] = CRGB::Yellow;
           FastLED.show();
-          String notes2[] = { "B4" };
-          melody = MelodyFactory.load("Nice Melody", 175, notes2, 1);
-          player.playAsync(melody);
-          delay(1000);
-          
+          tone(BUZZER_PIN, NOTE_B4, 250, BUZZER_CHANNEL);
+          noTone(BUZZER_PIN, BUZZER_CHANNEL);
+          delay(1000);          
           //==1==
+   
+          tone(BUZZER_PIN, NOTE_G5, 250, BUZZER_CHANNEL);
+          noTone(BUZZER_PIN, BUZZER_CHANNEL);
+          
           for(int i=0;i<16;i++)
             leds[i] = CRGB::Green;
           FastLED.show();
-          String notes1[] = { "G5" };
-          melody = MelodyFactory.load("Nice Melody", 175, notes1, 1);
-          player.playAsync(melody);
-
+          
           //Start the time
           startMillis = millis();
           // Demo Horizontal Level Meter
@@ -201,6 +278,53 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           }                 
           FastLED.show();
         }
+        else if (rxValue[0]=='F') // F -> like L but final lap
+        {                     
+          String led_string = getValue(rxValue.c_str(), 'F', 1);
+          String led_string2;
+
+          if(led_string.indexOf("B") > 0)          
+            led_string2 = getValue(led_string, 'B', 0);
+          else          
+            led_string2 = getValue(led_string, 'R', 0);
+                      
+          int led_int = led_string2.toInt() -2 ;
+
+          //We will be getting: 'L' OR 'F' + Lap number + lapType (B/R);
+          if (rxValue[2]=='B')
+          {
+            leds[led_int] = CRGB::Yellow;
+            leds[led_int+8] = CRGB::Yellow;            
+          }
+          else
+          {
+            leds[led_int] = CRGB::Green;
+            leds[led_int+8] = CRGB::Green;           
+          }                 
+          FastLED.show();
+          //Since this is the final lap we need to play Finish sequence
+
+
+          //If this is a LAP race after the end sequence we will show again the laps colors at the end
+          if (RaceType == 'A')
+          {
+            //Save the array
+            for (int i = 0; i <= 16; i++) 
+              leds_saving[i] = leds[i];
+
+            //Play finish sequence
+            theaterChase(0xff,0xff,0xff,50);
+  
+            //Restore the array
+            for (int i = 0; i <= 16; i++) 
+              leds[i] = leds_saving[i];
+            delay(2000);          
+            FastLED.show();              
+            Serial.println("Restoring");
+          }
+          else
+            theaterChase(0xff,0xff,0xff,50);
+        }
  
  
 
@@ -214,9 +338,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 void setup() {
    Serial.begin(9600);      
-  
+    ledcAttachPin(14, 0);
+
   // Create the BLE Device
-    BLEDevice::init("ESP32"); // Name must not be longer than 5 chars!!!
+    BLEDevice::init("train"); // Name must not be longer than 5 chars!!!
     
     // Create the BLE Server
     BLEServer *pServer = BLEDevice::createServer();
@@ -261,33 +386,29 @@ void setup() {
   
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
     FastLED.setBrightness(20);
+  
+    colorWipe(0x00,0xff,0x00, 40);
+    colorWipe(0x00,0x00,0x00, 40);
     
-    String notes[] = { "B4", "G3", "B5", "A3", "G3", "SILENCE", "B3", "C4" };
-    Melody melody = MelodyFactory.load("Nice Melody", 175, notes, 8);
-    player.playAsync(melody);
-    Serial.println("The end!");
+    tone(BUZZER_PIN, NOTE_B4, 100, BUZZER_CHANNEL);
+    noTone(BUZZER_PIN, BUZZER_CHANNEL);
+
+    tone(BUZZER_PIN, NOTE_G3, 100, BUZZER_CHANNEL);
+    noTone(BUZZER_PIN, BUZZER_CHANNEL);
+
+    tone(BUZZER_PIN, NOTE_B5, 100, BUZZER_CHANNEL);
+    noTone(BUZZER_PIN, BUZZER_CHANNEL);
+
+    tone(BUZZER_PIN, NOTE_A3, 100, BUZZER_CHANNEL);
+    noTone(BUZZER_PIN, BUZZER_CHANNEL);
 
     //Startup blink animation
     display.setBrightness(BRIGHT_7);
     display.showString("HELLO PLAYROBOTICS");
-
-
-    for(int j=0;j<3;j++)
-    {
-      for(int i=0;i<16;i++)
-        leds[i] = CRGB::White;
-      FastLED.show();
-      delay(400);
-      for (int i=0;i<16;i++)
-        leds[i] = CRGB::Black;
-      FastLED.show();
-        delay(400);
-    }
-    Serial.println("fast");
-
     delay(1000);
     //display.clear();
     display.showString("PLAY");
+
 }
 
 int searchAnimationCounter =16;
