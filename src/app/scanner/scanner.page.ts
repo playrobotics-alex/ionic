@@ -188,7 +188,11 @@ async startBleScan()
         )
       }
       */
-      if(device.name === defaultDeviceName)
+     
+     let nameOfDevice : string;
+     nameOfDevice = device.name ;
+     
+      if((nameOfDevice.indexOf("ESP")==0)||(nameOfDevice.indexOf("PR-")==0))
       {
         this.scannedDevices.push(scannedDevice);
       }

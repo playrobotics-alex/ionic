@@ -46,6 +46,8 @@ export class DashboardPage implements AfterViewInit {
   public blankTime = "00.00"
   public time = "LAP"
   public BestLapTimeString = "BEST"
+  public BestLapTimeDragString = "BEST"
+  public BestLapTimeLapString = "BEST"
   public LapTimeString = ""
   public menuShow = false;
 
@@ -73,6 +75,8 @@ export class DashboardPage implements AfterViewInit {
 
   LapTime : number = 0;
   BestLapTime : number = 0;
+  BestLapTimeDrag : number = 0;
+  BestLapTimeLap : number = 0;
   LapsCount : number = 1;
   TotalLaps : number = 1;
   wheelRotate : number = 0;
@@ -100,6 +104,8 @@ export class DashboardPage implements AfterViewInit {
   netSteering : number = 0;
   steeringMultiplier : number = 0;
 
+  maxLapTime : number = 20;
+
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
                 private diagnostic: Diagnostic,
@@ -120,9 +126,7 @@ export class DashboardPage implements AfterViewInit {
                   this.route.queryParams.subscribe(params => {
                     let deviceCar = JSON.parse(params['device']);
                     this.trainID = JSON.parse(params['deviceTrain']);
-    
-                    if(isLogEnabled) console.log('Route navigationExtra: device = '+JSON.stringify(device)); 
-    
+     
                     this.ble.isConnected(deviceCar.id).then(
                       () => this.onConnected(deviceCar),
                       () => this.onNotConnected(deviceCar)
@@ -632,9 +636,19 @@ export class DashboardPage implements AfterViewInit {
       this.RaceType = RaceType;
       console.log("RaceType: "+ this.RaceType);
       if (this.RaceType=="lap")
+      {
         this.TotalLaps=8;
+        //Restore best lap time of the same type of race
+        this.BestLapTimeString = this.BestLapTimeLapString; 
+        this.BestLapTime = this.BestLapTimeLap;
+      }  
       else if (this.RaceType=="drag")
+      {
         this.TotalLaps=1;
+        //Restore best lap time of the same type of race
+        this.BestLapTimeString = this.BestLapTimeDragString; 
+        this.BestLapTime = this.BestLapTimeDrag;
+      }  
       else if (this.RaceType=="countdown")
         this.TotalLaps=10;
       this.menuShow = false;
@@ -770,7 +784,19 @@ export class DashboardPage implements AfterViewInit {
     this.time =
     this.zeroPrefix(sec, 0) + "." +
     this.zeroPrefix(ms, 1);
-  };    
+  };   
+  
+  clockRunningCountdown()
+  {
+    let currentTime:any = new Date()
+    let timeElapsed:any = new Date(currentTime - this.timeBegan - this.stoppedDuration)
+
+    let sec = timeElapsed.getUTCSeconds()
+    sec = this.maxLapTime - sec; 
+    this.time =
+    this.zeroPrefix(sec, 0);
+
+  };      
 
   doVibrationFor(ms) {
     // Vibrate the device for given milliseconds
@@ -851,7 +877,10 @@ export class DashboardPage implements AfterViewInit {
           let newStoppedDuration:any = (+new Date() - this.timeStopped)
           this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
         }
-        this.started = setInterval(this.clockRunning.bind(this), 108);
+        if (this.RaceType=='countdown')
+          this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+        else
+          this.started = setInterval(this.clockRunning.bind(this), 108);
         this.running = true;
         this.LapsCount=1;
       }   
@@ -864,14 +893,17 @@ export class DashboardPage implements AfterViewInit {
         this.LapsCount = lapBLE;
         //Check for best lap
         
-        //if ((parseFloat(this.time) < this.BestLapTime)||(this.BestLapTime==0))
-        if ((lapTimeBLE < this.BestLapTime)||(this.BestLapTime==0))
+        if ((lapTimeBLE < this.BestLapTimeLap)||(this.BestLapTimeLap==0))
         {
           this.BestLapTime= lapTimeBLE;
           this.BestLapTimeString= lapTimeBLE.toString();
           //check if there is no decimal point
           if ( this.BestLapTimeString.indexOf('.')<1)
             this.BestLapTimeString =  this.BestLapTimeString + '.00';
+          //Save best lap time in case we switch to drag and then go back
+          this.BestLapTimeLapString = this.BestLapTimeString; 
+          this.BestLapTimeLap = this.BestLapTime;
+
           this.doVibrationFor(200);
           setTimeout(() => {
             this.doVibrationFor(200);
@@ -958,6 +990,10 @@ export class DashboardPage implements AfterViewInit {
         //check if there is no decimal point
         if ( this.BestLapTimeString.indexOf('.')<1)
           this.BestLapTimeString =  this.BestLapTimeString + '.00';
+        
+        //Save best lap time in case we switch to drag and then go back
+        this.BestLapTimeDragString = this.BestLapTimeString; 
+        this.BestLapTimeDrag = this.BestLapTime;
 
         this.doVibrationFor(2000);
         this.stop();
