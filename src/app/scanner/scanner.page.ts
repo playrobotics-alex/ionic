@@ -188,14 +188,12 @@ async startBleScan()
         )
       }
       */
-     
-     let nameOfDevice : string;
-     nameOfDevice = device.name ;
-     
-      if((nameOfDevice.indexOf("ESP")==0)||(nameOfDevice.indexOf("PR-")==0))
+
+      if (device.name)
       {
-        this.scannedDevices.push(scannedDevice);
-      }
+        if((device.name.indexOf("ESP")==0)||(device.name.indexOf("PR-")==0))
+          this.scannedDevices.push(scannedDevice);
+      } 
     });
 
     if(isLogEnabled) console.log('Scanned device  : '+ JSON.stringify(scannedDevice));  
