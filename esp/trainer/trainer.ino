@@ -224,33 +224,17 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           noTone(BUZZER_PIN, BUZZER_CHANNEL);
           delay(1000);          
           //==1==
-   
+          display.showString("RACE");
           tone(BUZZER_PIN, NOTE_G5, 250, BUZZER_CHANNEL);
           noTone(BUZZER_PIN, BUZZER_CHANNEL);
           
           for(int i=0;i<16;i++)
             leds[i] = CRGB::Green;
-          FastLED.show();
+          FastLED.show();         
           
           //Start the time
           startMillis = millis();
-          // Demo Horizontal Level Meter
-          for (int count = 0; count < 3; count++) {
-            for (int x = 0; x <= 100; x = x + 10) {
-              display.showLevel(x, true);
-              delay(1);
-            }
-            for (int x = 100; x >= 0; x = x - 10) {
-              display.showLevel(x, true);
-              delay(1);
-            }
-          }
 
-
-          //Lights off during the race
-          for(int i=0;i<16;i++)
-            leds[i] = CRGB::Black;
-          FastLED.show();
 
         }
         else if (rxValue[0]=='L')
@@ -266,16 +250,27 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           int led_int = led_string2.toInt() -2 ;
 
           //We will be getting: 'L' + Lap number + lapType (B/R);
-          if (rxValue[2]=='B')
+          if (RaceType=='C')
           {
-            leds[led_int] = CRGB::Yellow;
-            leds[led_int+8] = CRGB::Yellow;            
+            //countdown should only display one led not two
+            if(led_int<8)
+              leds[led_int+8] = CRGB::Purple;
+            else  
+              leds[led_int-8] = CRGB::Purple;
           }
           else
           {
-            leds[led_int] = CRGB::Green;
-            leds[led_int+8] = CRGB::Green;           
-          }                 
+            if (rxValue[2]=='B')
+            {
+              leds[led_int] = CRGB::Yellow;
+              leds[led_int+8] = CRGB::Yellow;            
+            }
+            else
+            {
+              leds[led_int] = CRGB::Green;
+              leds[led_int+8] = CRGB::Green;           
+            }                 
+          }  
           FastLED.show();
         }
         else if (rxValue[0]=='F') // F -> like L but final lap
@@ -439,6 +434,7 @@ void loop() {
   
     if (raceIsOn)
     {
+      
       int sensorValue = analogRead(35);
       
       //Serial.println(lap_counter++);
@@ -448,7 +444,15 @@ void loop() {
       elapsedMillis = (currentMillis - startMillis);
 
       //We need to make sure at least 1 second from the previous lap
-      if ((sensorValue + 150 < sensor_min_value )&&(elapsedMillis>1000)&&((currentMillis-CarLeaveFinishMillis)>1000))
+      if (
+            (sensorValue + 150 < sensor_min_value )
+            &&
+            (
+              (elapsedMillis>1000)&&((currentMillis-CarLeaveFinishMillis)>1000) 
+              ||
+              (lap_counter==0)
+            ) 
+          )
       {
         //We have a lap!
         //reset time
@@ -457,6 +461,28 @@ void loop() {
         Serial.print("We have a lap! count: ");
         lap_counter++;
         Serial.println(lap_counter);
+
+        if ((lap_counter==1)&&(RaceType!='D'))
+        {
+          //Display animation when the race is starting
+          // Horizontal Level Meter
+          for (int count = 0; count < 3; count++) {
+            for (int x = 0; x <= 100; x = x + 10) {
+              display.showLevel(x, true);
+              delay(1);
+            }
+            for (int x = 100; x >= 0; x = x - 10) {
+              display.showLevel(x, true);
+              delay(1);
+            }
+          }
+
+          //Lights off during the race
+          for(int i=0;i<16;i++)
+            leds[i] = CRGB::Black;
+          FastLED.show();
+          
+        }
         //Build the BLE string we are going to send by digits 1)lap number 2) time in miliseconds (without the last digit) 
 
         //60 seconds is the max
