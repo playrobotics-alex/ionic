@@ -43,6 +43,22 @@
         </ion-range>
       </ion-item>
 
+      <ion-item>
+        <ion-label>Countdown Race First Lap Time:</ion-label>
+      </ion-item>
+      <ion-item>
+        <ion-label>{{InitialMaxLapTime}}</ion-label>
+        <ion-range min="16" max="30" pin="true" snaps="true" step="1" value="20" (ionChange)="onRangeChangeCountdown($event)" [value]="InitialMaxLapTime">
+          <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+
+        </ion-range>
+        
+      </ion-item> 
+      <ion-item>
+        <ion-label>Time will decrease by 1 second every lap. First lap:{{InitialMaxLapTime}} | Last Lap {{InitialMaxLapTime-16}}</ion-label>
+      </ion-item>     
+
     </ion-list>
   </div>
 

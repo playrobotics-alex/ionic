@@ -73,6 +73,8 @@ export class DashboardPage implements AfterViewInit {
   SlowFuelToggle : boolean;
   SlowHeatToggle : boolean;
   TrimValue : number = 0;
+  InitialMaxLapTime : number = 30;
+
 
   LapTime : number = 0;
   BestLapTime : number = 0;
@@ -105,8 +107,7 @@ export class DashboardPage implements AfterViewInit {
   netSteering : number = 0;
   steeringMultiplier : number = 0;
 
-  InitialMaxLapTime : number = 20;
-  maxLapTime : number = 20;
+  maxLapTime : number = 25;
 
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
@@ -149,6 +150,7 @@ export class DashboardPage implements AfterViewInit {
             this.storage.set('IndoorLightsToggle', true); 
             this.storage.set('FirstTimeApp', 'NO'); 
             this.storage.set('TrimValue', '0'); 
+            this.storage.set('InitialMaxLapTime', '20'); 
             this.TrimValue = 0;
           }            
           else
@@ -339,7 +341,11 @@ export class DashboardPage implements AfterViewInit {
       this.storage.get("TrimValue").then((value) => {
         this.TrimValue=parseInt(value);
         console.log('TrimValue: ', value);
-      });                
+      });    
+      this.storage.get("InitialMaxLapTime").then((value) => {
+        this.InitialMaxLapTime=parseInt(value);
+        console.log('InitialMaxLapTime: ', value);
+      });             
 
 
     }
@@ -827,12 +833,15 @@ export class DashboardPage implements AfterViewInit {
         );  
         
         this.reset();
+        console.log("Settings maxLapTime = this.InitialMaxLapTime");
+        console.log(this.InitialMaxLapTime);
+
         this.maxLapTime = this.InitialMaxLapTime;
         this.BestLapTimeString=  (this.LapsCount-1).toString();
         //Save best lap time in case we switch to other race type and then go back
         this.BestLapTimeCountString = this.BestLapTimeString; 
         console.log(" this.BestLapTimeCountString: "+ this.BestLapTimeCountString);
-        
+
         this.doBlinkColor("#FFF","#000");          
         this.LapTimeString = this.time;
         this.doVibrationFor(2000);
@@ -929,7 +938,10 @@ export class DashboardPage implements AfterViewInit {
           this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
         }
         if (this.RaceType=='countdown')
+        {
+          this.maxLapTime = this.InitialMaxLapTime;
           this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+        }  
         else
           this.started = setInterval(this.clockRunning.bind(this), 108);
         this.running = true;

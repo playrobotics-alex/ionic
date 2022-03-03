@@ -13,6 +13,7 @@ export class SettingsPage implements OnInit {
   public SlowFuelToggle = true;
 
   public TrimValue = 0;
+  public InitialMaxLapTime = 20;
 
 
   constructor(private storage: Storage) { }
@@ -37,6 +38,10 @@ export class SettingsPage implements OnInit {
       this.TrimValue = value;
       console.log('TrimValue', this.TrimValue);
     });      
+    this.storage.get("InitialMaxLapTime").then((value) => {
+      this.InitialMaxLapTime = value;
+      console.log('InitialMaxLapTime', this.InitialMaxLapTime);
+    });      
   }
 
   onRangeChange(event:any){
@@ -44,6 +49,12 @@ export class SettingsPage implements OnInit {
     this.storage.set('TrimValue', event.detail.value); 
     this.TrimValue = event.detail.value;
   }
+
+  onRangeChangeCountdown(event:any){
+    console.log('InitialMaxLapTime changed: ', event.detail.value);
+    this.storage.set('InitialMaxLapTime', event.detail.value); 
+    this.InitialMaxLapTime = event.detail.value;
+  }  
   OnIndoorLightsToggleChange(event,toggleValue){
     console.log('IndoorLightsToggle toggleValue._value: ', toggleValue);
     let i=true;
