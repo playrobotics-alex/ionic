@@ -5,6 +5,8 @@
 #include <ESP32Servo.h>
 #include <FastLED.h>
 
+
+
 // How many leds in your strip?
 #define NUM_LEDS 1
 #define DATA_PIN 27
@@ -138,7 +140,7 @@ void setup() {
   leds[0] = CRGB::White;
   FastLED.show();
   // Create the BLE Device
-  BLEDevice::init("ESP32"); // Name must not be longer than 5 chars!!!
+  BLEDevice::init("PR*Honda Civic Type R*001"); // Name must not be longer than 5 chars!!!
   
   // Create the BLE Server
   BLEServer *pServer = BLEDevice::createServer();

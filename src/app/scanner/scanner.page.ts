@@ -165,7 +165,10 @@ async startBleScan()
       name: device.name, 
       id: device.id, 
       mac: this.platform.is("android") ? device.id : '', 
-      rssi : device.rssi
+      rssi : device.rssi,
+      mapped_name: "11",
+      mapped_id: 12,
+      mapped_icon: 1
     }; 
   
     this.ngZone.run(() => {
@@ -190,9 +193,22 @@ async startBleScan()
       */
 
       if (device.name)
-      {
-        if((device.name.indexOf("ESP")==0)||(device.name.indexOf("PR-")==0))
+      {console.log('looking');
+        if(device.name.indexOf("PR-Civic")==0)
+          device.name= "PR*Honda Civic Type R*001";
+        if(device.name.indexOf("PR*")==0)
+        {
+          const deviceNameSplitArray =  device.name.split("*");
+          scannedDevice.mapped_name = deviceNameSplitArray[1];
+          console.log('deviceNameSplitArray[1]');
+          console.log(deviceNameSplitArray[1]);
+          scannedDevice.mapped_id = deviceNameSplitArray[2];
+          if(scannedDevice.mapped_name=="Honda Civic Type R")
+          scannedDevice.mapped_icon=1;
           this.scannedDevices.push(scannedDevice);
+
+
+        }  
       } 
     });
 
