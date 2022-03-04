@@ -227,7 +227,7 @@ async startBleScan()
   });
   
     console.log('connect to device to '+device.name+'.');
-    this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
+    this.showToast('Connecting to car', 'medium', 2000, 'bottom');
     console.log('this.ble now');
     setTimeout(() => {
       console.log('INSIDE this.ble now - attempt 1');

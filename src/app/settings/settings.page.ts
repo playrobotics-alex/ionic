@@ -11,6 +11,7 @@ export class SettingsPage implements OnInit {
   public IndoorLightsToggle = true;
   public SlowHeatToggle = true;
   public SlowFuelToggle = true;
+  public AccSteeringToggle = false;
 
   public TrimValue = 0;
   public InitialMaxLapTime = 20;
@@ -24,6 +25,11 @@ export class SettingsPage implements OnInit {
       console.log('IndoorLightsToggle', this.IndoorLightsToggle);
 
     });
+    this.storage.get("AccSteeringToggle").then((value) => {
+      this.AccSteeringToggle = value;
+      console.log('AccSteeringToggle', this.AccSteeringToggle);
+
+    });    
     this.storage.get("SlowFuelToggle").then((value) => {
       this.SlowFuelToggle = value;
       console.log('SlowFuelToggle', this.SlowFuelToggle);
@@ -65,6 +71,17 @@ export class SettingsPage implements OnInit {
     }
     this.storage.set('IndoorLightsToggle', i); 
   }
+
+  OnAccSteeringToggleChange(event,toggleValue){
+    console.log('AccSteeringToggle toggleValue._value: ', toggleValue);
+    let i=true;
+    if(toggleValue==true){
+      i=true;
+    }else if(toggleValue==false){
+      i=false;
+    }
+    this.storage.set('AccSteeringToggle', i); 
+  }  
 
   OnSlowFuelToggleChange(event,toggleValue){
     console.log('SlowFuelToggle toggleValue._value: ', toggleValue);

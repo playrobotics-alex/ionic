@@ -70,6 +70,7 @@ export class DashboardPage implements AfterViewInit {
   //Varaibles to pull the settings from storage
   BLEcounter  : number = 0;
   IndoorLightsToggle : boolean;
+  AccSteeringToggle : boolean;
   SlowFuelToggle : boolean;
   SlowHeatToggle : boolean;
   TrimValue : number = 0;
@@ -148,6 +149,7 @@ export class DashboardPage implements AfterViewInit {
             this.storage.set('SlowHeatToggle', true); 
             this.storage.set('SlowFuelToggle', true); 
             this.storage.set('IndoorLightsToggle', true); 
+            this.storage.set('AccSteeringToggle', false); 
             this.storage.set('FirstTimeApp', 'NO'); 
             this.storage.set('TrimValue', '0'); 
             this.storage.set('InitialMaxLapTime', '20'); 
@@ -337,7 +339,11 @@ export class DashboardPage implements AfterViewInit {
       this.storage.get("SlowFuelToggle").then((value) => {
         this.SlowFuelToggle=value;
         console.log('SlowFuelToggle: ', value);
-      });     
+      });   
+      this.storage.get("AccSteeringToggle").then((value) => {
+        this.AccSteeringToggle=value;
+        console.log('AccSteeringToggle: ', value);
+      });          
       this.storage.get("TrimValue").then((value) => {
         this.TrimValue=parseInt(value);
         console.log('TrimValue: ', value);
@@ -346,6 +352,7 @@ export class DashboardPage implements AfterViewInit {
         this.InitialMaxLapTime=parseInt(value);
         console.log('InitialMaxLapTime: ', value);
       });             
+      
 
 
     }
@@ -494,23 +501,41 @@ export class DashboardPage implements AfterViewInit {
       this.RPMValue =RpmToDisplay;
    
     // Get the device current acceleration
-    // sreering with accelerometer , not used currently
-    /*
-    this.deviceMotion.getCurrentAcceleration().then(
-      (acceleration: DeviceMotionAccelerationData) => this.steering = acceleration.y,
-      (error: any) => console.log(error)
-    );
-    */
-   //mapping steering to 0->90 | 0->-90 instead of 0-180
-
-    let netSteering = this.steering-90;
+    // sreering with accelerometer
     let steeringMultiplier = 0.75; 
+    if (this.AccSteeringToggle)
+    {
+      //Acceleromter steering
+      this.deviceMotion.getCurrentAcceleration().then(
+        (acceleration: DeviceMotionAccelerationData) => {          
+          //convert to -90->90
+          this.revSteering = Math.round(acceleration.y) * 10;          
+          this.revSteering = this.revSteering * steeringMultiplier
 
-    //now back to 0-180
-    netSteering = netSteering*steeringMultiplier +90;
-    this.revSteering = Math.round(180-(netSteering*1));
-    this.revSteering =  this.revSteering + this.TrimValue;
+          //convert it to 0->180
+          this.revSteering = this.revSteering +90 + this.TrimValue;
+          //reverse steering
+          this.revSteering = 180 - this.revSteering;
+          //console.log("this.revSteering: " + this.revSteering);
 
+
+        },
+        (error: any) => console.log(error)
+      );
+    }  
+    else
+    {
+        //Regular steering
+        //mapping steering to 0->90 | 0->-90 instead of 0-180
+
+        let netSteering = this.steering-90;
+
+
+        //now back to 0-180
+        netSteering = netSteering*steeringMultiplier +90;
+        this.revSteering = Math.round(180-(netSteering*1));
+        this.revSteering =  this.revSteering + this.TrimValue;
+    } 
 
     let Mapped180Gas = 180-(this.gasLevel);
     let NitroGas=0;
