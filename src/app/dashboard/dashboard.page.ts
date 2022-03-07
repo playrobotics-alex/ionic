@@ -690,7 +690,7 @@ export class DashboardPage implements AfterViewInit {
         console.log("RESTORE this.BestLapTimeString: "+this.BestLapTimeString);
       }  
       this.menuShow = false;
-      this.reset();
+      
       //Send start command to trainer if connected
       if ( this.trainID.length>2 )
       {
@@ -700,7 +700,7 @@ export class DashboardPage implements AfterViewInit {
           // Y -> end race
           let string = 'A';
           if (RaceType == "countdown" )
-            string = 'C';
+            string = 'C' + this.InitialMaxLapTime;
           if (RaceType == "drag" )
             string = 'D';
             
@@ -712,7 +712,7 @@ export class DashboardPage implements AfterViewInit {
           this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
             () => {           
                 console.log("sending settings to trainer start function");
-                console.log(this.trainID);
+                console.log(string);
             },
             error => { 
               if(isLogEnabled) 
@@ -748,7 +748,7 @@ export class DashboardPage implements AfterViewInit {
           this.doBlinkColor("#FF0000","#000");        
         } 
         */ 
-
+        this.reset();
         //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
         if (this.RaceType=="drag")
         {

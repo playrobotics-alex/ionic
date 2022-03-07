@@ -28,6 +28,9 @@ bool raceIsOn = false;
 int lap_counter = 0;
 
 char RaceType = 'A';
+int InitialMaxLapTime;
+int LapTimeLeft;
+int LapTimeLeftPreviousSecond;
 
 unsigned long startMillis;
 unsigned long currentMillis;
@@ -173,9 +176,19 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         if ((rxValue[0]=='A')||(rxValue[0]=='D')||(rxValue[0]=='C'))
         {          
           RaceType = rxValue[0];
+          if (RaceType=='C')
+          {
+             char bufferLap[2];
+             bufferLap[0] = rxValue[1];
+             bufferLap[1] = rxValue[2];
+             InitialMaxLapTime = atoi(bufferLap);
+             LapTimeLeftPreviousSecond = InitialMaxLapTime;
+             Serial.println("InitialMaxLapTime: ");
+             Serial.print(InitialMaxLapTime);
+          }   
           Serial.println("Race type: ");
           Serial.print(RaceType);
-          raceIsOn = true;
+  
           lap_counter = 0;
           Serial.println("GOT DATA -> Staring race");
 
@@ -234,7 +247,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           
           //Start the time
           startMillis = millis();
-
+          raceIsOn = true;
 
         }
         else if (rxValue[0]=='L')
@@ -274,10 +287,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           FastLED.show();
         }
         else if (rxValue[0]=='F') // F -> like L but final lap
-        {                     
+        {             
           String led_string = getValue(rxValue.c_str(), 'F', 1);
           String led_string2;
-
+          
           if(led_string.indexOf("B") > 0)          
             led_string2 = getValue(led_string, 'B', 0);
           else          
@@ -442,7 +455,26 @@ void loop() {
 
       //Lap Time  
       elapsedMillis = (currentMillis - startMillis);
+      if ((RaceType=='C')&&(lap_counter>0))
+      {
+         LapTimeLeft = InitialMaxLapTime - elapsedMillis/1000;
+         Serial.print("LapTimeLeft: ");
+         Serial.println(LapTimeLeft);
+    
+         if (LapTimeLeftPreviousSecond > LapTimeLeft)
+         {
+             display.showNumber(LapTimeLeft,false, 2, 1);
+             LapTimeLeftPreviousSecond = LapTimeLeft; 
+             if ( LapTimeLeft < 4)
+                tone(BUZZER_PIN, NOTE_C2, 100, BUZZER_CHANNEL);
+             
+         }    
+         if ( LapTimeLeft < 1)
+             raceIsOn = false;
 
+
+      }   
+         
       //We need to make sure at least 1 second from the previous lap
       if (
             (sensorValue + 150 < sensor_min_value )
@@ -457,11 +489,11 @@ void loop() {
         //We have a lap!
         //reset time
         startMillis = millis();   
-
         Serial.print("We have a lap! count: ");
         lap_counter++;
         Serial.println(lap_counter);
-
+        if (RaceType='C')
+          LapTimeLeftPreviousSecond = InitialMaxLapTime;
         if ((lap_counter==1)&&(RaceType!='D'))
         {
           //Display animation when the race is starting
@@ -497,7 +529,14 @@ void loop() {
         int elapsedSeconds = elapsedMillis/10;
         //If this is a drag race we want to show the time during the first lap as well
         if ((lap_counter>1)||(RaceType=='D'))
-          display.showNumberDec(elapsedSeconds, (0x80 >> 1), false);
+        {
+          //in countdown we don't show lap times, the loop will take care of this
+          if (RaceType=='C')
+            InitialMaxLapTime = InitialMaxLapTime - 1;
+          else  
+            display.showNumberDec(elapsedSeconds, (0x80 >> 1), false);
+
+        }  
         
       }
 
