@@ -14,7 +14,7 @@
 TM1637TinyDisplay display(CLK, DIO);
 
 #include "FastLED.h"
-#define NUM_LEDS 30
+#define NUM_LEDS 120
 #define DATA_PIN 33
 
 
@@ -68,7 +68,8 @@ void setPixel(int Pixel, byte red, byte green, byte blue) {
 }
 
 void setAll(byte red, byte green, byte blue) {
-  for(int i = 0; i < NUM_LEDS-3; i++ ) {
+  //replacing NUM_LEDS with 16
+  for(int i = 0; i < 16-3; i++ ) {
     setPixel(i, red, green, blue);
   }
   showStrip();
@@ -77,45 +78,70 @@ void setAll(byte red, byte green, byte blue) {
 void theaterChase(byte red, byte green, byte blue, int SpeedDelay) {
   for (int j=0; j<10; j++) {  //do 10 cycles of chasing
     for (int q=0; q < 3; q++) {
-      for (int i=0; i < NUM_LEDS-3; i=i+3) {
+      //replacing NUM_LEDS with 16
+      for (int i=0; i < 16-3; i=i+3) {
         setPixel(i+q, red, green, blue);    //turn every third pixel on
       }
       showStrip();
      
       delay(SpeedDelay);
-     
-      for (int i=0; i < NUM_LEDS-3; i=i+3) {
+     //replacing NUM_LEDS with 16
+      for (int i=0; i < 16-3; i=i+3) {
         setPixel(i+q, 0,0,0);        //turn every third pixel off
       }
     }
   }
 }
-void FadeInOut(byte red, byte green, byte blue){
-  float r, g, b;
-     
-  for(int k = 0; k < 256; k=k+1) {
-    r = (k/256.0)*red;
-    g = (k/256.0)*green;
-    b = (k/256.0)*blue;
-    setAll(r,g,b);
-    showStrip();
-  }
-     
-  for(int k = 255; k >= 0; k=k-2) {
-    r = (k/256.0)*red;
-    g = (k/256.0)*green;
-    b = (k/256.0)*blue;
-    setAll(r,g,b);
-    showStrip();
-  }
-}
 
 void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
-  for(uint16_t i=0; i<NUM_LEDS; i++) {
+  //replacing NUM_LEDS with 16
+  for(uint16_t i=0; i<16; i++) {
       setPixel(i, red, green, blue);
       showStrip();
       delay(SpeedDelay);
   }
+}
+
+
+void fadeToBlack(int ledNo, byte fadeValue) {
+   leds[ledNo].fadeToBlackBy( fadeValue );
+
+}
+
+void rainbowCycle(int SpeedDelay) {
+  byte *c;
+  uint16_t i, j;
+
+  for(j=0; j<256*1; j++) { // 5 cycles of all colors on wheel
+    for(i=16; i< 65; i++) {
+      c=Wheel(((i * 256 / 65) + j) & 255);
+      setPixel(i, *c, *(c+1), *(c+2));
+    }
+    showStrip();
+    delay(SpeedDelay);
+  }
+}
+
+byte * Wheel(byte WheelPos) {
+  static byte c[3];
+ 
+  if(WheelPos < 85) {
+   c[0]=WheelPos * 3;
+   c[1]=255 - WheelPos * 3;
+   c[2]=0;
+  } else if(WheelPos < 170) {
+   WheelPos -= 85;
+   c[0]=255 - WheelPos * 3;
+   c[1]=0;
+   c[2]=WheelPos * 3;
+  } else {
+   WheelPos -= 170;
+   c[0]=0;
+   c[1]=WheelPos * 3;
+   c[2]=255 - WheelPos * 3;
+  }
+
+  return c;
 }
 
 String getValue(String data, char separator, int index)
@@ -209,7 +235,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //==4==
           display.showString("-3-");
           Serial.println("-3-");
-          for(int i=0;i<16;i++)
+          for(int i=0;i<120;i++)
             leds[i] = CRGB::Red;
           FastLED.show();
 
@@ -230,7 +256,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //==2==
           display.showString("-1-");
           Serial.println("-1-");
-          for(int i=0;i<16;i++)
+          for(int i=0;i<120;i++)
             leds[i] = CRGB::Yellow;
           FastLED.show();
           tone(BUZZER_PIN, NOTE_B4, 250, BUZZER_CHANNEL);
@@ -241,7 +267,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           tone(BUZZER_PIN, NOTE_G5, 250, BUZZER_CHANNEL);
           noTone(BUZZER_PIN, BUZZER_CHANNEL);
           
-          for(int i=0;i<16;i++)
+          for(int i=0;i<120;i++)
             leds[i] = CRGB::Green;
           FastLED.show();         
           
@@ -265,26 +291,84 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //We will be getting: 'L' + Lap number + lapType (B/R);
           if (RaceType=='C')
           {
+            //Save the array
+            for (int i = 0; i <= 16; i++) 
+              leds_saving[i] = leds[i];
+              
+            //Blink white
+            for (int i = 0; i <= 16; i++) 
+              leds[i] = CRGB::White;       
+            FastLED.show();   
+            delay(300);          
+            for (int i = 0; i <= 16; i++) 
+              leds[i] = CRGB::Black;       
+            FastLED.show();               
+            delay(300);         
+
+
+            //Restore the array
+            for (int i = 0; i <= 16; i++) 
+              leds[i] = leds_saving[i];
+              
             //countdown should only display one led not two
-            if(led_int<8)
-              leds[led_int+8] = CRGB::Purple;
-            else  
-              leds[led_int-8] = CRGB::Purple;
+            leds[led_int] = CRGB::Purple;
+
+            FastLED.show();                 
           }
           else
           {
             if (rxValue[2]=='B')
             {
+              //Save the array
+              for (int i = 0; i <= 16; i++) 
+                leds_saving[i] = leds[i];
+              
+              //Blink Yellow
+              for (int i = 0; i <= 16; i++) 
+                leds[i] = CRGB::Yellow;       
+              FastLED.show();   
+              delay(300);          
+              for (int i = 0; i <= 16; i++) 
+                leds[i] = CRGB::Yellow;      
+              FastLED.show();   
+              
+              delay(300);  
+
+              //Restore the array
+              for (int i = 0; i <= 16; i++) 
+                leds[i] = leds_saving[i];
+                
               leds[led_int] = CRGB::Yellow;
-              leds[led_int+8] = CRGB::Yellow;            
+              leds[led_int+8] = CRGB::Yellow;                
+              FastLED.show();   
             }
             else
             {
+              //Save the array
+              for (int i = 0; i <= 16; i++) 
+                leds_saving[i] = leds[i];
+                              
+              //Blink Green
+              for (int i = 0; i <= 16; i++) 
+                leds[i] = CRGB::Green;       
+              FastLED.show();   
+              delay(300);          
+              for (int i = 0; i <= 16; i++) 
+                leds[i] = CRGB::Green;      
+              FastLED.show();   
+
+              //Restore the array
+              for (int i = 0; i <= 16; i++) 
+                leds[i] = leds_saving[i];              
+              delay(300);                
               leds[led_int] = CRGB::Green;
               leds[led_int+8] = CRGB::Green;           
+              FastLED.show();
             }                 
           }  
-          FastLED.show();
+
+
+
         }
         else if (rxValue[0]=='F') // F -> like L but final lap
         {             
@@ -312,7 +396,6 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           FastLED.show();
           //Since this is the final lap we need to play Finish sequence
 
-
           //If this is a LAP race after the end sequence we will show again the laps colors at the end
           if (RaceType == 'A')
           {
@@ -320,9 +403,16 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             for (int i = 0; i <= 16; i++) 
               leds_saving[i] = leds[i];
 
+            //Clear Leds
+            for (int i = 0; i <= 16; i++) 
+              leds[i] = CRGB::Black;       
+            FastLED.show();   
             //Play finish sequence
             theaterChase(0xff,0xff,0xff,50);
-  
+
+            //LED Strip finish sequence                        
+            //TODO
+            
             //Restore the array
             for (int i = 0; i <= 16; i++) 
               leds[i] = leds_saving[i];
@@ -331,7 +421,13 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             Serial.println("Restoring");
           }
           else
+            //Clear Leds
+            for (int i = 0; i <= 16; i++) 
+              leds[i] = CRGB::Black;       
+            FastLED.show();  
             theaterChase(0xff,0xff,0xff,50);
+            //LED Strip finish sequence                        
+            rainbowCycle(20);            
         }
  
  
@@ -458,6 +554,8 @@ void loop() {
       if ((RaceType=='C')&&(lap_counter>0))
       {
          LapTimeLeft = InitialMaxLapTime - elapsedMillis/1000;
+         if (lap_counter==1)
+          LapTimeLeft = LapTimeLeft + 1;
          Serial.print("LapTimeLeft: ");
          Serial.println(LapTimeLeft);
     
@@ -469,8 +567,11 @@ void loop() {
                 tone(BUZZER_PIN, NOTE_C2, 100, BUZZER_CHANNEL);
              
          }    
-         if ( LapTimeLeft < 1)
+         if ((LapTimeLeft < 1) || (lap_counter>16))
              raceIsOn = false;
+
+        if (lap_counter>16)
+           display.showString("WIN!");
 
 
       }   
@@ -492,22 +593,22 @@ void loop() {
         Serial.print("We have a lap! count: ");
         lap_counter++;
         Serial.println(lap_counter);
-        if (RaceType='C')
+        if (RaceType=='C')
           LapTimeLeftPreviousSecond = InitialMaxLapTime;
         if ((lap_counter==1)&&(RaceType!='D'))
         {
-          //Display animation when the race is starting
-          // Horizontal Level Meter
-          for (int count = 0; count < 3; count++) {
-            for (int x = 0; x <= 100; x = x + 10) {
-              display.showLevel(x, true);
-              delay(1);
-            }
-            for (int x = 100; x >= 0; x = x - 10) {
-              display.showLevel(x, true);
-              delay(1);
-            }
-          }
+          display.showString("----");
+
+          //Blink white
+          for (int i = 0; i <= 16; i++) 
+            leds[i] = CRGB::White;       
+          FastLED.show();   
+          delay(300);          
+          for (int i = 0; i <= 16; i++) 
+            leds[i] = CRGB::Black;       
+          FastLED.show();               
+          delay(300);  
+            
 
           //Lights off during the race
           for(int i=0;i<16;i++)
