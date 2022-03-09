@@ -19,7 +19,7 @@ TM1637TinyDisplay display(CLK, DIO);
 
 
 // Define the array of leds
-CRGB leds[NUM_LEDS];
+CRGB leds_array[NUM_LEDS];
 CRGB leds_saving[NUM_LEDS];
 
 int sensor_start_value;
@@ -62,9 +62,9 @@ void showStrip() {
 
 void setPixel(int Pixel, byte red, byte green, byte blue) {
    // FastLED
-   leds[Pixel].r = red;
-   leds[Pixel].g = green;
-   leds[Pixel].b = blue;
+   leds_array[Pixel].r = red;
+   leds_array[Pixel].g = green;
+   leds_array[Pixel].b = blue;
 }
 
 void setAll(byte red, byte green, byte blue) {
@@ -104,7 +104,7 @@ void colorWipe(byte red, byte green, byte blue, int SpeedDelay) {
 
 
 void fadeToBlack(int ledNo, byte fadeValue) {
-   leds[ledNo].fadeToBlackBy( fadeValue );
+   leds_array[ledNo].fadeToBlackBy( fadeValue );
 
 }
 
@@ -169,7 +169,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
 
       Serial.println("Connected");
       for(int i=0;i<16;i++)
-        leds[i] = CRGB::Blue;
+        leds_array[i] = CRGB::Blue;
       FastLED.show();
       deviceConnected = true;
 
@@ -180,7 +180,7 @@ class MyServerCallbacks: public BLEServerCallbacks {
       deviceConnected = false;
       //Turn off lights
       for(int i=0;i<16;i++)
-        leds[i] = CRGB::Black;
+        leds_array[i] = CRGB::Black;
       FastLED.show();
 
       delay(500); // give the bluetooth stack the chance to get things ready
@@ -235,8 +235,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //==4==
           display.showString("-3-");
           Serial.println("-3-");
-          for(int i=0;i<120;i++)
-            leds[i] = CRGB::Red;
+          for(int i=0;i<118;i++)
+            leds_array[i] = CRGB::Red;
           FastLED.show();
 
           tone(BUZZER_PIN, NOTE_B4, 250, BUZZER_CHANNEL);
@@ -256,8 +256,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //==2==
           display.showString("-1-");
           Serial.println("-1-");
-          for(int i=0;i<120;i++)
-            leds[i] = CRGB::Yellow;
+          for(int i=0;i<118;i++)
+            leds_array[i] = CRGB::Yellow;
           FastLED.show();
           tone(BUZZER_PIN, NOTE_B4, 250, BUZZER_CHANNEL);
           noTone(BUZZER_PIN, BUZZER_CHANNEL);
@@ -267,8 +267,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           tone(BUZZER_PIN, NOTE_G5, 250, BUZZER_CHANNEL);
           noTone(BUZZER_PIN, BUZZER_CHANNEL);
           
-          for(int i=0;i<120;i++)
-            leds[i] = CRGB::Green;
+          for(int i=0;i<118;i++)
+            leds_array[i] = CRGB::Green;
           FastLED.show();         
           
           //Start the time
@@ -293,25 +293,25 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           {
             //Save the array
             for (int i = 0; i <= 16; i++) 
-              leds_saving[i] = leds[i];
+              leds_saving[i] = leds_array[i];
               
             //Blink white
             for (int i = 0; i <= 16; i++) 
-              leds[i] = CRGB::White;       
+              leds_array[i] = CRGB::White;       
             FastLED.show();   
             delay(300);          
             for (int i = 0; i <= 16; i++) 
-              leds[i] = CRGB::Black;       
+              leds_array[i] = CRGB::Black;       
             FastLED.show();               
             delay(300);         
 
 
             //Restore the array
             for (int i = 0; i <= 16; i++) 
-              leds[i] = leds_saving[i];
+              leds_array[i] = leds_saving[i];
               
             //countdown should only display one led not two
-            leds[led_int] = CRGB::Purple;
+            leds_array[led_int] = CRGB::Purple;
 
             FastLED.show();                 
           }
@@ -321,48 +321,48 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             {
               //Save the array
               for (int i = 0; i <= 16; i++) 
-                leds_saving[i] = leds[i];
+                leds_saving[i] = leds_array[i];
               
               //Blink Yellow
               for (int i = 0; i <= 16; i++) 
-                leds[i] = CRGB::Yellow;       
+                leds_array[i] = CRGB::Yellow;       
               FastLED.show();   
               delay(300);          
               for (int i = 0; i <= 16; i++) 
-                leds[i] = CRGB::Yellow;      
+                leds_array[i] = CRGB::Yellow;      
               FastLED.show();   
               
               delay(300);  
 
               //Restore the array
               for (int i = 0; i <= 16; i++) 
-                leds[i] = leds_saving[i];
+                leds_array[i] = leds_saving[i];
                 
-              leds[led_int] = CRGB::Yellow;
-              leds[led_int+8] = CRGB::Yellow;                
+              leds_array[led_int] = CRGB::Yellow;
+              leds_array[led_int+8] = CRGB::Yellow;                
               FastLED.show();   
             }
             else
             {
               //Save the array
               for (int i = 0; i <= 16; i++) 
-                leds_saving[i] = leds[i];
+                leds_saving[i] = leds_array[i];
                               
               //Blink Green
               for (int i = 0; i <= 16; i++) 
-                leds[i] = CRGB::Green;       
+                leds_array[i] = CRGB::Green;       
               FastLED.show();   
               delay(300);          
               for (int i = 0; i <= 16; i++) 
-                leds[i] = CRGB::Green;      
+                leds_array[i] = CRGB::Green;      
               FastLED.show();   
 
               //Restore the array
               for (int i = 0; i <= 16; i++) 
-                leds[i] = leds_saving[i];              
+                leds_array[i] = leds_saving[i];              
               delay(300);                
-              leds[led_int] = CRGB::Green;
-              leds[led_int+8] = CRGB::Green;           
+              leds_array[led_int] = CRGB::Green;
+              leds_array[led_int+8] = CRGB::Green;           
               FastLED.show();
             }                 
           }  
@@ -385,13 +385,13 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //We will be getting: 'L' OR 'F' + Lap number + lapType (B/R);
           if (rxValue[2]=='B')
           {
-            leds[led_int] = CRGB::Yellow;
-            leds[led_int+8] = CRGB::Yellow;            
+            leds_array[led_int] = CRGB::Yellow;
+            leds_array[led_int+8] = CRGB::Yellow;            
           }
           else
           {
-            leds[led_int] = CRGB::Green;
-            leds[led_int+8] = CRGB::Green;           
+            leds_array[led_int] = CRGB::Green;
+            leds_array[led_int+8] = CRGB::Green;           
           }                 
           FastLED.show();
           //Since this is the final lap we need to play Finish sequence
@@ -401,11 +401,11 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           {
             //Save the array
             for (int i = 0; i <= 16; i++) 
-              leds_saving[i] = leds[i];
+              leds_saving[i] = leds_array[i];
 
             //Clear Leds
             for (int i = 0; i <= 16; i++) 
-              leds[i] = CRGB::Black;       
+              leds_array[i] = CRGB::Black;       
             FastLED.show();   
             //Play finish sequence
             theaterChase(0xff,0xff,0xff,50);
@@ -415,7 +415,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
             
             //Restore the array
             for (int i = 0; i <= 16; i++) 
-              leds[i] = leds_saving[i];
+              leds_array[i] = leds_saving[i];
             delay(2000);          
             FastLED.show();              
             Serial.println("Restoring");
@@ -423,7 +423,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           else
             //Clear Leds
             for (int i = 0; i <= 16; i++) 
-              leds[i] = CRGB::Black;       
+              leds_array[i] = CRGB::Black;       
             FastLED.show();  
             theaterChase(0xff,0xff,0xff,50);
             //LED Strip finish sequence                        
@@ -488,21 +488,21 @@ void setup() {
 
 
   
-    FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
+    FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds_array, NUM_LEDS);  // GRB ordering is assumed
     FastLED.setBrightness(20);
 
 
 
     //Blink Led sttrip during setup
-    for (int i = 16; i <= 120; i++) 
-      leds[i] = CRGB::Green;     
+    for (int i = 16; i <= 118; i++) 
+      leds_array[i] = CRGB::Green;     
     FastLED.show();  
                   
     colorWipe(0x00,0xff,0x00, 40);    
     colorWipe(0x00,0x00,0x00, 40);
     
-    for (int i = 0; i <= 120; i++) 
-      leds[i] = CRGB::Black;     
+    for (int i = 16; i <= 118; i++) 
+      leds_array[i] = CRGB::Black;     
     FastLED.show();  
         
     tone(BUZZER_PIN, NOTE_B4, 100, BUZZER_CHANNEL);
@@ -537,14 +537,14 @@ void loop() {
     if (searchAnimationCounter==16)
     {
         searchAnimationCounter=0;
-        leds[searchAnimationCounter] = CRGB::Blue;
+        leds_array[searchAnimationCounter] = CRGB::Blue;
         FastLED.show();
         delay(200);  
     }   
     //Change led to next one
-    leds[searchAnimationCounter] = CRGB::Black;
+    leds_array[searchAnimationCounter] = CRGB::Black;
     searchAnimationCounter++;
-    leds[searchAnimationCounter] = CRGB::Blue;
+    leds_array[searchAnimationCounter] = CRGB::Blue;
     FastLED.show();
     delay(200);  
   }
@@ -612,18 +612,18 @@ void loop() {
 
           //Blink white
           for (int i = 0; i <= 16; i++) 
-            leds[i] = CRGB::White;       
+            leds_array[i] = CRGB::White;       
           FastLED.show();   
           delay(300);          
           for (int i = 0; i <= 16; i++) 
-            leds[i] = CRGB::Black;       
+            leds_array[i] = CRGB::Black;       
           FastLED.show();               
           delay(300);  
             
 
           //Lights off during the race
           for(int i=0;i<16;i++)
-            leds[i] = CRGB::Black;
+            leds_array[i] = CRGB::Black;
           FastLED.show();
           
         }

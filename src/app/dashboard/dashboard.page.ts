@@ -1185,12 +1185,14 @@ async startBleScan()
 { 
   if (this.alreadyConnected==false)
   {
-    let scanSpinner = await this.loadingController.create({
-        spinner : "bubbles",
-        animated : true,
-        message : "Searching for finish line....",
-        duration : 2000,
-        translucent : true
+      this.loadingController.create({
+        message: 'Searching for finish line....',
+        duration: 6000
+      }).then((response) => {
+        response.present();
+        response.onDidDismiss().then((response) => {
+          console.log('Loader dismissed', response);
+        });
       });
     
     this.ngZone.run(()=> { 
@@ -1205,9 +1207,6 @@ async startBleScan()
         this.ble.isLocationEnabled().then(
           () =>
           { // location is enabled.
-            scanSpinner.present().then(
-              () => 
-              { 
                 if(isLogEnabled) console.info('Scanning ....');
                 
                 // start the BLE scanning.
@@ -1215,15 +1214,19 @@ async startBleScan()
                   (device) => 
                   {
                     this.onDiscoveredDevice(device);
+
                   }, 
                   (error)  =>  
                   {
                     if(isLogEnabled) console.error('Error scanning.', error);
-                    scanSpinner.dismiss().then(() => { 
-                              this.showAlert('Error scanning.', error); 
-                    });
+                    //Dissmiss loader
+                    this.loadingController.dismiss().then((response) => {
+                      console.log('Loader closed!', response);
+                    }).catch((err) => {
+                        console.log('Error occured : ', err);
+                    });                    
+
                   }); 
-              });
           },
           // location is not enabled.
           (error) =>
@@ -1265,6 +1268,12 @@ connectToDevice(device)
           console.log('Connected to TRAIN saving id: '+device.id+'.');
         }       
         this.alreadyConnected=true;
+        //Dissmiss loader
+        this.loadingController.dismiss().then((response) => {
+          console.log('Loader closed!', response);
+        }).catch((err) => {
+            console.log('Error occured : ', err);
+        });   
       },
       (error) => {
         console.log('INSIDE ble error ');
@@ -1288,6 +1297,12 @@ connectToDevice(device)
               console.log('Connected to TRAIN saving id: '+device.id+'.');
             }
             this.alreadyConnected=true;
+            //Dissmiss loader
+            this.loadingController.dismiss().then((response) => {
+              console.log('Loader closed!', response);
+            }).catch((err) => {
+                console.log('Error occured : ', err);
+            });               
           },
           (error) => {
             console.log('INSIDE ble error ');
@@ -1310,6 +1325,12 @@ connectToDevice(device)
               console.log('Connected to TRAIN saving id: '+device.id+'.');
             }
             this.alreadyConnected=true;
+            //Dissmiss loader
+            this.loadingController.dismiss().then((response) => {
+              console.log('Loader closed!', response);
+            }).catch((err) => {
+                console.log('Error occured : ', err);
+            });               
           },
           (error) => {
             console.log('INSIDE ble error ');
