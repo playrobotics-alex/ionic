@@ -490,10 +490,21 @@ void setup() {
   
     FastLED.addLeds<NEOPIXEL, DATA_PIN>(leds, NUM_LEDS);  // GRB ordering is assumed
     FastLED.setBrightness(20);
-  
-    colorWipe(0x00,0xff,0x00, 40);
+
+
+
+    //Blink Led sttrip during setup
+    for (int i = 16; i <= 120; i++) 
+      leds[i] = CRGB::Green;     
+    FastLED.show();  
+                  
+    colorWipe(0x00,0xff,0x00, 40);    
     colorWipe(0x00,0x00,0x00, 40);
     
+    for (int i = 0; i <= 120; i++) 
+      leds[i] = CRGB::Black;     
+    FastLED.show();  
+        
     tone(BUZZER_PIN, NOTE_B4, 100, BUZZER_CHANNEL);
     noTone(BUZZER_PIN, BUZZER_CHANNEL);
 
