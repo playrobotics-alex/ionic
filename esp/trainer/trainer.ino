@@ -372,6 +372,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         }
         else if (rxValue[0]=='F') // F -> like L but final lap
         {             
+          raceIsOn = false;
           String led_string = getValue(rxValue.c_str(), 'F', 1);
           String led_string2;
           
@@ -582,7 +583,7 @@ void loop() {
              raceIsOn = false;
 
         if (lap_counter>16)
-           display.showString("WIN!");
+           display.showString("HOHO");
 
 
       }   
@@ -647,6 +648,11 @@ void loop() {
             InitialMaxLapTime = InitialMaxLapTime - 1;
           else  
             display.showNumberDec(elapsedSeconds, (0x80 >> 1), false);
+          if (RaceType=='D')            
+          {
+            //If we are here drag race is over!
+            raceIsOn = false;
+          }
 
         }  
         
