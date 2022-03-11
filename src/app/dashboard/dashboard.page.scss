@@ -51,4 +51,42 @@ ion-label {
   text-align: center;
 }
 
+table {
+  font-family: "Lato", "sans-serif";
+  margin-left: 100px;
+  margin-top: 15px;
+} /* added custom font-family  */
 
+table.one {
+  border-collapse: collapse;
+}
+
+td {
+  /* removed the border from the table data rows  */
+  text-align: center;
+  width: 100px;
+}
+
+.best_lap {
+  /* removed the border from the table heading row  */
+  background-color: #45d21f; /* added a red background color to the heading cells  */
+  //color: white;
+} /* added a white font color to the heading text */
+
+tr {
+  height: 36px;
+}
+
+table tr:nth-child(even) {
+  /* added all even rows a #eee color  */
+  background-color: #eee;
+}
+
+table tr:nth-child(odd) {
+  /* added all odd rows a #fff color  */
+  background-color: #fff;
+}
+
+.table_best_lap_class {
+  background-color: #45d21f !important;
+}

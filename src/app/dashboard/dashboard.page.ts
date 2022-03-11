@@ -34,6 +34,8 @@ const isLogEnabled = true;
 })
 export class DashboardPage implements AfterViewInit {
   scannedDevices: any[] = [];
+  LapTimes: any[] = [];
+
   public alreadyConnected = false;
 
   //Timer Varaibles
@@ -49,8 +51,14 @@ export class DashboardPage implements AfterViewInit {
   public BestLapTimeDragString = "BEST"
   public BestLapTimeLapString = "BEST"
   public BestLapTimeCountString = "BEST"
+
+  public BestLapId = 1;
+
   public LapTimeString = ""
   public menuShow = false;
+  public LapStatsShow = false;
+
+  
 
   public RaceType = "lap";
 
@@ -136,7 +144,8 @@ export class DashboardPage implements AfterViewInit {
                       () => this.onNotConnected(deviceCar)
                     );  
                   });
-
+                  this.LapTimes = [];
+  
 
                 }
 
@@ -749,6 +758,8 @@ export class DashboardPage implements AfterViewInit {
         } 
         */ 
         this.reset();
+        this.LapTimes = [];
+
         //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
         if (this.RaceType=="drag")
         {
@@ -998,12 +1009,25 @@ export class DashboardPage implements AfterViewInit {
               this.doVibrationFor(200);
             },200);    
             lapType = 'B';  
+            this.BestLapId = this.LapsCount - 1;
           }
           else
           {
             this.doVibrationFor(200);
             lapType = 'R';  
           }  
+
+          //Update laps array
+          var SingleLapTime = 
+          { 
+            id: this.LapsCount-1, 
+            time: lapTimeBLE, 
+            lapType: lapType
+          }; 
+          this.LapTimes.push(SingleLapTime);
+          console.log("pushing lap times");
+          console.log(this.LapTimes);
+
 
           //Send score lights command to trainer
 
@@ -1046,7 +1070,7 @@ export class DashboardPage implements AfterViewInit {
           }  
           else
           {
-            //Race finished      
+            //Race finished       Type: LAP
             this.doBlinkColor("#FFF","#000");          
             this.LapTimeString = this.time;
             this.doVibrationFor(2000);
@@ -1054,6 +1078,7 @@ export class DashboardPage implements AfterViewInit {
             this.time = "FINSH";
             this.LapsCount = 1;
             this.running = false;
+            this.LapStatsShow = true;
 
           }
         }
