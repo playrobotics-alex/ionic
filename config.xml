@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="io.ionic.starter" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>PlayRobotics Racing</name>
-    <description>App for driving your PlayRobotics RC cars</description>
-    <author email="info@playrobotics.com" href="http://playrobotics.com/">PlayRobotics Team</author>
-    <content original-src="index.html" src="https://localhost:8100" />
+    <description>App to drive your PlayRobotics RC cars</description>
+    <author email="info@playrobotics.com" href="http://ionicframework.com/">PlayRobotics Team</author>
+    <content src="index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
