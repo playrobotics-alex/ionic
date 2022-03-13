@@ -208,7 +208,7 @@ export class DashboardPage implements AfterViewInit {
           this.get_duration_interval= setInterval(()=> 
           {
               this.sendBLE(); 
-          }, 100);
+          }, 50);
           },2000);
         
 
@@ -655,7 +655,7 @@ export class DashboardPage implements AfterViewInit {
     }
     else
     {
-      this.bgColor = "rgb(0, 0, 51)";
+      this.bgColor = "rgb(0, 0, 151)";
       this.nitro=true;
     }  
   }

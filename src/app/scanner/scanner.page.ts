@@ -29,7 +29,7 @@ export class ScannerPage   {
   trainID  : string = " ";
   public alertMode = "";
   public alreadyConnected = false;
-
+  public beepPlayed = false;
   constructor(private ble: BLE,
               private diagnostic: Diagnostic,
               private nativeStorage : NativeStorage,
@@ -49,6 +49,7 @@ export class ScannerPage   {
                   this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.PORTRAIT);
                   });
                   this.setRingtone();  
+                  this.setRingtoneScan();  
               }
 
               ngOnInit() {
@@ -69,7 +70,12 @@ doVibrationFor(ms) {
 
 setRingtone() {
   // Preload the audio track 
-  this.nativeAudio.preloadSimple('uniqueId1', 'assets/sounds/car.wav');
+  this.nativeAudio.preloadSimple('uniqueId1', 'assets/sounds/car.mp3');
+}
+
+setRingtoneScan() {
+  // Preload the audio track 
+  this.nativeAudio.preloadSimple('uniqueIdScan', 'assets/sounds/beep-beep.mp3');
 }
 
 getAudioMode() {
@@ -97,10 +103,19 @@ playSingle() {
 
 }
 
+playSingleScan() {
+  this.nativeAudio.play('uniqueIdScan').then(() => {
+    console.log('Successfully played');
+  }).catch((err) => {
+    console.log('error', err);
+  });
+
+}
 
 // start the BLE scan
 async startBleScan()
 { 
+  this.beepPlayed = false;
   this.getAudioMode();
   let scanSpinner = await this.loadingController.create({
       message : "Scanning for cars....",
@@ -193,7 +208,8 @@ async startBleScan()
       */
 
       if (device.name)
-      {console.log('looking');
+      {
+        console.log('lookings');
         if(device.name.indexOf("PR-Civic")==0)
           device.name= "PR*Honda Civic Type R*001";
         if(device.name.indexOf("PR*")==0)
@@ -209,6 +225,19 @@ async startBleScan()
             scannedDevice.year=1999;
           }  
           this.scannedDevices.push(scannedDevice);
+          //We only want to beep on first car
+          if (this.beepPlayed == false)
+          {
+            if (this.alertMode== 'Ring') 
+            {
+              this.beepPlayed = true;
+              this.playSingleScan();
+            }  
+            else
+              this.doVibrationFor(200);
+          }
+          
+          
 
 
         }  
