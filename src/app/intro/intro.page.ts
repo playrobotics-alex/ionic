@@ -37,16 +37,7 @@ export class IntroPage  {
               if(isLogEnabled) console.info('Checking Location status ...');
 
               if(isLogEnabled) console.info('Location authorisation was granted!');
-              this.nativeStorage.setItem('intro-done', false).then(
-                () => 
-                {
-                  if(isLogEnabled) console.info('intro done!')
-                  if(isLogEnabled) console.info('Navigating to scanner page.')
-                  this.navCtrl.navigateForward('scanner');
-                },
-                (error) => {
-                  if(isLogEnabled) console.error("Error setting the (intro-done) variable to true.", error);
-                });
+              this.navCtrl.navigateRoot('scanner');
             } else 
               {
                 if(isLogEnabled) console.error('Location authorisation was Not granted.');

@@ -6,7 +6,7 @@
             Lap Stats
         </div>
         <ion-icon style="font-size: 40px;position:absolute;color:white;right:15px;top:15px;" slot="end" name="close" (click)="LapStatsShow=!LapStatsShow" ></ion-icon>
-        <div *ngIf="LapTimes.length; else noDevicesScanned">
+        <div *ngIf="LapTimes.length">
             <table class="one">
                 <tr [ngClass]="SingleLapTime.id == BestLapId ? 'table_best_lap_class':'noclass'" *ngFor="let SingleLapTime of LapTimes">
                     <td>{{SingleLapTime.id}}</td>

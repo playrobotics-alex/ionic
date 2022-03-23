@@ -53,10 +53,22 @@ export class ScannerPage   {
               }
 
               ngOnInit() {
+
                 this.alertMode="";
                 //$("#myValues").speedometer({divFact:10,eventListenerType:'keyup'});
                 this.storage.create();
                 this.trainID =" ";
+
+                //Check if intro done
+                this.storage.get("intro-done").then((value) => {
+                  if ( !value ) {            
+                    if(isLogEnabled) console.log('Intro not done yet, updating intro to done and redirecting');
+                    this.storage.set('intro-done', true); 
+                    this.navCtrl.navigateRoot('intro');
+                  }            
+                  else
+                    if(isLogEnabled) console.log('App NOT Runing for the first time');
+                });
               }
 
 
