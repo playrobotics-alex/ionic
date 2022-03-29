@@ -44,6 +44,7 @@
     "ionic-navigationbar-color": "^1.2.1",
     "ng-canvas-gauges": "^6.0.4",
     "ng5-slider": "^1.2.6",
+    "ngx-gamepad": "^1.0.0",
     "rxjs": "~6.5.5",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.3"

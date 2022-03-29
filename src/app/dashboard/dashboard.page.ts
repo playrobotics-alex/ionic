@@ -9,7 +9,7 @@ import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { Storage } from '@ionic/storage-angular';
 import { NativeAudio } from '@ionic-native/native-audio/ngx';
 import { AudioManagement } from '@ionic-native/audio-management/ngx';
-
+import { GamepadService } from 'ngx-gamepad';
 
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
@@ -125,6 +125,12 @@ export class DashboardPage implements AfterViewInit {
 
   maxLapTime : number = 25;
 
+  //Controller Global Variables
+  ControllerFound : boolean;
+  mappedSteeringController : number = 0;
+  mappedSpeedController : number = 0;
+
+
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
                 private diagnostic: Diagnostic,
@@ -139,10 +145,13 @@ export class DashboardPage implements AfterViewInit {
                 private audio: AudioManagement,
                 private storage: Storage,  
                 private loadingController: LoadingController,              
+                private gamepad: GamepadService,
                 private ngZone: NgZone ) 
                 {
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
+                    this.setRingtoneLock();  
+
                     });
                   this.route.queryParams.subscribe(params => {
                     let deviceCar = JSON.parse(params['device']);
@@ -155,9 +164,109 @@ export class DashboardPage implements AfterViewInit {
                   });
                   this.LapTimes = [];
                   this.getAudioMode();
-                  this.setRingtoneLock();  
-                }
 
+                  //this.listenToGamepad();
+                }
+      ngOnInit() {    
+        const refreshRate = 50;
+  
+        setInterval( () =>
+        {
+          
+          // Returns up to 4 gamepads.
+          const gamepads = navigator.getGamepads();
+          // We take the first one, for simplicity
+          const gamepad = gamepads[0];
+  
+          // Escape if no gamepad was found
+          if (!gamepad) {
+              console.log('No gamepad found.');
+              this.ControllerFound = false;
+              return;
+          }
+          else
+          {
+            console.log('FOUNDDD');
+            this.ControllerFound = true;
+          }  
+  
+          // Filter out only the buttons which are pressed
+          const pressedButtons = gamepad.buttons                
+              .map((button, id) => ({id, button}))
+              .filter(isPressed);
+  
+          // Print the pressed buttons to our HTML
+          for (const button of pressedButtons) {
+              console.log(button);
+              if(button.id==8)
+              {
+                console.log('NITRO');
+                this.nitro = true;
+                this.bgColor = "rgb(0, 0, 151)";
+              }  
+              if(button.id==9)
+              {
+                console.log('NO NITRO');
+                this.nitro = false;
+                this.bgColor = "rgb(0, 0, 0)";
+              }                  
+              if(button.id==2)
+                console.log('Race menu');                        
+              if(button.id==3)
+                console.log('Race Best Lap');                        
+              if(button.id==4)
+                console.log('Race Drag');                        
+              if(button.id==0)
+                console.log('Race Countdown');                        
+
+
+
+          }
+          const pressedAxes = gamepad.axes;
+
+          //map left stick to steering as we use it
+          //-100 -> +100
+          this.mappedSteeringController =  Math.round(pressedAxes[0]*-100);
+          //0 -> 200
+          this.mappedSteeringController = this.mappedSteeringController + 100;
+          //0 -> 120
+          this.mappedSteeringController = this.mappedSteeringController * 0.6;          
+          //30 -> 150
+          this.mappedSteeringController = this.mappedSteeringController + 30  + this.TrimValue;          
+
+          //map right stick to gas as we use it
+          //-100 -> +100
+          this.mappedSpeedController =  pressedAxes[3]*100;
+          //0 -> 200
+          this.mappedSpeedController = this.mappedSpeedController + 100;
+          //0 -> 180
+          this.mappedSpeedController = this.mappedSpeedController * 0.9;  
+
+          //Yes nitro -- 0 -> 180
+          //No nitro -- 30 -> 150
+          if (this.nitro==false)
+              this.mappedSpeedController = this.mappedSpeedController * 0.5 + 45;  
+
+          this.mappedSpeedController = Math.round(this.mappedSpeedController);
+
+
+            console.log('steering 0: ' + this.mappedSteeringController + ' || Gas 3: ' + this.mappedSpeedController);
+            //console.log('1: ' +pressedAxes[1]);
+            //console.log('2: ' +pressedAxes[2]);
+
+        }
+          
+          
+          
+
+          , refreshRate);
+    
+
+    
+        function isPressed({button: {pressed}}) {
+            return !!pressed;
+        }
+      }
       ngAfterViewInit(): void {        
 
         //Check if this is the first time we are running the app
@@ -612,8 +721,19 @@ playSingleLock() {
     else  
       NitroGas = Mapped180Gas*0.5 + 45;
     
+    //check if we have a controller connected
+
     let string = NitroGas +'S' + this.revSteering;
+    if (this.ControllerFound == true)
+    {
+      string = this.mappedSpeedController +'S' + this.mappedSteeringController;
+      console.log("(this.ControllerFound == true)");
+    }  
+    else
+      console.log("(this.ControllerFound == false)");
+
     if(isLogEnabled) console.log("String that will be sent"+ string);
+    console.log("String that will be sent"+ string);
 
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
@@ -1536,6 +1656,34 @@ connectToDevice(device)
     if(isLogEnabled) console.log('Scanned device  : '+ JSON.stringify(scannedDevice));  
   }
 
+  private listenToGamepad() {
+    this.gamepad.connect()
+      .subscribe(() => {
+        console.log('gamepad conencted');
+        
+        this.gamepad.after('button0')
+          .subscribe(() => console.log('button0'));
+/*
+        this.gamepad.after('select')
+          .subscribe(() => ...);
+
+        this.gamepad.after('start')
+          .subscribe(() => ...);
+
+        this.gamepad.on('right')
+          .pipe(bufferCount(10))
+          .subscribe(() => ...);
+
+        this.gamepad.on('right0')
+          .pipe(bufferCount(10))
+          .subscribe(() => ...);
+
+        this.gamepad.on('right1')
+          .pipe(bufferCount(10))
+          .subscribe(() => ...);
+          */
+      })
+  }
 
 
 }

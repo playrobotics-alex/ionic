@@ -47,13 +47,13 @@ export class ScannerPage   {
               {                
                 this.platform.ready().then(() => {
                   this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.PORTRAIT);
-                  });
                   this.setRingtone();  
                   this.setRingtoneScan();  
+                  });
+
               }
 
-              ngOnInit() {
-
+              ngOnInit() {                              
                 this.alertMode="";
                 //$("#myValues").speedometer({divFact:10,eventListenerType:'keyup'});
                 this.storage.create();

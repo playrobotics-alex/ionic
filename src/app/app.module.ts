@@ -22,6 +22,7 @@ import * as Hammer from 'hammerjs';
 import { IonicStorageModule } from '@ionic/storage-angular';
 import { NativeAudio } from '@ionic-native/native-audio/ngx';
 import { AudioManagement } from '@ionic-native/audio-management/ngx';
+import { NgxGamepadModule } from 'ngx-gamepad';
 
 
 
@@ -37,6 +38,7 @@ export class IonicGestureConfig extends HammerGestureConfig {
   declarations: [AppComponent],
   entryComponents: [],
   imports: [
+          NgxGamepadModule,
           BrowserModule, 
           IonicModule.forRoot(), 
           AppRoutingModule,
