@@ -100,6 +100,9 @@
         <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:130px;" (touchstart) = "disconnect()" >        
             <ion-icon name="power" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
         </span> 
+        <span style="width:40px;border-radius: 50px;background-color: rgb(231, 162, 0);color:white;position:absolute;top:120px;left:70px;" *ngIf="ControllerFound" >        
+            <ion-icon name="game-controller-outline" style="font-size: 29px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
+        </span> 
         <radial-gauge id="gauge-ps" width="300" height="300"
             [attr.value]="RPMValue"
             units="RPM/1000"

@@ -179,14 +179,15 @@ export class DashboardPage implements AfterViewInit {
           const gamepad = gamepads[0];
   
           // Escape if no gamepad was found
-          if (!gamepad) {
-              console.log('No gamepad found.');
+          if (!gamepad) 
+          {
+              if(isLogEnabled) console.log('No gamepad found.');
               this.ControllerFound = false;
               return;
           }
           else
           {
-            console.log('FOUNDDD');
+            if(isLogEnabled) console.log('FOUNDDD');
             this.ControllerFound = true;
           }  
   
@@ -210,15 +211,21 @@ export class DashboardPage implements AfterViewInit {
                 this.nitro = false;
                 this.bgColor = "rgb(0, 0, 0)";
               }                  
+ 
+              //This is not working coorectly because button clicks were not handeled (double click)
+              /*
               if(button.id==2)
-                console.log('Race menu');                        
-              if(button.id==3)
-                console.log('Race Best Lap');                        
-              if(button.id==4)
-                console.log('Race Drag');                        
-              if(button.id==0)
-                console.log('Race Countdown');                        
+                this.menuShow = true;
+ 
+              if((button.id==3)&&(this.menuShow==true))
+                this.start('lap');
 
+              if((button.id==4)&&(this.menuShow==true))
+                this.start('drag');          
+                
+              if((button.id==0)&&(this.menuShow==true))
+                this.start('countdown');                 
+              */
 
 
           }
@@ -642,7 +649,8 @@ playSingleLock() {
     let RpmToDisplay = 0;
     if (this.gasLevel<90)
     { //BACK
-      this.ProgressBarColor = "#3111c0"; 
+      //this.ProgressBarColor = "#3111c0"; 
+      this.ProgressBarColor = "#FF0000";
       //Limit to 1000
       if (180-(this.gasLevel-90)*5.5*2>1000)
         RpmToDisplay = 1000;
@@ -665,7 +673,8 @@ playSingleLock() {
         else
           RpmToDisplay =   (this.gasLevel-90)*5.5*2;
 
-        this.ProgressBarColor = "#FF0000";
+        //this.ProgressBarColor = "#FF0000";
+        this.ProgressBarColor = "#3111c0"; 
       }
 
     }     
@@ -727,13 +736,19 @@ playSingleLock() {
     if (this.ControllerFound == true)
     {
       string = this.mappedSpeedController +'S' + this.mappedSteeringController;
-      console.log("(this.ControllerFound == true)");
+      //Display RPM
+      //mappedSpeedController value is:
+      // NOT NITRO 45-135 => -45 -> 45 => 0 -> 45
+      // NITRO
+      RpmToDisplay =  Math.abs(this.mappedSpeedController - 90);
+      // to 0-1000
+      this.RPMValue =RpmToDisplay*11.11;
     }  
     else
       console.log("(this.ControllerFound == false)");
 
     if(isLogEnabled) console.log("String that will be sent"+ string);
-    console.log("String that will be sent"+ string);
+    //console.log("String that will be sent"+ string);
 
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
