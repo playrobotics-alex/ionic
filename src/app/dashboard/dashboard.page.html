@@ -30,7 +30,7 @@
             </div>
         </div>   
         <div class="services" style="text-align: center;margin-top:4%;">
-           <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('lap')">
+           <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "checkIfGameIsRunning('lap')">
               <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/lap.svg" ></ion-icon>
               <h2 style="color:dodgerblue;">
                  BEST LAP
@@ -40,7 +40,7 @@
               </p>
 
            </div>
-           <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('drag')">
+           <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "checkIfGameIsRunning('drag')">
                 <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/road.svg" ></ion-icon>
                 <h2 style="color:dodgerblue;">
                 DRAG RACE
@@ -49,7 +49,7 @@
                     straight line race until the finish line.
                 </p>
            </div>
-           <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('countdown')">
+           <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "checkIfGameIsRunning('countdown')">
                 <ion-icon style="font-size: 50px;" slot="end" name="hourglass-outline" ></ion-icon>
                 <h2 style="color:dodgerblue;">
                 COUNTDOWN

@@ -136,7 +136,7 @@ export class DashboardPage implements AfterViewInit {
                 private diagnostic: Diagnostic,
                 public  navCtrl: NavController,  
                 private route: ActivatedRoute, 
-                private alertCtrl: AlertController,      
+                private alertController: AlertController,      
                 private toastCtrl: ToastController,
                 public  platform: Platform,
                 private screenOrientation: ScreenOrientation,
@@ -861,7 +861,7 @@ playSingleLock() {
  
   async showAlert(title, message) 
   {               
-    let alert = await this.alertCtrl.create({
+    let alert = await this.alertController.create({
           header: title,
           subHeader: message,
           buttons: ['OK'],
@@ -872,6 +872,7 @@ playSingleLock() {
 
   start(RaceType) 
   {        
+    this.running = true;
     clearInterval(this.startedNoRace);
     if ( this.trainID.length>2 )
     {
@@ -975,7 +976,6 @@ playSingleLock() {
             this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
           }
           this.started = setInterval(this.clockRunning.bind(this), 108);
-          this.running = true;
           this.LapsCount=1;
         }
         
@@ -1604,7 +1604,7 @@ connectToDevice(device)
   // show the location enable alert
   async showLocationEnableAlert(title, message) 
   {
-    let alert = await this.alertCtrl.create({
+    let alert = await this.alertController.create({
         header: title,
         subHeader: message,
         buttons: [
@@ -1628,7 +1628,7 @@ connectToDevice(device)
 
   async showBluetoothEnableAlert(title, message) 
   {               
-    let alert = await this.alertCtrl.create({
+    let alert = await this.alertController.create({
         header: title,
         subHeader: message,
         buttons: [
@@ -1647,6 +1647,42 @@ connectToDevice(device)
         backdropDismiss : false
     });        
     alert.present()
+  }
+
+
+  
+  async checkIfGameIsRunning(gameType) {
+
+    //Alert if a game is already running and the user clicks on start a new game
+    if (this.running==false)
+      this.start(gameType);
+    else
+    {
+        const alert = await this.alertController.create({
+          cssClass: 'my-custom-class',
+          header: 'New Race?',
+          message: 'A race is <strong>already running</strong>!!!',
+          buttons: [
+            {
+              text: 'Continue Race',
+              role: 'cancel',
+              cssClass: 'secondary',
+              handler: (blah) => {
+                console.log('Confirm Cancel: blah');
+              },
+            },
+            {
+              text: 'Start New',
+              handler: () => {
+                console.log('Confirm Okay');
+                this.start(gameType);
+              },
+            },
+          ],
+        });
+
+        await alert.present();
+      }    
   }
 
   onDiscoveredDevice(device)

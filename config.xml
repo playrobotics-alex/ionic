@@ -3,7 +3,7 @@
     <name>PlayRobotics Racing</name>
     <description>App to drive your PlayRobotics RC cars</description>
     <author email="info@playrobotics.com" href="http://ionicframework.com/">PlayRobotics Team</author>
-    <content src="index.html" />
+    <content original-src="index.html" src="https://localhost:8100" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />
