@@ -198,7 +198,7 @@ export class DashboardPage implements AfterViewInit {
   
           // Print the pressed buttons to our HTML
           for (const button of pressedButtons) {
-              console.log(button);
+              if(isLogEnabled) console.log(button);
               if(button.id==8)
               {
                 console.log('NITRO');
@@ -257,7 +257,7 @@ export class DashboardPage implements AfterViewInit {
           this.mappedSpeedController = Math.round(this.mappedSpeedController);
 
 
-            console.log('steering 0: ' + this.mappedSteeringController + ' || Gas 3: ' + this.mappedSpeedController);
+          if(isLogEnabled) console.log('steering 0: ' + this.mappedSteeringController + ' || Gas 3: ' + this.mappedSpeedController);
             //console.log('1: ' +pressedAxes[1]);
             //console.log('2: ' +pressedAxes[2]);
 
@@ -745,7 +745,7 @@ playSingleLock() {
       this.RPMValue =RpmToDisplay*11.11;
     }  
     else
-      console.log("(this.ControllerFound == false)");
+      if(isLogEnabled) console.log("(this.ControllerFound == false)");
 
     if(isLogEnabled) console.log("String that will be sent"+ string);
     //console.log("String that will be sent"+ string);
@@ -872,7 +872,7 @@ playSingleLock() {
 
   start(RaceType) 
   {        
-    this.running = true;
+    this.reset();
     clearInterval(this.startedNoRace);
     if ( this.trainID.length>2 )
     {
@@ -921,14 +921,14 @@ playSingleLock() {
 
           this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
             () => {           
-                if(isLogEnabled) 
-                {
+                //if(isLogEnabled) 
+                //{
                   console.log("sending settings to trainer start function");
                   console.log(string);
-                }  
+                //}  
             },
             error => { 
-              if(isLogEnabled) 
+              //if(isLogEnabled) 
                 console.error('Error sending date, disconnecting.', error);
               clearInterval(this.get_duration_interval);
               this.navCtrl.navigateBack('scanner');
@@ -977,6 +977,7 @@ playSingleLock() {
           }
           this.started = setInterval(this.clockRunning.bind(this), 108);
           this.LapsCount=1;
+          this.running = true;
         }
         
       },3600);      
@@ -1661,14 +1662,15 @@ connectToDevice(device)
         const alert = await this.alertController.create({
           cssClass: 'my-custom-class',
           header: 'New Race?',
-          message: 'A race is <strong>already running</strong>!!!',
+          message: 'A race is <strong>already running</strong>',
           buttons: [
             {
               text: 'Continue Race',
               role: 'cancel',
               cssClass: 'secondary',
               handler: (blah) => {
-                console.log('Confirm Cancel: blah');
+                console.log('Confirm Cancel');
+                this.menuShow = false;
               },
             },
             {
@@ -1710,7 +1712,8 @@ connectToDevice(device)
   private listenToGamepad() {
     this.gamepad.connect()
       .subscribe(() => {
-        console.log('gamepad conencted');
+
+        if(isLogEnabled) console.log('gamepad conencted');
         
         this.gamepad.after('button0')
           .subscribe(() => console.log('button0'));
