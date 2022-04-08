@@ -18,8 +18,8 @@ Servo servo2;
 int minUs = 1000;
 int maxUs = 2000;
 //pins
-int ServoSpeed = 18;
-int ServoSteering = 19;
+int ServoSpeed = 32;
+int ServoSteering = 25;
 int pos = 0;      // position in degrees
 ESP32PWM pwm;
 
@@ -140,7 +140,7 @@ void setup() {
   leds[0] = CRGB::White;
   FastLED.show();
   // Create the BLE Device
-  BLEDevice::init("PR*Honda Civic Type R*001"); // Name must not be longer than 5 chars!!!
+  BLEDevice::init("PR*Honda Civic Type R*002"); // Name must not be longer than 5 chars!!!
   
   // Create the BLE Server
   BLEServer *pServer = BLEDevice::createServer();
