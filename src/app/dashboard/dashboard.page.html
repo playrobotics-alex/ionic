@@ -6,7 +6,7 @@
             Lap Stats
         </div>
         <ion-icon style="font-size: 40px;position:absolute;color:white;right:15px;top:15px;" slot="end" name="close" (click)="LapStatsShow=!LapStatsShow" ></ion-icon>
-        <div *ngIf="LapTimes.length; else noDevicesScanned">
+        <div *ngIf="LapTimes.length">
             <table class="one">
                 <tr [ngClass]="SingleLapTime.id == BestLapId ? 'table_best_lap_class':'noclass'" *ngFor="let SingleLapTime of LapTimes">
                     <td>{{SingleLapTime.id}}</td>
@@ -30,7 +30,7 @@
             </div>
         </div>   
         <div class="services" style="text-align: center;margin-top:4%;">
-           <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('lap')">
+           <div class="content content-1" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "checkIfGameIsRunning('lap')">
               <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/lap.svg" ></ion-icon>
               <h2 style="color:dodgerblue;">
                  BEST LAP
@@ -40,7 +40,7 @@
               </p>
 
            </div>
-           <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('drag')">
+           <div class="content content-2" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "checkIfGameIsRunning('drag')">
                 <ion-icon style="font-size: 50px;" slot="end" src="/assets/icon/road.svg" ></ion-icon>
                 <h2 style="color:dodgerblue;">
                 DRAG RACE
@@ -49,7 +49,7 @@
                     straight line race until the finish line.
                 </p>
            </div>
-           <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "start('countdown')">
+           <div class="content content-3" style=" border-radius: 25px;border:1px solid white;float:left;width:30%;height:220px;margin-left:2.5%;padding:10px;" (touchstart) = "checkIfGameIsRunning('countdown')">
                 <ion-icon style="font-size: 50px;" slot="end" name="hourglass-outline" ></ion-icon>
                 <h2 style="color:dodgerblue;">
                 COUNTDOWN
@@ -99,6 +99,9 @@
 
         <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:130px;" (touchstart) = "disconnect()" >        
             <ion-icon name="power" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
+        </span> 
+        <span style="width:40px;border-radius: 50px;background-color: rgb(231, 162, 0);color:white;position:absolute;top:120px;left:70px;" *ngIf="ControllerFound" >        
+            <ion-icon name="game-controller-outline" style="font-size: 29px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
         </span> 
         <radial-gauge id="gauge-ps" width="300" height="300"
             [attr.value]="RPMValue"

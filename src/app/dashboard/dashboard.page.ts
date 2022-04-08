@@ -7,6 +7,10 @@ import { DeviceMotion, DeviceMotionAccelerationData } from '@awesome-cordova-plu
 import { NavigationExtras } from "@angular/router";
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { Storage } from '@ionic/storage-angular';
+import { NativeAudio } from '@ionic-native/native-audio/ngx';
+import { AudioManagement } from '@ionic-native/audio-management/ngx';
+import { GamepadService } from 'ngx-gamepad';
+
 
 import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
@@ -24,7 +28,8 @@ const TRAINER_CHAR_UUID     = '7E400002-B5A3-F393-E0A9-E50E24DCCA9E';
 const TRAINER_SERVICE_UUID      = '7E400001-B5A3-F393-E0A9-E50E24DCCA9E';
 
 
-const isLogEnabled = true;
+//const isLogEnabled = true;
+const isLogEnabled = false;
 
 
 @Component({
@@ -43,6 +48,7 @@ export class DashboardPage implements AfterViewInit {
   public timeStopped:any = null
   public stoppedDuration:any = 0
   public started = null
+  public startedNoRace = null
   public running = false
   public nitro = false
   public blankTime = "00.00"
@@ -57,6 +63,7 @@ export class DashboardPage implements AfterViewInit {
   public LapTimeString = ""
   public menuShow = false;
   public LapStatsShow = false;
+  public alertMode = "";
 
   
 
@@ -118,22 +125,33 @@ export class DashboardPage implements AfterViewInit {
 
   maxLapTime : number = 25;
 
+  //Controller Global Variables
+  ControllerFound : boolean;
+  mappedSteeringController : number = 0;
+  mappedSpeedController : number = 0;
+
+
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
                 private diagnostic: Diagnostic,
                 public  navCtrl: NavController,  
                 private route: ActivatedRoute, 
-                private alertCtrl: AlertController,      
+                private alertController: AlertController,      
                 private toastCtrl: ToastController,
                 public  platform: Platform,
                 private screenOrientation: ScreenOrientation,
                 private vibration: Vibration,
+                private nativeAudio: NativeAudio,
+                private audio: AudioManagement,
                 private storage: Storage,  
                 private loadingController: LoadingController,              
+                private gamepad: GamepadService,
                 private ngZone: NgZone ) 
                 {
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
+                    this.setRingtoneLock();  
+
                     });
                   this.route.queryParams.subscribe(params => {
                     let deviceCar = JSON.parse(params['device']);
@@ -145,16 +163,123 @@ export class DashboardPage implements AfterViewInit {
                     );  
                   });
                   this.LapTimes = [];
-  
+                  this.getAudioMode();
 
+                  //this.listenToGamepad();
                 }
+      ngOnInit() {    
+        const refreshRate = 50;
+  
+        setInterval( () =>
+        {
+          
+          // Returns up to 4 gamepads.
+          const gamepads = navigator.getGamepads();
+          // We take the first one, for simplicity
+          const gamepad = gamepads[0];
+  
+          // Escape if no gamepad was found
+          if (!gamepad) 
+          {
+              if(isLogEnabled) console.log('No gamepad found.');
+              this.ControllerFound = false;
+              return;
+          }
+          else
+          {
+            if(isLogEnabled) console.log('FOUNDDD');
+            this.ControllerFound = true;
+          }  
+  
+          // Filter out only the buttons which are pressed
+          const pressedButtons = gamepad.buttons                
+              .map((button, id) => ({id, button}))
+              .filter(isPressed);
+  
+          // Print the pressed buttons to our HTML
+          for (const button of pressedButtons) {
+              if(isLogEnabled) console.log(button);
+              if(button.id==8)
+              {
+                console.log('NITRO');
+                this.nitro = true;
+                this.bgColor = "rgb(0, 0, 151)";
+              }  
+              if(button.id==9)
+              {
+                console.log('NO NITRO');
+                this.nitro = false;
+                this.bgColor = "rgb(0, 0, 0)";
+              }                  
+ 
+              //This is not working coorectly because button clicks were not handeled (double click)
+              /*
+              if(button.id==2)
+                this.menuShow = true;
+ 
+              if((button.id==3)&&(this.menuShow==true))
+                this.start('lap');
 
+              if((button.id==4)&&(this.menuShow==true))
+                this.start('drag');          
+                
+              if((button.id==0)&&(this.menuShow==true))
+                this.start('countdown');                 
+              */
+
+
+          }
+          const pressedAxes = gamepad.axes;
+
+          //map left stick to steering as we use it
+          //-100 -> +100
+          this.mappedSteeringController =  Math.round(pressedAxes[0]*-100);
+          //0 -> 200
+          this.mappedSteeringController = this.mappedSteeringController + 100;
+          //0 -> 120
+          this.mappedSteeringController = this.mappedSteeringController * 0.6;          
+          //30 -> 150
+          this.mappedSteeringController = this.mappedSteeringController + 30  + this.TrimValue;          
+
+          //map right stick to gas as we use it
+          //-100 -> +100
+          this.mappedSpeedController =  pressedAxes[3]*100;
+          //0 -> 200
+          this.mappedSpeedController = this.mappedSpeedController + 100;
+          //0 -> 180
+          this.mappedSpeedController = this.mappedSpeedController * 0.9;  
+
+          //Yes nitro -- 0 -> 180
+          //No nitro -- 30 -> 150
+          if (this.nitro==false)
+              this.mappedSpeedController = this.mappedSpeedController * 0.5 + 45;  
+
+          this.mappedSpeedController = Math.round(this.mappedSpeedController);
+
+
+          if(isLogEnabled) console.log('steering 0: ' + this.mappedSteeringController + ' || Gas 3: ' + this.mappedSpeedController);
+            //console.log('1: ' +pressedAxes[1]);
+            //console.log('2: ' +pressedAxes[2]);
+
+        }
+          
+          
+          
+
+          , refreshRate);
+    
+
+    
+        function isPressed({button: {pressed}}) {
+            return !!pressed;
+        }
+      }
       ngAfterViewInit(): void {        
 
         //Check if this is the first time we are running the app
         this.storage.get("FirstTimeApp").then((value) => {
           if ( !value ) {            
-            console.log('App Runing for the first time, setting storage default values');
+            if(isLogEnabled) console.log('App Runing for the first time, setting storage default values');
             this.storage.set('SlowHeatToggle', true); 
             this.storage.set('SlowFuelToggle', true); 
             this.storage.set('IndoorLightsToggle', true); 
@@ -165,20 +290,23 @@ export class DashboardPage implements AfterViewInit {
             this.TrimValue = 0;
           }            
           else
-            console.log('App NOT Runing for the first time');
+            if(isLogEnabled) console.log('App NOT Runing for the first time');
         });
 
 
         this.storage.get("TrimValue").then((value) => {
           if ( !value ) {            
-            console.log('setting trim');
+            if(isLogEnabled)console.log('setting trim');
             this.storage.set('TrimValue', '0'); 
             this.TrimValue = 0;
           }        
           else   
           { 
-            console.log('trim set');
-            console.log(value);
+            if(isLogEnabled) 
+            {
+              console.log('trim set');
+              console.log(value);
+            }  
           }  
         });        
 
@@ -208,16 +336,20 @@ export class DashboardPage implements AfterViewInit {
           this.get_duration_interval= setInterval(()=> 
           {
               this.sendBLE(); 
-          }, 100);
+          }, 50);
           },2000);
         
-
+        //Start ticking time  
+        this.time = "00:00";
+        this.timeBegan = new Date();
+        this.startedNoRace = setInterval(this.clockRunningNoRace.bind(this), 1000);
+        
       }       
     
       onMoveGas(ev){
         this.gasLevel = 180-(ev.center.y)/2;
         
-        console.log(this.gasLevel/2+45);
+        if(isLogEnabled) console.log(this.gasLevel/2+45);
 
       }
             
@@ -229,10 +361,14 @@ export class DashboardPage implements AfterViewInit {
 
     }
     onEndGas(ev){
-        //console.log("END");
+      //add a small delay in case we will stil get the gas move event after the gas end event
+      setTimeout(() => {
+        console.log("END");
         this.gasLevel = 90;
         this.GasValue = 500;
-        this.RPMValue = 0;             
+        this.RPMValue = 0;                 
+      },100);
+         
     } 
     
     onEndSteering(ev){    
@@ -291,6 +427,43 @@ export class DashboardPage implements AfterViewInit {
     this.navCtrl.navigateBack('scanner');
   }
 
+
+  
+setRingtoneLock() {
+  // Preload the audio track 
+  this.nativeAudio.preloadSimple('uniqueIdLock', 'assets/sounds/car-lock.mp3');
+}
+
+
+
+getAudioMode() {
+  return new Promise(async (resolve, reject) => {
+    this.audio.getAudioMode().then((value) => {
+      if (value.audioMode == 0 || value.audioMode == 1) { // this will cause vibration in silent mode as well
+        this.alertMode = 'Vibrate';
+        resolve(false);
+      } else {
+        this.alertMode = 'Ring';
+        resolve(true);
+      }
+    }).catch((error) => {
+      resolve(false);
+    })
+  });
+}             
+
+playSingleLock() {
+  this.nativeAudio.play('uniqueIdLock').then(() => {
+    console.log('Successfully played');
+  }).catch((err) => {
+    console.log('error', err);
+  });
+
+}
+
+
+
+
   sendBLE() : any
   {
     //Get settings from storage every 2 seconds
@@ -299,12 +472,12 @@ export class DashboardPage implements AfterViewInit {
     {
         //Test readying characteristic
         // read data from a characteristic, do something with output data
-        console.log("trainID: "+this.trainID);
+        if(isLogEnabled) console.log("trainID: "+this.trainID);
         //If trainer is connected and we are not subscrbied to notifications lets subscribe
         if (( this.trainID.length>2 )&&(this.SubscribedToNotifyBLE===false))
         {
           //this.SubscribedToNotifyBLE = true;
-          console.log("-==subscribing==-");
+          if(isLogEnabled) console.log("-==subscribing==-");
           this.SubscribedToNotifyBLE = true;
           this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
             (data) => {
@@ -316,14 +489,14 @@ export class DashboardPage implements AfterViewInit {
         }
         this.storage.get("IndoorLightsToggle").then((value) => {
         this.IndoorLightsToggle=value;
-        console.log('IndoorLightsToggle: ', value);
+        if(isLogEnabled) console.log('IndoorLightsToggle: ', value);
         //Send settings to car
         let string = 'X'
         if  (this.IndoorLightsToggle)
           string = string + '1';
         else
           string = string + '0';
-        console.log('sending settings to car',string);
+        if(isLogEnabled) console.log('sending settings to car',string);
     
         let array = new Uint8Array(string.length);
         for (let i = 0, l = string.length; i < l; i ++) {
@@ -331,7 +504,7 @@ export class DashboardPage implements AfterViewInit {
         } 
         this.ble.writeWithoutResponse(this.carID, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
           () => {           
-              console.log("sending settings to car: "+this.carID);
+            if(isLogEnabled) console.log("sending settings to car: "+this.carID);
           },
           error => { 
             if(isLogEnabled) 
@@ -343,23 +516,23 @@ export class DashboardPage implements AfterViewInit {
       });
       this.storage.get("SlowHeatToggle").then((value) => {
         this.SlowHeatToggle=value;
-        console.log('SlowHeatToggle: ', value);
+        if(isLogEnabled) console.log('SlowHeatToggle: ', value);
       });
       this.storage.get("SlowFuelToggle").then((value) => {
         this.SlowFuelToggle=value;
-        console.log('SlowFuelToggle: ', value);
+        if(isLogEnabled) console.log('SlowFuelToggle: ', value);
       });   
       this.storage.get("AccSteeringToggle").then((value) => {
         this.AccSteeringToggle=value;
-        console.log('AccSteeringToggle: ', value);
+        if(isLogEnabled) console.log('AccSteeringToggle: ', value);
       });          
       this.storage.get("TrimValue").then((value) => {
         this.TrimValue=parseInt(value);
-        console.log('TrimValue: ', value);
+        if(isLogEnabled) console.log('TrimValue: ', value);
       });    
       this.storage.get("InitialMaxLapTime").then((value) => {
         this.InitialMaxLapTime=parseInt(value);
-        console.log('InitialMaxLapTime: ', value);
+        if(isLogEnabled) console.log('InitialMaxLapTime: ', value);
       });             
       
 
@@ -476,7 +649,8 @@ export class DashboardPage implements AfterViewInit {
     let RpmToDisplay = 0;
     if (this.gasLevel<90)
     { //BACK
-      this.ProgressBarColor = "#3111c0"; 
+      //this.ProgressBarColor = "#3111c0"; 
+      this.ProgressBarColor = "#FF0000";
       //Limit to 1000
       if (180-(this.gasLevel-90)*5.5*2>1000)
         RpmToDisplay = 1000;
@@ -499,7 +673,8 @@ export class DashboardPage implements AfterViewInit {
         else
           RpmToDisplay =   (this.gasLevel-90)*5.5*2;
 
-        this.ProgressBarColor = "#FF0000";
+        //this.ProgressBarColor = "#FF0000";
+        this.ProgressBarColor = "#3111c0"; 
       }
 
     }     
@@ -548,14 +723,32 @@ export class DashboardPage implements AfterViewInit {
 
     let Mapped180Gas = 180-(this.gasLevel);
     let NitroGas=0;
+    let currentNitroGas=0;
 
     if (this.nitro==true)
       NitroGas = Mapped180Gas;
     else  
       NitroGas = Mapped180Gas*0.5 + 45;
     
+    //check if we have a controller connected
+
     let string = NitroGas +'S' + this.revSteering;
-    console.log("String that will be sent"+ string);
+    if (this.ControllerFound == true)
+    {
+      string = this.mappedSpeedController +'S' + this.mappedSteeringController;
+      //Display RPM
+      //mappedSpeedController value is:
+      // NOT NITRO 45-135 => -45 -> 45 => 0 -> 45
+      // NITRO
+      RpmToDisplay =  Math.abs(this.mappedSpeedController - 90);
+      // to 0-1000
+      this.RPMValue =RpmToDisplay*11.11;
+    }  
+    else
+      if(isLogEnabled) console.log("(this.ControllerFound == false)");
+
+    if(isLogEnabled) console.log("String that will be sent"+ string);
+    //console.log("String that will be sent"+ string);
 
     let array = new Uint8Array(string.length);
     for (let i = 0, l = string.length; i < l; i ++) {
@@ -605,6 +798,12 @@ export class DashboardPage implements AfterViewInit {
   // Function to disconnect from the device
   disconnect()
   {
+    if (this.alertMode== 'Ring') 
+      this.playSingleLock();
+    else
+      this.doVibrationFor(200);
+
+
     //Disconnect CAR
     this.ble.disconnect(this.connectedDevice.id).then(
       () => this.onDisconnecting(this.connectedDevice),
@@ -655,14 +854,14 @@ export class DashboardPage implements AfterViewInit {
     }
     else
     {
-      this.bgColor = "rgb(0, 0, 51)";
+      this.bgColor = "rgb(0, 0, 151)";
       this.nitro=true;
     }  
   }
  
   async showAlert(title, message) 
   {               
-    let alert = await this.alertCtrl.create({
+    let alert = await this.alertController.create({
           header: title,
           subHeader: message,
           buttons: ['OK'],
@@ -673,10 +872,12 @@ export class DashboardPage implements AfterViewInit {
 
   start(RaceType) 
   {        
+    this.reset();
+    clearInterval(this.startedNoRace);
     if ( this.trainID.length>2 )
     {
       this.RaceType = RaceType;
-      console.log("RaceType: "+ this.RaceType);
+      if(isLogEnabled) console.log("RaceType: "+ this.RaceType);
       if (this.RaceType=="lap")
       {
         this.TotalLaps=8;
@@ -696,7 +897,7 @@ export class DashboardPage implements AfterViewInit {
         this.TotalLaps=16;
         //Restore best lap time of the same type of race
         this.BestLapTimeString = this.BestLapTimeCountString; 
-        console.log("RESTORE this.BestLapTimeString: "+this.BestLapTimeString);
+        if(isLogEnabled) console.log("RESTORE this.BestLapTimeString: "+this.BestLapTimeString);
       }  
       this.menuShow = false;
       
@@ -720,11 +921,14 @@ export class DashboardPage implements AfterViewInit {
 
           this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
             () => {           
-                console.log("sending settings to trainer start function");
-                console.log(string);
+                //if(isLogEnabled) 
+                //{
+                  console.log("sending settings to trainer start function");
+                  console.log(string);
+                //}  
             },
             error => { 
-              if(isLogEnabled) 
+              //if(isLogEnabled) 
                 console.error('Error sending date, disconnecting.', error);
               clearInterval(this.get_duration_interval);
               this.navCtrl.navigateBack('scanner');
@@ -772,8 +976,8 @@ export class DashboardPage implements AfterViewInit {
             this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
           }
           this.started = setInterval(this.clockRunning.bind(this), 108);
-          this.running = true;
           this.LapsCount=1;
+          this.running = true;
         }
         
       },3600);      
@@ -823,6 +1027,19 @@ export class DashboardPage implements AfterViewInit {
     this.timeStopped = null;
     this.time = this.blankTime;
   }
+  clockRunningNoRace()
+  {
+    let currentTime:any = new Date()
+    let timeElapsed:any = new Date(currentTime - this.timeBegan - this.stoppedDuration)
+
+    let sec = timeElapsed.getUTCSeconds()
+    let min = timeElapsed.getUTCMinutes();
+    if (sec<10)
+      this.time = min + ":0" +  sec;
+    else
+      this.time = min + ":" +  sec;
+  };   
+
   clockRunning()
   {
     let currentTime:any = new Date()
@@ -856,9 +1073,12 @@ export class DashboardPage implements AfterViewInit {
         } 
 
         this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
-          () => {           
+          () => {          
+            if(isLogEnabled) 
+            { 
               console.log("sending settings to trainer clockRunningCountdown");
               console.log(this.trainID);
+            }  
           },
           error => { 
             if(isLogEnabled) 
@@ -869,14 +1089,16 @@ export class DashboardPage implements AfterViewInit {
         );  
         
         this.reset();
-        console.log("Settings maxLapTime = this.InitialMaxLapTime");
-        console.log(this.InitialMaxLapTime);
+        if(isLogEnabled) {
+          console.log("Settings maxLapTime = this.InitialMaxLapTime");
+          console.log(this.InitialMaxLapTime);
+        }  
 
         this.maxLapTime = this.InitialMaxLapTime;
         this.BestLapTimeString=  (this.LapsCount-1).toString();
         //Save best lap time in case we switch to other race type and then go back
         this.BestLapTimeCountString = this.BestLapTimeString; 
-        console.log(" this.BestLapTimeCountString: "+ this.BestLapTimeCountString);
+        if(isLogEnabled) console.log(" this.BestLapTimeCountString: "+ this.BestLapTimeCountString);
 
         this.doBlinkColor("#FFF","#000");          
         this.LapTimeString = this.time;
@@ -949,16 +1171,16 @@ export class DashboardPage implements AfterViewInit {
   ReadLapData(buffer:ArrayBuffer) {
     // Temperature is a 4 byte floating point value
     var data = new Uint8Array(buffer);
-    console.log('Array we got from BLE: ',data);
+    if(isLogEnabled) console.log('Array we got from BLE: ',data);
     //Transfor the buff array to a 5 digit number
     
     var lapData= data[2]*256*256+data[1]*256+data[0];
    // lap-number|| lap second X 10  || lap second X 1 || lap second / 10 ||   lap second / 100 ||
     var lapBLE = Math.round(lapData/10000)
-    console.log('Lap: ',lapBLE);
+    if(isLogEnabled) console.log('Lap: ',lapBLE);
     
     var lapTimeBLE = Math.round(lapData%10000)/100;
-    console.log('Time: ',lapTimeBLE);
+    if(isLogEnabled) console.log('Time: ',lapTimeBLE);
     
     //In best lap and countdown races we start the clock only once the car passes the start line
     if ( (this.RaceType=='lap')||(this.RaceType=='countdown') )
@@ -1025,8 +1247,8 @@ export class DashboardPage implements AfterViewInit {
             lapType: lapType
           }; 
           this.LapTimes.push(SingleLapTime);
-          console.log("pushing lap times");
-          console.log(this.LapTimes);
+          if(isLogEnabled) console.log("pushing lap times");
+          if(isLogEnabled) console.log(this.LapTimes);
 
 
           //Send score lights command to trainer
@@ -1046,9 +1268,11 @@ export class DashboardPage implements AfterViewInit {
           } 
   
           this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
-            () => {           
+            () => {  
+              if(isLogEnabled) {         
                 console.log("sending settings to trainer");
                 console.log(this.trainID);
+              }  
             },
             error => { 
               if(isLogEnabled) 
@@ -1113,7 +1337,7 @@ export class DashboardPage implements AfterViewInit {
 
               //Save best lap time in case we switch to other race type and then go back
               this.BestLapTimeCountString = this.BestLapTimeString; 
-              console.log(" this.BestLapTimeCountString: "+ this.BestLapTimeCountString);
+              if(isLogEnabled) console.log(" this.BestLapTimeCountString: "+ this.BestLapTimeCountString);
             }
             //Send lap data to trainer
             string = string +  this.LapsCount;
@@ -1124,8 +1348,11 @@ export class DashboardPage implements AfterViewInit {
     
             this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
               () => {           
+                if(isLogEnabled) 
+                {
                   console.log("sending settings to trainer");
                   console.log(this.trainID);
+                }  
               },
               error => { 
                 if(isLogEnabled) 
@@ -1144,9 +1371,12 @@ export class DashboardPage implements AfterViewInit {
     //If we are here this is a drag race, actually there is no need to check it again
     if (this.RaceType=="drag")
     {
-      console.log('this.running '+this.running);
-      console.log('lapBLE '+lapBLE);
-      console.log('this.LapsCount '+this.LapsCount);
+      if(isLogEnabled) 
+      {
+        console.log('this.running '+this.running);
+        console.log('lapBLE '+lapBLE);
+        console.log('this.LapsCount '+this.LapsCount);
+      }  
       if((this.running)&&(lapBLE >= this.LapsCount))
       {
         //Race finished      
@@ -1183,9 +1413,12 @@ export class DashboardPage implements AfterViewInit {
             } 
 
             this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
-              () => {           
+              () => {        
+                if(isLogEnabled) 
+                {   
                   console.log("sending settings to trainer");
                   console.log(this.trainID);
+                }  
               },
               error => { 
                 if(isLogEnabled) 
@@ -1216,7 +1449,7 @@ async startBleScan()
       }).then((response) => {
         response.present();
         response.onDidDismiss().then((response) => {
-          console.log('Loader dismissed', response);
+          if(isLogEnabled) console.log('Loader dismissed', response);
         });
       });
     
@@ -1246,9 +1479,9 @@ async startBleScan()
                     if(isLogEnabled) console.error('Error scanning.', error);
                     //Dissmiss loader
                     this.loadingController.dismiss().then((response) => {
-                      console.log('Loader closed!', response);
+                      if(isLogEnabled) console.log('Loader closed!', response);
                     }).catch((err) => {
-                        console.log('Error occured : ', err);
+                      if(isLogEnabled) console.log('Error occured : ', err);
                     });                    
 
                   }); 
@@ -1274,34 +1507,34 @@ connectToDevice(device)
 {    
   this.alreadyConnected=false;
   this.ble.disconnect(device.id).then(() => {
-    console.debug("Disconnect success");
+    if(isLogEnabled) console.debug("Disconnect success");
    })
 .catch(error => {
-    console.error("Disconnect  error:", error);
+  if(isLogEnabled) console.error("Disconnect  error:", error);
 });
 
-  console.log('connect to device to '+device.name+'.');
+  if(isLogEnabled) console.log('connect to device to '+device.name+'.');
   this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
-  console.log('this.ble now');
+  if(isLogEnabled) console.log('this.ble now');
   setTimeout(() => {
-    console.log('INSIDE this.ble now - attempt 1');
+    if(isLogEnabled) console.log('INSIDE this.ble now - attempt 1');
     this.ble.connect(device.id).subscribe(
       (success) => {
         if (device.name == "train")
         {
           this.trainID = device.id;
-          console.log('Connected to TRAIN saving id: '+device.id+'.');
+          if(isLogEnabled) console.log('Connected to TRAIN saving id: '+device.id+'.');
         }       
         this.alreadyConnected=true;
         //Dissmiss loader
         this.loadingController.dismiss().then((response) => {
-          console.log('Loader closed!', response);
+          if(isLogEnabled) console.log('Loader closed!', response);
         }).catch((err) => {
-            console.log('Error occured : ', err);
+          if(isLogEnabled) console.log('Error occured : ', err);
         });   
       },
       (error) => {
-        console.log('INSIDE ble error ');
+        if(isLogEnabled) console.log('INSIDE ble error ');
         this.alreadyConnected=false;
       }
     );             
@@ -1311,7 +1544,7 @@ connectToDevice(device)
     {
       if (this.alreadyConnected!=true)
       {
-        console.log('INSIDE this.ble now - attempt 2');
+        if(isLogEnabled) console.log('INSIDE this.ble now - attempt 2');
 
         this.ble.connect(device.id).subscribe(
           (success) => {
@@ -1319,18 +1552,18 @@ connectToDevice(device)
             {
               //If train save id
               this.trainID = device.id;
-              console.log('Connected to TRAIN saving id: '+device.id+'.');
+              if(isLogEnabled) console.log('Connected to TRAIN saving id: '+device.id+'.');
             }
             this.alreadyConnected=true;
             //Dissmiss loader
             this.loadingController.dismiss().then((response) => {
-              console.log('Loader closed!', response);
+              if(isLogEnabled) console.log('Loader closed!', response);
             }).catch((err) => {
-                console.log('Error occured : ', err);
+              if(isLogEnabled) console.log('Error occured : ', err);
             });               
           },
           (error) => {
-            console.log('INSIDE ble error ');
+            if(isLogEnabled)  console.log('INSIDE ble error ');
             this.alreadyConnected=false;
           }
         );             
@@ -1340,25 +1573,25 @@ connectToDevice(device)
     {
       if (this.alreadyConnected!=true)
       {
-        console.log('INSIDE this.ble now - attempt 3');
+        if(isLogEnabled) console.log('INSIDE this.ble now - attempt 3');
         this.ble.connect(device.id).subscribe(
           (success) => {
             if (device.name == "train")
             {
               //If train save id
               this.trainID = device.id;
-              console.log('Connected to TRAIN saving id: '+device.id+'.');
+              if(isLogEnabled) console.log('Connected to TRAIN saving id: '+device.id+'.');
             }
             this.alreadyConnected=true;
             //Dissmiss loader
             this.loadingController.dismiss().then((response) => {
-              console.log('Loader closed!', response);
+              if(isLogEnabled) console.log('Loader closed!', response);
             }).catch((err) => {
-                console.log('Error occured : ', err);
+              if(isLogEnabled) console.log('Error occured : ', err);
             });               
           },
           (error) => {
-            console.log('INSIDE ble error ');
+            if(isLogEnabled) console.log('INSIDE ble error ');
             this.alreadyConnected=false;
           }
         );             
@@ -1372,7 +1605,7 @@ connectToDevice(device)
   // show the location enable alert
   async showLocationEnableAlert(title, message) 
   {
-    let alert = await this.alertCtrl.create({
+    let alert = await this.alertController.create({
         header: title,
         subHeader: message,
         buttons: [
@@ -1396,7 +1629,7 @@ connectToDevice(device)
 
   async showBluetoothEnableAlert(title, message) 
   {               
-    let alert = await this.alertCtrl.create({
+    let alert = await this.alertController.create({
         header: title,
         subHeader: message,
         buttons: [
@@ -1415,6 +1648,43 @@ connectToDevice(device)
         backdropDismiss : false
     });        
     alert.present()
+  }
+
+
+  
+  async checkIfGameIsRunning(gameType) {
+
+    //Alert if a game is already running and the user clicks on start a new game
+    if (this.running==false)
+      this.start(gameType);
+    else
+    {
+        const alert = await this.alertController.create({
+          cssClass: 'my-custom-class',
+          header: 'New Race?',
+          message: 'A race is <strong>already running</strong>',
+          buttons: [
+            {
+              text: 'Continue Race',
+              role: 'cancel',
+              cssClass: 'secondary',
+              handler: (blah) => {
+                console.log('Confirm Cancel');
+                this.menuShow = false;
+              },
+            },
+            {
+              text: 'Start New',
+              handler: () => {
+                console.log('Confirm Okay');
+                this.start(gameType);
+              },
+            },
+          ],
+        });
+
+        await alert.present();
+      }    
   }
 
   onDiscoveredDevice(device)
@@ -1439,6 +1709,35 @@ connectToDevice(device)
     if(isLogEnabled) console.log('Scanned device  : '+ JSON.stringify(scannedDevice));  
   }
 
+  private listenToGamepad() {
+    this.gamepad.connect()
+      .subscribe(() => {
+
+        if(isLogEnabled) console.log('gamepad conencted');
+        
+        this.gamepad.after('button0')
+          .subscribe(() => console.log('button0'));
+/*
+        this.gamepad.after('select')
+          .subscribe(() => ...);
+
+        this.gamepad.after('start')
+          .subscribe(() => ...);
+
+        this.gamepad.on('right')
+          .pipe(bufferCount(10))
+          .subscribe(() => ...);
+
+        this.gamepad.on('right0')
+          .pipe(bufferCount(10))
+          .subscribe(() => ...);
+
+        this.gamepad.on('right1')
+          .pipe(bufferCount(10))
+          .subscribe(() => ...);
+          */
+      })
+  }
 
 
 }
