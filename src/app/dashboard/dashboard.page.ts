@@ -163,7 +163,11 @@ export class DashboardPage implements AfterViewInit {
                     );  
                   });
                   this.LapTimes = [];
-                  this.getAudioMode();
+
+                  if (this.platform.is("android"))
+                    this.getAudioMode();
+                  else
+                    this.alertMode = 'Ring';   
 
                   //this.listenToGamepad();
                 }
@@ -239,7 +243,7 @@ export class DashboardPage implements AfterViewInit {
           //0 -> 120
           this.mappedSteeringController = this.mappedSteeringController * 0.6;          
           //30 -> 150
-          this.mappedSteeringController = this.mappedSteeringController + 30  + this.TrimValue;          
+          this.mappedSteeringController = this.mappedSteeringController + 30  - this.TrimValue;          
 
           //map right stick to gas as we use it
           //-100 -> +100
@@ -697,9 +701,9 @@ playSingleLock() {
           this.revSteering = this.revSteering * steeringMultiplier
 
           //convert it to 0->180
-          this.revSteering = this.revSteering +90 + this.TrimValue;
+          this.revSteering = this.revSteering +90;
           //reverse steering
-          this.revSteering = 180 - this.revSteering;
+          this.revSteering = 180 - this.revSteering  - this.TrimValue ;
           //console.log("this.revSteering: " + this.revSteering);
 
 
@@ -718,7 +722,7 @@ playSingleLock() {
         //now back to 0-180
         netSteering = netSteering*steeringMultiplier +90;
         this.revSteering = Math.round(180-(netSteering*1));
-        this.revSteering =  this.revSteering + this.TrimValue;
+        this.revSteering =  this.revSteering - this.TrimValue;
     } 
 
     let Mapped180Gas = 180-(this.gasLevel);
@@ -1462,36 +1466,66 @@ async startBleScan()
       () =>
       { // Bluetooth is enabled.
         // is the location enabled?
-        this.ble.isLocationEnabled().then(
-          () =>
-          { // location is enabled.
-                if(isLogEnabled) console.info('Scanning ....');
-                
-                // start the BLE scanning.
-                this.ble.scan([], 1).subscribe(
-                  (device) => 
-                  {
-                    this.onDiscoveredDevice(device);
+        if (this.platform.is("android"))
+        {
+          this.ble.isLocationEnabled().then(
+            () =>
+            { // location is enabled.
+                  if(isLogEnabled) console.info('Scanning ....');
+                  
+                  // start the BLE scanning.
+                  this.ble.scan([], 1).subscribe(
+                    (device) => 
+                    {
+                      this.onDiscoveredDevice(device);
 
-                  }, 
-                  (error)  =>  
-                  {
-                    if(isLogEnabled) console.error('Error scanning.', error);
-                    //Dissmiss loader
-                    this.loadingController.dismiss().then((response) => {
-                      if(isLogEnabled) console.log('Loader closed!', response);
-                    }).catch((err) => {
-                      if(isLogEnabled) console.log('Error occured : ', err);
-                    });                    
+                    }, 
+                    (error)  =>  
+                    {
+                      if(isLogEnabled) console.error('Error scanning.', error);
+                      //Dissmiss loader
+                      this.loadingController.dismiss().then((response) => {
+                        if(isLogEnabled) console.log('Loader closed!', response);
+                      }).catch((err) => {
+                        if(isLogEnabled) console.log('Error occured : ', err);
+                      });                    
 
-                  }); 
-          },
-          // location is not enabled.
-          (error) =>
-          {
-            if(isLogEnabled) console.error('Error isLocationEnabled.', error);
-            this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
-          });  
+                    }); 
+            },
+            // location is not enabled.
+            (error) =>
+            {
+              if(isLogEnabled) console.error('Error isLocationEnabled.', error);
+              this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
+            });  
+        }
+        else
+        { // location is enabled.
+          if(isLogEnabled) console.info('Scanning ....');
+          
+          // start the BLE scanning.
+          this.ble.scan([], 1).subscribe(
+            (device) => 
+            {
+              this.onDiscoveredDevice(device);
+
+            }, 
+            (error)  =>  
+            {
+              if(isLogEnabled) console.error('Error scanning.', error);
+              //Dissmiss loader
+              this.loadingController.dismiss().then((response) => {
+                if(isLogEnabled) console.log('Loader closed!', response);
+              }).catch((err) => {
+                if(isLogEnabled) console.log('Error occured : ', err);
+              });                    
+
+            }); 
+        }
+
+
+
+
       },
       // Bluetooth is not enabled.
       (error) => 
