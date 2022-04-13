@@ -128,7 +128,10 @@ playSingleScan() {
 async startBleScan()
 { 
   this.beepPlayed = false;
-  this.getAudioMode();
+  if (this.platform.is("android"))
+    this.getAudioMode();
+  else
+    this.alertMode = 'Ring';  
   let scanSpinner = await this.loadingController.create({
       message : "Scanning for cars....",
       duration : 2000,
@@ -145,35 +148,63 @@ async startBleScan()
     () =>
     { // Bluetooth is enabled.
       // is the location enabled?
-      this.ble.isLocationEnabled().then(
-        () =>
-        { // location is enabled.
-          scanSpinner.present().then(
-            () => 
-            { 
-              if(isLogEnabled) console.info('Scanning ....');
-              
-              // start the BLE scanning.
-              this.ble.scan([], 1).subscribe(
-                (device) => 
-                {
-                  this.onDiscoveredDevice(device);
-                }, 
-                (error)  =>  
-                {
-                  if(isLogEnabled) console.error('Error scanning.', error);
-                  scanSpinner.dismiss().then(() => { 
-                            this.showAlert('Error scanning.', error); 
-                  });
-                }); 
-            });
-        },
-        // location is not enabled.
-        (error) =>
-        {
-          if(isLogEnabled) console.error('Error isLocationEnabled.', error);
-          this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
-        });  
+      if (this.platform.is("android"))
+      {  
+        this.ble.isLocationEnabled().then(
+          () =>
+          { // location is enabled.
+            scanSpinner.present().then(
+              () => 
+              { 
+                if(isLogEnabled) console.info('Scanning ....');
+                
+                // start the BLE scanning.
+                this.ble.scan([], 1).subscribe(
+                  (device) => 
+                  {
+                    this.onDiscoveredDevice(device);
+                  }, 
+                  (error)  =>  
+                  {
+                    if(isLogEnabled) console.error('Error scanning.', error);
+                    scanSpinner.dismiss().then(() => { 
+                              this.showAlert('Error scanning.', error); 
+                    });
+                  }); 
+              });
+          },
+          // location is not enabled.
+          (error) =>
+          {
+            if(isLogEnabled) console.error('Error isLocationEnabled.', error);
+            this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
+          });  
+      }
+      else
+      { // location is enabled.
+        scanSpinner.present().then(
+          () => 
+          { 
+            if(isLogEnabled) console.info('Scanning ....');
+            
+            // start the BLE scanning.
+            this.ble.scan([], 1).subscribe(
+              (device) => 
+              {
+                this.onDiscoveredDevice(device);
+              }, 
+              (error)  =>  
+              {
+                if(isLogEnabled) console.error('Error scanning.', error);
+                scanSpinner.dismiss().then(() => { 
+                          this.showAlert('Error scanning.', error); 
+                });
+              }); 
+          });
+      }
+
+
+
     },
     // Bluetooth is not enabled.
     (error) => 
