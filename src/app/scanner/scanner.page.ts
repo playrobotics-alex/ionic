@@ -314,9 +314,9 @@ async startBleScan()
     
           console.log('before ng-1');
 
-          console.info('Navigating to the [dashboard] page');
+          console.log('Navigating to the [dashboard] page');
           this.ngZone.run(() => {
-            this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+            this.router.navigate(['dashboard/2']).then();;
           });
 
           this.scannedDevices = [];
