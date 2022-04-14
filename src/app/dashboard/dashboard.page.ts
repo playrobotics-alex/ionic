@@ -293,7 +293,22 @@ export class DashboardPage implements AfterViewInit {
             if(isLogEnabled) console.log('App NOT Runing for the first time');
         });
 
-          
+
+        this.storage.get("TrimValue").then((value) => {
+          if ( !value ) {            
+            if(isLogEnabled)console.log('setting trim');
+            this.storage.set('TrimValue', '0'); 
+            this.TrimValue = 0;
+          }        
+          else   
+          { 
+            if(isLogEnabled) 
+            {
+              console.log('trim set');
+              console.log(value);
+            }  
+          }  
+        });        
 
         this.gasLevel = 90;
         this.GasValue = 500;
