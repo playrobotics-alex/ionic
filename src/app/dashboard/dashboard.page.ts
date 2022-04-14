@@ -299,6 +299,16 @@ export class DashboardPage implements AfterViewInit {
 
         
   
+        
+        this.storage.get("storageDevice").then((value) => 
+        {
+            let deviceCar = JSON.parse(value);   
+            this.ble.isConnected(deviceCar.id).then(
+              () => this.onConnected(deviceCar),
+              () => this.onNotConnected(deviceCar)
+            );  
+        });   
+
 
         this.storage.get("TrimValue").then((value) => {
           if ( !value ) {            
