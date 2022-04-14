@@ -133,6 +133,10 @@ playSingleScan() {
 // start the BLE scan
 async startBleScan()
 { 
+
+
+
+
   this.beepPlayed = false;
   if (this.platform.is("android"))
     this.getAudioMode();
@@ -223,6 +227,9 @@ async startBleScan()
   // con discovered device
   onDiscoveredDevice(device)
   {
+    console.info('Navigating to the [dashboard] page');
+    this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+    
     var scannedDevice = 
     { 
       name: device.name, 
@@ -330,7 +337,7 @@ async startBleScan()
           else
             this.doVibrationFor(200);
     
-          console.log('before ng-zone');
+          console.log('before ng-1');
 
           if(isLogEnabled) console.info('Navigating to the [dashboard] page');
           this.router.navigate(['dashboard/' + JSON.stringify(device)]);
