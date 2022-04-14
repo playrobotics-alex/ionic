@@ -153,7 +153,7 @@ export class DashboardPage implements AfterViewInit {
                     this.setRingtoneLock();  
 
                     });
-                  this.route.queryParams.subscribe(params => {
+                  this.route.paramMap.subscribe(params => {
                     let deviceCar = JSON.parse(params['car']);
                     //this.trainID = JSON.parse(params['deviceTrain']);
 
