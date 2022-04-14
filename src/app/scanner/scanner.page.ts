@@ -347,7 +347,17 @@ async startBleScan()
           }
           else
           {
-            this.navCtrl.navigateRoot('dashboard');
+            let navigationExtras: NavigationExtras = {
+              queryParams: { 
+                device: JSON.stringify(device),
+                deviceTrain: JSON.stringify(this.trainID)
+              }
+            }; 
+            if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+            if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
+            this.scannedDevices = [];
+            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+
           }
           this.alreadyConnected=true;
 
@@ -399,7 +409,16 @@ async startBleScan()
               }
               else
               {
-                this.navCtrl.navigateRoot('dashboard');
+                let navigationExtras: NavigationExtras = {
+                  queryParams: { 
+                    device: JSON.stringify(device),
+                    deviceTrain: JSON.stringify(this.trainID)
+                  }
+                }; 
+                if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+                if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
+                this.scannedDevices = [];
+                this.navCtrl.navigateForward(['dashboard'], navigationExtras);
               }
 
               this.alreadyConnected=true;
@@ -449,7 +468,17 @@ async startBleScan()
               }
               else
               {
-                this.navCtrl.navigateRoot('dashboard');
+                let navigationExtras: NavigationExtras = {
+                  queryParams: { 
+                    device: JSON.stringify(device),
+                    deviceTrain: JSON.stringify(this.trainID)
+                  }
+                }; 
+                if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+                if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
+                this.scannedDevices = [];
+                this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+                
               }
               this.alreadyConnected=true;
               //Dissmiss loader
