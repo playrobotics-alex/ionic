@@ -154,14 +154,9 @@ export class DashboardPage implements AfterViewInit {
 
                     });
                   this.route.queryParams.subscribe(params => {
-                    let deviceCar = JSON.parse(params['device']);
-                    this.trainID = JSON.parse(params['deviceTrain']);
-                    if (this.platform.is("android"))
-                    {
-                      this.storage.get("storageDevice").then((value) => {
-                        deviceCar = JSON.parse(value);
-                      });                      
-                    }
+                    let deviceCar = JSON.parse(params['car']);
+                    //this.trainID = JSON.parse(params['deviceTrain']);
+
      
                     this.ble.isConnected(deviceCar.id).then(
                       () => this.onConnected(deviceCar),
