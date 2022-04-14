@@ -59,16 +59,20 @@ export class ScannerPage   {
                 this.storage.create();
                 this.trainID =" ";
 
-                //Check if intro done
-                this.storage.get("intro-done").then((value) => {
-                  if ( !value ) {            
-                    if(isLogEnabled) console.log('Intro not done yet, updating intro to done and redirecting');
-                    this.storage.set('intro-done', true); 
-                    this.navCtrl.navigateRoot('intro');
-                  }            
-                  else
-                    if(isLogEnabled) console.log('App NOT Runing for the first time');
-                });
+                //Check if intro done (intro only needed on android)
+                if (this.platform.is("android"))
+                {
+                  this.storage.get("intro-done").then((value) => {
+                    if ( !value ) {            
+                      if(isLogEnabled) console.log('Intro not done yet, updating intro to done and redirecting');
+                      this.storage.set('intro-done', true); 
+                      this.navCtrl.navigateRoot('intro');
+                    }            
+                    else
+                      if(isLogEnabled) console.log('App NOT Runing for the first time');
+                  });
+                }
+
               }
 
 
@@ -335,7 +339,8 @@ async startBleScan()
             if(isLogEnabled) console.info('Navigating to the [dashboard] page');
             if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
             this.scannedDevices = [];
-            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+            //this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+            this.navCtrl.navigateRoot('dashboard');
           });
           this.alreadyConnected=true;
 
@@ -381,7 +386,8 @@ async startBleScan()
                 if(isLogEnabled) console.info('Navigating to the [dashboard] page');
                 if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
                 this.scannedDevices = [];
-                this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+                //this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+                this.navCtrl.navigateRoot('dashboard');
               });
               this.alreadyConnected=true;
               //Dissmiss loader
@@ -422,7 +428,8 @@ async startBleScan()
                 if(isLogEnabled) console.info('Navigating to the [dashboard] page');
                 if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
                 this.scannedDevices = [];
-                this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+                //this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+                this.navCtrl.navigateRoot('dashboard');
               });
               this.alreadyConnected=true;
               //Dissmiss loader
@@ -475,7 +482,8 @@ async startBleScan()
             if(isLogEnabled) console.info('Navigating to the [dashboard] page');
             if(isLogEnabled) console.log('Navigation extras: device = '+JSON.stringify(device));
             //this.scannedDevices = [];
-            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+            //this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+            this.navCtrl.navigateRoot('dashboard');
         }
       }, 
       (error) => {
