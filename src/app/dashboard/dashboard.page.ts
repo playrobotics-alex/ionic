@@ -293,6 +293,15 @@ export class DashboardPage implements AfterViewInit {
             if(isLogEnabled) console.log('App NOT Runing for the first time');
         });
 
+        
+        this.storage.get("storageDevice").then((value) => 
+        {
+            this.ble.isConnected(value.id).then(
+              () => this.onConnected(value),
+              () => this.onNotConnected(value)
+            );  
+        });   
+
 
         this.storage.get("TrimValue").then((value) => {
           if ( !value ) {            
@@ -397,9 +406,7 @@ export class DashboardPage implements AfterViewInit {
     }  
 // on connected to a device
   onConnected(device)
-  {
-    
-
+  {    
     this.ngZone.run(() => { 
 
       this.connectedDevice = device;
