@@ -274,7 +274,10 @@ export class DashboardPage implements AfterViewInit {
             return !!pressed;
         }
       }
-     
+      ngAfterViewInit(): void {        
+
+        
+      }       
     
       onMoveGas(ev){
         this.gasLevel = 180-(ev.center.y)/2;
