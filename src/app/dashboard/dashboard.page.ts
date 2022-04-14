@@ -506,6 +506,12 @@ playSingleLock() {
         for (let i = 0, l = string.length; i < l; i ++) {
           array[i] = string.charCodeAt(i);
         } 
+        console.log('writeWithoutResponse');
+        console.log('this.carID',this.carID);
+        console.log('CUSTOM_SERVICE_UUID',CUSTOM_SERVICE_UUID);
+        console.log('LEDS_STATES_CHAR_UUID',LEDS_STATES_CHAR_UUID);
+        console.log('array.buffer',array.buffer);
+
         this.ble.writeWithoutResponse(this.carID, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
           () => {           
             if(isLogEnabled) console.log("sending settings to car: "+this.carID);
