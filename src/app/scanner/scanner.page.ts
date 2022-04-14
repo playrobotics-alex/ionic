@@ -320,7 +320,7 @@ async startBleScan()
  
           this.ngZone.run(() => {
 
-              this.router.navigate(['intro']);
+              this.router.navigate(['dashboard']);
               this.scannedDevices = [];
               this.alreadyConnected=true;
            });
