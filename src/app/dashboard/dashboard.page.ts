@@ -154,16 +154,7 @@ export class DashboardPage implements AfterViewInit {
 
                     });
 
-
-
-                  this.storage.get("storageDevice").then((value) => 
-                  {
-                      let deviceCar = JSON.parse(value);   
-                      this.ble.isConnected(deviceCar.id).then(
-                        () => this.onConnected(deviceCar),
-                        () => this.onNotConnected(deviceCar)
-                      );  
-                  });
+                  
                   this.LapTimes = [];
 
                   if (this.platform.is("android"))
@@ -302,6 +293,7 @@ export class DashboardPage implements AfterViewInit {
         });
 
 
+
         this.storage.get("TrimValue").then((value) => {
           if ( !value ) {            
             if(isLogEnabled)console.log('setting trim');
@@ -351,6 +343,16 @@ export class DashboardPage implements AfterViewInit {
         this.time = "00:00";
         this.timeBegan = new Date();
         this.startedNoRace = setInterval(this.clockRunningNoRace.bind(this), 1000);
+
+
+        this.storage.get("storageDevice").then((value) => 
+        {
+            let deviceCar = JSON.parse(value);   
+            this.ble.isConnected(deviceCar.id).then(
+              () => this.onConnected(deviceCar),
+              () => this.onNotConnected(deviceCar)
+            );  
+        });        
         
       }       
     
