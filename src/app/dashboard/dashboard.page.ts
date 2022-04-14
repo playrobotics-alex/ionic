@@ -156,6 +156,12 @@ export class DashboardPage implements AfterViewInit {
                   this.route.queryParams.subscribe(params => {
                     let deviceCar = JSON.parse(params['device']);
                     this.trainID = JSON.parse(params['deviceTrain']);
+                    if (this.platform.is("android"))
+                    {
+                      this.storage.get("storageDevice").then((value) => {
+                        deviceCar = JSON.parse(value);
+                      });                      
+                    }
      
                     this.ble.isConnected(deviceCar.id).then(
                       () => this.onConnected(deviceCar),
@@ -165,7 +171,9 @@ export class DashboardPage implements AfterViewInit {
                   this.LapTimes = [];
 
                   if (this.platform.is("android"))
+                  {
                     this.getAudioMode();
+                  }  
                   else
                     this.alertMode = 'Ring';   
 
