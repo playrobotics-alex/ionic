@@ -239,41 +239,41 @@ async startBleScan()
       year:1
     }; 
   
-
-    if (device.name)
-    {
-      console.log('lookings');
-      if(device.name.indexOf("PR-Civic")==0)
-        device.name= "PR*Honda Civic Type R*001";
-      if(device.name.indexOf("PR*")==0)
+    this.ngZone.run(() => {
+      if (device.name)
       {
-        const deviceNameSplitArray =  device.name.split("*");
-        scannedDevice.mapped_name = deviceNameSplitArray[1];
-        console.log('deviceNameSplitArray[1]');
-        console.log(deviceNameSplitArray[1]);
-        scannedDevice.mapped_id = deviceNameSplitArray[2];
-        if(scannedDevice.mapped_name=="Honda Civic Type R")
+        console.log('lookings');
+        if(device.name.indexOf("PR-Civic")==0)
+          device.name= "PR*Honda Civic Type R*001";
+        if(device.name.indexOf("PR*")==0)
         {
-          scannedDevice.mapped_icon=1;
-          scannedDevice.year=1999;
-        }  
-        this.scannedDevices.push(scannedDevice);
-        //We only want to beep on first car
-        if (this.beepPlayed == false)
-        {
-          if (this.alertMode== 'Ring') 
+          const deviceNameSplitArray =  device.name.split("*");
+          scannedDevice.mapped_name = deviceNameSplitArray[1];
+          console.log('deviceNameSplitArray[1]');
+          console.log(deviceNameSplitArray[1]);
+          scannedDevice.mapped_id = deviceNameSplitArray[2];
+          if(scannedDevice.mapped_name=="Honda Civic Type R")
           {
-            this.beepPlayed = true;
-            this.playSingleScan();
+            scannedDevice.mapped_icon=1;
+            scannedDevice.year=1999;
           }  
-          else
-            this.doVibrationFor(200);
-        }
-              
+          this.scannedDevices.push(scannedDevice);
+          //We only want to beep on first car
+          if (this.beepPlayed == false)
+          {
+            if (this.alertMode== 'Ring') 
+            {
+              this.beepPlayed = true;
+              this.playSingleScan();
+            }  
+            else
+              this.doVibrationFor(200);
+          }
+                
 
-      }  
-    } 
- 
+        }  
+      } 
+    });
 
     if(isLogEnabled) console.log('Scanned device  : '+ JSON.stringify(scannedDevice));  
   }
@@ -314,11 +314,9 @@ async startBleScan()
     
           console.log('before ng-1');
 
-          console.log('Navigating to the [dashboard] page');
-          this.ngZone.run(() => {
-            this.router.navigate(['dashboard/2']).then();;
-          });
-
+          if(isLogEnabled) console.info('Navigating to the [dashboard] page');
+          //this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+          this.router.navigate(['dashboard/2']).then();;
           this.scannedDevices = [];
           this.alreadyConnected=true;
 
