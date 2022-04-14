@@ -170,95 +170,111 @@ export class DashboardPage implements AfterViewInit {
         const refreshRate = 50;
   
         
+        setInterval( () =>
+        {
+          
+          // Returns up to 4 gamepads.
+          const gamepads = navigator.getGamepads();
+          // We take the first one, for simplicity
+          const gamepad = gamepads[0];
+  
+          // Escape if no gamepad was found
+          if (!gamepad) 
+          {
+              if(isLogEnabled) console.log('No gamepad found.');
+              this.ControllerFound = false;
+              return;
+          }
+          else
+          {
+            if(isLogEnabled) console.log('FOUNDDD');
+            this.ControllerFound = true;
+          }  
+  
+          // Filter out only the buttons which are pressed
+          const pressedButtons = gamepad.buttons                
+              .map((button, id) => ({id, button}))
+              .filter(isPressed);
+  
+          // Print the pressed buttons to our HTML
+          for (const button of pressedButtons) {
+              if(isLogEnabled) console.log(button);
+              if(button.id==8)
+              {
+                console.log('NITRO');
+                this.nitro = true;
+                this.bgColor = "rgb(0, 0, 151)";
+              }  
+              if(button.id==9)
+              {
+                console.log('NO NITRO');
+                this.nitro = false;
+                this.bgColor = "rgb(0, 0, 0)";
+              }                  
+ 
+              //This is not working coorectly because button clicks were not handeled (double click)
+              /*
+              if(button.id==2)
+                this.menuShow = true;
+ 
+              if((button.id==3)&&(this.menuShow==true))
+                this.start('lap');
+
+              if((button.id==4)&&(this.menuShow==true))
+                this.start('drag');          
+                
+              if((button.id==0)&&(this.menuShow==true))
+                this.start('countdown');                 
+              */
+
+
+          }
+          const pressedAxes = gamepad.axes;
+
+          //map left stick to steering as we use it
+          //-100 -> +100
+          this.mappedSteeringController =  Math.round(pressedAxes[0]*-100);
+          //0 -> 200
+          this.mappedSteeringController = this.mappedSteeringController + 100;
+          //0 -> 120
+          this.mappedSteeringController = this.mappedSteeringController * 0.6;          
+          //30 -> 150
+          this.mappedSteeringController = this.mappedSteeringController + 30  - this.TrimValue;          
+
+          //map right stick to gas as we use it
+          //-100 -> +100
+          this.mappedSpeedController =  pressedAxes[3]*100;
+          //0 -> 200
+          this.mappedSpeedController = this.mappedSpeedController + 100;
+          //0 -> 180
+          this.mappedSpeedController = this.mappedSpeedController * 0.9;  
+
+          //Yes nitro -- 0 -> 180
+          //No nitro -- 30 -> 150
+          if (this.nitro==false)
+              this.mappedSpeedController = this.mappedSpeedController * 0.5 + 45;  
+
+          this.mappedSpeedController = Math.round(this.mappedSpeedController);
+
+
+          if(isLogEnabled) console.log('steering 0: ' + this.mappedSteeringController + ' || Gas 3: ' + this.mappedSpeedController);
+            //console.log('1: ' +pressedAxes[1]);
+            //console.log('2: ' +pressedAxes[2]);
+
+        }
+          
+          
+          
+
+          , refreshRate);
+    
 
     
         function isPressed({button: {pressed}}) {
             return !!pressed;
         }
       }
-      ngAfterViewInit(): void {        
-
-        //Check if this is the first time we are running the app
-        this.storage.get("FirstTimeApp").then((value) => {
-          if ( !value ) {            
-            if(isLogEnabled) console.log('App Runing for the first time, setting storage default values');
-            this.storage.set('SlowHeatToggle', true); 
-            this.storage.set('SlowFuelToggle', true); 
-            this.storage.set('IndoorLightsToggle', true); 
-            this.storage.set('AccSteeringToggle', false); 
-            this.storage.set('FirstTimeApp', 'NO'); 
-            this.storage.set('TrimValue', '0'); 
-            this.storage.set('InitialMaxLapTime', '20'); 
-            this.TrimValue = 0;
-          }            
-          else
-            if(isLogEnabled) console.log('App NOT Runing for the first time');
-        });
-
-        
-        this.storage.get("storageDevice").then((value) => 
-        {
-            let deviceCar = JSON.parse(value);   
-            this.ble.isConnected(deviceCar.id).then(
-              () => this.onConnected(deviceCar),
-              () => this.onNotConnected(deviceCar)
-            );  
-        });   
-
-
-        this.storage.get("TrimValue").then((value) => {
-          if ( !value ) {            
-            if(isLogEnabled)console.log('setting trim');
-            this.storage.set('TrimValue', '0'); 
-            this.TrimValue = 0;
-          }        
-          else   
-          { 
-            if(isLogEnabled) 
-            {
-              console.log('trim set');
-              console.log(value);
-            }  
-          }  
-        });        
-
-        this.gasLevel = 90;
-        this.GasValue = 500;
-        this.RPMValue = 0;             
-        this.wheelRotate = 0;   
-        this.steering = 90;              
-        //Gauge needle animations
-        setTimeout(() => {
-          this.AnimationDuration=700;
-          this.RPMValue=1000;
-          this.FuelValue=1000;
-          this.TempValue=180;                    
-        },500);
-
-        setTimeout(() => 
-        {                
-          this.RPMValue=0;
-          this.FuelValue=0;
-          this.TempValue=0;
-        },1400);
-        
-        setTimeout(() => 
-        {
-          this.AnimationDuration=20;
-          this.get_duration_interval= setInterval(()=> 
-          {
-              this.sendBLE(); 
-          }, 50);
-          },2000);
-        
-        //Start ticking time  
-        this.time = "00:00";
-        this.timeBegan = new Date();
-        this.startedNoRace = setInterval(this.clockRunningNoRace.bind(this), 1000);
-
      
-        
-      }       
     
       onMoveGas(ev){
         this.gasLevel = 180-(ev.center.y)/2;
