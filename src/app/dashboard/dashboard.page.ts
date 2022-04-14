@@ -771,7 +771,7 @@ playSingleLock() {
       array[i] = string.charCodeAt(i);
     }
       //console.log("before sending attemp:" + this.carID);
-      this.ble.writeWithoutResponse(this.carID, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
+      this.ble.write(this.carID, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
         () => {           
          // console.log("sending settings to car: "+this.carID);
         },
