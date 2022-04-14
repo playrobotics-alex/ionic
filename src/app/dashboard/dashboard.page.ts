@@ -294,13 +294,6 @@ export class DashboardPage implements AfterViewInit {
         });
 
         
-        this.storage.get("storageDevice").then((value) => 
-        {
-            //this.ble.isConnected(value.id).then(
-             // () => this.onConnected(value),
-             // () => this.onNotConnected(value)
-            //);  
-        });   
 
 
         this.storage.get("TrimValue").then((value) => {
