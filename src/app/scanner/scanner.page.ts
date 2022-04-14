@@ -316,7 +316,7 @@ async startBleScan()
           else
             this.doVibrationFor(200);
     
-          console.log('before ng-2');
+          console.log('before ng-3');
  
           this.ngZone.run(() => {
 
