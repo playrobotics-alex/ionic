@@ -276,6 +276,51 @@ export class DashboardPage implements AfterViewInit {
       }
       ngAfterViewInit(): void {        
 
+        //Check if this is the first time we are running the app
+        this.storage.get("FirstTimeApp").then((value) => {
+          if ( !value ) {            
+            if(isLogEnabled) console.log('App Runing for the first time, setting storage default values');
+            this.storage.set('SlowHeatToggle', true); 
+            this.storage.set('SlowFuelToggle', true); 
+            this.storage.set('IndoorLightsToggle', true); 
+            this.storage.set('AccSteeringToggle', false); 
+            this.storage.set('FirstTimeApp', 'NO'); 
+            this.storage.set('TrimValue', '0'); 
+            this.storage.set('InitialMaxLapTime', '20'); 
+            this.TrimValue = 0;
+          }            
+          else
+            if(isLogEnabled) console.log('App NOT Runing for the first time');
+        });
+
+        
+        this.storage.get("storageDevice").then((value) => 
+        {
+            let deviceCar = JSON.parse(value);   
+            this.ble.isConnected(deviceCar.id).then(
+              () => this.onConnected(deviceCar),
+              () => this.onNotConnected(deviceCar)
+            );  
+        });   
+
+
+        this.storage.get("TrimValue").then((value) => {
+          if ( !value ) {            
+            if(isLogEnabled)console.log('setting trim');
+            this.storage.set('TrimValue', '0'); 
+            this.TrimValue = 0;
+          }        
+          else   
+          { 
+            if(isLogEnabled) 
+            {
+              console.log('trim set');
+              console.log(value);
+            }  
+          }  
+        });        
+
+    
         
       }       
     
