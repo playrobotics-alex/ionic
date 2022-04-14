@@ -312,14 +312,16 @@ async startBleScan()
           else
             this.doVibrationFor(200);
     
-          console.log('before ng-1');
+          console.log('before ng-2');
+ 
+          this.ngZone.run(() => {
 
-          if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-          //this.router.navigate(['dashboard/' + JSON.stringify(device)]);
-          this.router.navigate(['dashboard/2']).then();;
-          this.scannedDevices = [];
-          this.alreadyConnected=true;
-
+              if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+              //this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+              this.router.navigate(['dashboard/2']).then();;
+              this.scannedDevices = [];
+              this.alreadyConnected=true;
+           });
           //Dissmiss loader
           this.loadingController.dismiss().then((response) => {
             console.log('Loader closed!', response);
@@ -351,11 +353,14 @@ async startBleScan()
               else
                 this.doVibrationFor(200);
 
-              if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-                this.router.navigate(['dashboard/' + JSON.stringify(device)]);
-              
-              this.scannedDevices = [];
-              this.alreadyConnected=true;
+                this.ngZone.run(() => {
+
+                  if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+                  //this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+                  this.router.navigate(['dashboard/2']).then();;
+                  this.scannedDevices = [];
+                  this.alreadyConnected=true;
+               });
 
               //Dissmiss loader
               this.loadingController.dismiss().then((response) => {
@@ -384,12 +389,14 @@ async startBleScan()
               else
                 this.doVibrationFor(200);
         
-              console.log('before ng-zone');
-              
-              if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-              this.router.navigate(['dashboard/' + JSON.stringify(device)]);
-            
-              this.scannedDevices = [];
+                this.ngZone.run(() => {
+
+                  if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+                  //this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+                  this.router.navigate(['dashboard/2']).then();;
+                  this.scannedDevices = [];
+                  this.alreadyConnected=true;
+               });
 
               //Dissmiss loader
               this.loadingController.dismiss().then((response) => {
@@ -432,11 +439,14 @@ async startBleScan()
         if (device.name!="train")
         {  
 
-          if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-            this.router.navigate(['dashboard/' + JSON.stringify(device)]);
-          
-          this.scannedDevices = [];
-          this.alreadyConnected=true;
+          this.ngZone.run(() => {
+
+            if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+            //this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+            this.router.navigate(['dashboard/2']).then();;
+            this.scannedDevices = [];
+            this.alreadyConnected=true;
+         });
             
         }
       }, 
