@@ -153,15 +153,16 @@ export class DashboardPage implements AfterViewInit {
                     this.setRingtoneLock();  
 
                     });
-                  this.route.paramMap.subscribe(params => {
-                    let deviceCar = JSON.parse(params['car']);
-                    //this.trainID = JSON.parse(params['deviceTrain']);
 
-     
-                    this.ble.isConnected(deviceCar.id).then(
-                      () => this.onConnected(deviceCar),
-                      () => this.onNotConnected(deviceCar)
-                    );  
+
+
+                  this.storage.get("storageDevice").then((value) => 
+                  {
+                      let deviceCar = JSON.parse(value);   
+                      this.ble.isConnected(deviceCar.id).then(
+                        () => this.onConnected(deviceCar),
+                        () => this.onNotConnected(deviceCar)
+                      );  
                   });
                   this.LapTimes = [];
 

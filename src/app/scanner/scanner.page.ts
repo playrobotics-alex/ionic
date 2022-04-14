@@ -300,6 +300,10 @@ async startBleScan()
     });
   });
 
+    //add device data to storage
+    this.storage.set('storageDevice', JSON.stringify(device)); 
+
+
     console.log('connect to device to '+device.name+'.');
     //this.showToast('Connecting to car', 'medium', 2000, 'bottom');
     console.log('this.ble now');
@@ -316,8 +320,7 @@ async startBleScan()
  
           this.ngZone.run(() => {
 
-              if(isLogEnabled) console.log('Navigating to the [dashboard] page','dashboard/' + JSON.stringify(device));
-              this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+              this.router.navigate(['dashboard']);
               this.scannedDevices = [];
               this.alreadyConnected=true;
            });
@@ -355,7 +358,7 @@ async startBleScan()
                 this.ngZone.run(() => {
 
                   if(isLogEnabled) console.log('Navigating to the [dashboard] page');
-                  this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+                  this.router.navigate(['dashboard']);
                   this.scannedDevices = [];
                   this.alreadyConnected=true;
                });
@@ -390,7 +393,7 @@ async startBleScan()
                 this.ngZone.run(() => {
 
                   if(isLogEnabled) console.log('Navigating to the [dashboard] page');
-                  this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+                  this.router.navigate(['dashboard']);
                   this.scannedDevices = [];
                   this.alreadyConnected=true;
                });
@@ -439,7 +442,7 @@ async startBleScan()
           this.ngZone.run(() => {
 
             if(isLogEnabled) console.log('Navigating to the [dashboard] page');
-            this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+            this.router.navigate(['dashboard']);
             this.scannedDevices = [];
             this.alreadyConnected=true;
          });
