@@ -316,7 +316,7 @@ async startBleScan()
  
           this.ngZone.run(() => {
 
-              if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+              if(isLogEnabled) console.log('Navigating to the [dashboard] page','dashboard/' + JSON.stringify(device));
               this.router.navigate(['dashboard/' + JSON.stringify(device)]);
               this.scannedDevices = [];
               this.alreadyConnected=true;
