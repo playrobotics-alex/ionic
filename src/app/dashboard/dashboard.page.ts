@@ -294,7 +294,7 @@ export class DashboardPage implements AfterViewInit {
         });
 
         
-
+  
 
         this.storage.get("TrimValue").then((value) => {
           if ( !value ) {            
