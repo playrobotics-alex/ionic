@@ -292,6 +292,15 @@ export class DashboardPage implements AfterViewInit {
             if(isLogEnabled) console.log('App NOT Runing for the first time');
         });
 
+        
+        this.storage.get("storageDevice").then((value) => 
+        {
+            let deviceCar = JSON.parse(value);   
+            this.ble.isConnected(deviceCar.id).then(
+              () => this.onConnected(deviceCar),
+              () => this.onNotConnected(deviceCar)
+            );  
+        });   
 
 
         this.storage.get("TrimValue").then((value) => {
@@ -344,15 +353,7 @@ export class DashboardPage implements AfterViewInit {
         this.timeBegan = new Date();
         this.startedNoRace = setInterval(this.clockRunningNoRace.bind(this), 1000);
 
-
-        this.storage.get("storageDevice").then((value) => 
-        {
-            let deviceCar = JSON.parse(value);   
-            this.ble.isConnected(deviceCar.id).then(
-              () => this.onConnected(deviceCar),
-              () => this.onNotConnected(deviceCar)
-            );  
-        });        
+     
         
       }       
     
