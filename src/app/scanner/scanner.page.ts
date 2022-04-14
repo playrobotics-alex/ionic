@@ -228,8 +228,10 @@ async startBleScan()
   onDiscoveredDevice(device)
   {
     console.info('Navigating to the [dashboard] page');
+    this.ngZone.run(() => {
     this.router.navigate(['dashboard/' + JSON.stringify(device)]);
-    
+  });
+
     var scannedDevice = 
     { 
       name: device.name, 
