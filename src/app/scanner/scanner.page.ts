@@ -227,11 +227,6 @@ async startBleScan()
   // con discovered device
   onDiscoveredDevice(device)
   {
-    console.info('Navigating to the [dashboard] page');
-    this.ngZone.run(() => {
-    this.router.navigate(['dashboard/' + JSON.stringify(device)]);
-  });
-
     var scannedDevice = 
     { 
       name: device.name, 
@@ -244,63 +239,41 @@ async startBleScan()
       year:1
     }; 
   
-    this.ngZone.run(() => {
-      /*
-      if(device.name === "train")
-      {
-        //If we found the trainer just connect to it automatically
-        //this.connectToDevice(device);
-        console.log('Connected to TRAIN saving id: '+device.id+'.');
-        this.ble.connect(device.id).subscribe
-        (
-          (success) => {
-                console.log('trainer success');
-                //If train save id
-                this.trainID = device.id;
-          },
-          (error) => {
-            console.log('trainer error');
-          }      
-        )
-      }
-      */
 
-      if (device.name)
+    if (device.name)
+    {
+      console.log('lookings');
+      if(device.name.indexOf("PR-Civic")==0)
+        device.name= "PR*Honda Civic Type R*001";
+      if(device.name.indexOf("PR*")==0)
       {
-        console.log('lookings');
-        if(device.name.indexOf("PR-Civic")==0)
-          device.name= "PR*Honda Civic Type R*001";
-        if(device.name.indexOf("PR*")==0)
+        const deviceNameSplitArray =  device.name.split("*");
+        scannedDevice.mapped_name = deviceNameSplitArray[1];
+        console.log('deviceNameSplitArray[1]');
+        console.log(deviceNameSplitArray[1]);
+        scannedDevice.mapped_id = deviceNameSplitArray[2];
+        if(scannedDevice.mapped_name=="Honda Civic Type R")
         {
-          const deviceNameSplitArray =  device.name.split("*");
-          scannedDevice.mapped_name = deviceNameSplitArray[1];
-          console.log('deviceNameSplitArray[1]');
-          console.log(deviceNameSplitArray[1]);
-          scannedDevice.mapped_id = deviceNameSplitArray[2];
-          if(scannedDevice.mapped_name=="Honda Civic Type R")
-          {
-            scannedDevice.mapped_icon=1;
-            scannedDevice.year=1999;
-          }  
-          this.scannedDevices.push(scannedDevice);
-          //We only want to beep on first car
-          if (this.beepPlayed == false)
-          {
-            if (this.alertMode== 'Ring') 
-            {
-              this.beepPlayed = true;
-              this.playSingleScan();
-            }  
-            else
-              this.doVibrationFor(200);
-          }
-          
-          
-
-
+          scannedDevice.mapped_icon=1;
+          scannedDevice.year=1999;
         }  
-      } 
-    });
+        this.scannedDevices.push(scannedDevice);
+        //We only want to beep on first car
+        if (this.beepPlayed == false)
+        {
+          if (this.alertMode== 'Ring') 
+          {
+            this.beepPlayed = true;
+            this.playSingleScan();
+          }  
+          else
+            this.doVibrationFor(200);
+        }
+              
+
+      }  
+    } 
+ 
 
     if(isLogEnabled) console.log('Scanned device  : '+ JSON.stringify(scannedDevice));  
   }
@@ -341,8 +314,11 @@ async startBleScan()
     
           console.log('before ng-1');
 
-          if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-          this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+          console.info('Navigating to the [dashboard] page');
+          this.ngZone.run(() => {
+            this.router.navigate(['dashboard/' + JSON.stringify(device)]);
+          });
+
           this.scannedDevices = [];
           this.alreadyConnected=true;
 
