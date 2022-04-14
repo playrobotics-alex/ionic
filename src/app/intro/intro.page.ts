@@ -18,7 +18,10 @@ export class IntroPage  {
                 public  navCtrl: NavController,       
                 public  platform: Platform,  
                 private toastCtrl: ToastController
-            ) { }
+            ) { 
+              if (!this.platform.is("android"))
+                this.navCtrl.navigateRoot('scanner');
+            }
 
   exitIntro() 
   {
