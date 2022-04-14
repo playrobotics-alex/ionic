@@ -16,9 +16,6 @@ import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
 import 'hammerjs';
 
-declare const NavigationBar: any;
-//NavigationBar.backgroundColorByHexString("#FF0000", true);
-NavigationBar.hide();
 
 
 const CUSTOM_SERVICE_UUID       = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
@@ -148,6 +145,13 @@ export class DashboardPage implements AfterViewInit {
                 private gamepad: GamepadService,
                 private ngZone: NgZone ) 
                 {
+                  if (this.platform.is("android"))
+                  {
+                    let NavigationBar: any;
+                    //NavigationBar.backgroundColorByHexString("#FF0000", true);
+                    NavigationBar.hide();
+                  }
+
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
                     this.setRingtoneLock();  
