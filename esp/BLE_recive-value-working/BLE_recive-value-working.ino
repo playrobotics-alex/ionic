@@ -152,7 +152,7 @@ void setup() {
   // Create a BLE Characteristic
   pCharacteristic = pService->createCharacteristic(
                       CHARACTERISTIC_UUID_TX,
-                      BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ|BLECharacteristic::PROPERTY_WRITE
+                      BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ|BLECharacteristic::PROPERTY_WRITE_NR  
                     );
 
   BLE2902 *desc = new BLE2902();
@@ -161,7 +161,7 @@ void setup() {
   
   BLECharacteristic *pCharacteristic = pService->createCharacteristic(
                                          CHARACTERISTIC_UUID_RX,
-                                         BLECharacteristic::PROPERTY_WRITE
+                                         BLECharacteristic::PROPERTY_WRITE_NR
                                        );
   pCharacteristic->setReadProperty(true);
   pCharacteristic->setCallbacks(new MyCallbacks());
