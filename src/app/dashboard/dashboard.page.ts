@@ -67,8 +67,8 @@ export class DashboardPage implements AfterViewInit {
   public RaceType = "lap";
 
   public SubscribedToNotifyBLE = false;
-  trainID  : string;
-  carID : string;
+  trainID  : string="";
+  carID : string="";
 
   //Gauges variable
   //Slide should be at the middle
@@ -145,12 +145,6 @@ export class DashboardPage implements AfterViewInit {
                 private gamepad: GamepadService,
                 private ngZone: NgZone ) 
                 {
-                  if (this.platform.is("android"))
-                  {
-                    let NavigationBar: any;
-                    //NavigationBar.backgroundColorByHexString("#FF0000", true);
-                    NavigationBar.hide();
-                  }
 
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
