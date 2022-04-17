@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { NavController, ToastController } from '@ionic/angular';
 import { Diagnostic } from '@ionic-native/diagnostic/ngx';
 import { NativeStorage } from '@ionic-native/native-storage/ngx';
+import { Platform } from '@ionic/angular'; 
   
 const isLogEnabled = true;
 
@@ -14,41 +15,53 @@ export class IntroPage  {
 
     constructor(private diagnostic: Diagnostic,
                 private nativeStorage : NativeStorage,
-                public  navCtrl: NavController,        
+                public  navCtrl: NavController,       
+                public  platform: Platform,  
                 private toastCtrl: ToastController
-            ) { }
+            ) { 
+              if (!this.platform.is("android"))
+                this.navCtrl.navigateRoot('scanner');
+            }
 
   exitIntro() 
   {
-    this.diagnostic.requestLocationAuthorization().then(
-      ()=>
-      {
-        if(isLogEnabled) console.info('Location authorisation was requested!');
+    //Location premissions are only needed on android not on IOS
+    if (this.platform.is("android"))
+    {  
+      this.diagnostic.requestLocationAuthorization().then(
+        ()=>
+        {
+          if(isLogEnabled) console.info('Location authorisation was requested!');
 
-        if(isLogEnabled) console.log('Bluetooth is enabled.'); 
-        if(isLogEnabled) console.info('Checking Location authorization ...');
-        
-        this.diagnostic.getLocationAuthorizationStatus().then( 
-          (state) => 
-          {
-            if (state == this.diagnostic.permissionStatus.GRANTED)
+          if(isLogEnabled) console.log('Bluetooth is enabled.'); 
+          if(isLogEnabled) console.info('Checking Location authorization ...');
+          
+          this.diagnostic.getLocationAuthorizationStatus().then( 
+            (state) => 
             {
-              if(isLogEnabled) console.log('Location permission was granted.');
-              if(isLogEnabled) console.info('Checking Location status ...');
-
-              if(isLogEnabled) console.info('Location authorisation was granted!');
-              this.navCtrl.navigateRoot('scanner');
-            } else 
+              if (state == this.diagnostic.permissionStatus.GRANTED)
               {
-                if(isLogEnabled) console.error('Location authorisation was Not granted.');
-                this.showToast("Please grant the location access!", "light", 2000, "bottom");
-              }
-        }).catch(e => { if(isLogEnabled)  console.error(e) });
-      },
-      (error)=>
-      {
-        if(isLogEnabled) console.error('Error requesting the Location authorisation!', error);
-      });
+                if(isLogEnabled) console.log('Location permission was granted.');
+                if(isLogEnabled) console.info('Checking Location status ...');
+
+                if(isLogEnabled) console.info('Location authorisation was granted!');
+                this.navCtrl.navigateRoot('scanner');
+              } else 
+                {
+                  if(isLogEnabled) console.error('Location authorisation was Not granted.');
+                  this.showToast("Please grant the location access!", "light", 2000, "bottom");
+                }
+          }).catch(e => { if(isLogEnabled)  console.error(e) });
+        },
+        (error)=>
+        {
+          if(isLogEnabled) console.error('Error requesting the Location authorisation!', error);
+        });
+    }   
+    else
+      this.navCtrl.navigateRoot('scanner');
+
+
   }
 
   // show toast

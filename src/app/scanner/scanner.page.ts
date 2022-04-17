@@ -11,7 +11,7 @@ import { NativeAudio } from '@ionic-native/native-audio/ngx';
 import { AudioManagement } from '@ionic-native/audio-management/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
 
-
+import {Router} from '@angular/router';
 
 const isLogEnabled = true;
 const defaultDeviceName =  "ESP32";
@@ -34,6 +34,7 @@ export class ScannerPage   {
               private diagnostic: Diagnostic,
               private nativeStorage : NativeStorage,
               public  navCtrl: NavController,   
+              public  router:Router,
               public  platform: Platform,  
               private toastCtrl: ToastController,  
               private alertCtrl: AlertController,
@@ -42,7 +43,7 @@ export class ScannerPage   {
               private storage: Storage,
               private vibration: Vibration,
               private nativeAudio: NativeAudio,
-              private audio: AudioManagement,
+              private audio: AudioManagement,              
               private ngZone: NgZone ) 
               {                
                 this.platform.ready().then(() => {
@@ -59,16 +60,21 @@ export class ScannerPage   {
                 this.storage.create();
                 this.trainID =" ";
 
-                //Check if intro done
-                this.storage.get("intro-done").then((value) => {
-                  if ( !value ) {            
-                    if(isLogEnabled) console.log('Intro not done yet, updating intro to done and redirecting');
-                    this.storage.set('intro-done', true); 
-                    this.navCtrl.navigateRoot('intro');
-                  }            
-                  else
-                    if(isLogEnabled) console.log('App NOT Runing for the first time');
-                });
+                //Check if intro done (intro only needed on android)
+                if (this.platform.is("android"))
+                {
+                  this.storage.get("intro-done").then((value) => {
+                    if ( !value ) {            
+                      if(isLogEnabled) console.log('Intro not done yet, updating intro to done and redirecting');
+                      this.storage.set('intro-done', true); 
+                      //this.navCtrl.navigateRoot('intro');
+                      this.router.navigate(['intro']);
+                    }            
+                    else
+                      if(isLogEnabled) console.log('App NOT Runing for the first time');
+                  });
+                }
+
               }
 
 
@@ -127,8 +133,15 @@ playSingleScan() {
 // start the BLE scan
 async startBleScan()
 { 
+
+
+
+
   this.beepPlayed = false;
-  this.getAudioMode();
+  if (this.platform.is("android"))
+    this.getAudioMode();
+  else
+    this.alertMode = 'Ring';  
   let scanSpinner = await this.loadingController.create({
       message : "Scanning for cars....",
       duration : 2000,
@@ -145,35 +158,63 @@ async startBleScan()
     () =>
     { // Bluetooth is enabled.
       // is the location enabled?
-      this.ble.isLocationEnabled().then(
-        () =>
-        { // location is enabled.
-          scanSpinner.present().then(
-            () => 
-            { 
-              if(isLogEnabled) console.info('Scanning ....');
-              
-              // start the BLE scanning.
-              this.ble.scan([], 1).subscribe(
-                (device) => 
-                {
-                  this.onDiscoveredDevice(device);
-                }, 
-                (error)  =>  
-                {
-                  if(isLogEnabled) console.error('Error scanning.', error);
-                  scanSpinner.dismiss().then(() => { 
-                            this.showAlert('Error scanning.', error); 
-                  });
-                }); 
-            });
-        },
-        // location is not enabled.
-        (error) =>
-        {
-          if(isLogEnabled) console.error('Error isLocationEnabled.', error);
-          this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
-        });  
+      if (this.platform.is("android"))
+      {  
+        this.ble.isLocationEnabled().then(
+          () =>
+          { // location is enabled.
+            scanSpinner.present().then(
+              () => 
+              { 
+                if(isLogEnabled) console.info('Scanning ....');
+                
+                // start the BLE scanning.
+                this.ble.scan([], 1).subscribe(
+                  (device) => 
+                  {
+                    this.onDiscoveredDevice(device);
+                  }, 
+                  (error)  =>  
+                  {
+                    if(isLogEnabled) console.error('Error scanning.', error);
+                    scanSpinner.dismiss().then(() => { 
+                              this.showAlert('Error scanning.', error); 
+                    });
+                  }); 
+              });
+          },
+          // location is not enabled.
+          (error) =>
+          {
+            if(isLogEnabled) console.error('Error isLocationEnabled.', error);
+            this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
+          });  
+      }
+      else
+      { // location is enabled.
+        scanSpinner.present().then(
+          () => 
+          { 
+            if(isLogEnabled) console.info('Scanning ....');
+            
+            // start the BLE scanning.
+            this.ble.scan([], 1).subscribe(
+              (device) => 
+              {
+                this.onDiscoveredDevice(device);
+              }, 
+              (error)  =>  
+              {
+                if(isLogEnabled) console.error('Error scanning.', error);
+                scanSpinner.dismiss().then(() => { 
+                          this.showAlert('Error scanning.', error); 
+                });
+              }); 
+          });
+      }
+
+
+
     },
     // Bluetooth is not enabled.
     (error) => 
@@ -199,26 +240,6 @@ async startBleScan()
     }; 
   
     this.ngZone.run(() => {
-      /*
-      if(device.name === "train")
-      {
-        //If we found the trainer just connect to it automatically
-        //this.connectToDevice(device);
-        console.log('Connected to TRAIN saving id: '+device.id+'.');
-        this.ble.connect(device.id).subscribe
-        (
-          (success) => {
-                console.log('trainer success');
-                //If train save id
-                this.trainID = device.id;
-          },
-          (error) => {
-            console.log('trainer error');
-          }      
-        )
-      }
-      */
-
       if (device.name)
       {
         console.log('lookings');
@@ -248,9 +269,7 @@ async startBleScan()
             else
               this.doVibrationFor(200);
           }
-          
-          
-
+                
 
         }  
       } 
@@ -281,6 +300,10 @@ async startBleScan()
     });
   });
 
+    //add device data to storage
+    this.storage.set('storageDevice', JSON.stringify(device)); 
+
+
     console.log('connect to device to '+device.name+'.');
     //this.showToast('Connecting to car', 'medium', 2000, 'bottom');
     console.log('this.ble now');
@@ -293,21 +316,14 @@ async startBleScan()
           else
             this.doVibrationFor(200);
     
-          console.log('before ng-zone');
-          this.ngZone.run(()=> {
-            let navigationExtras: NavigationExtras = {
-              queryParams: { 
-                device: JSON.stringify(device),
-                deviceTrain: JSON.stringify(this.trainID)
-              }
-            }; 
-            if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-            if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
-            this.scannedDevices = [];
-            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
-          });
-          this.alreadyConnected=true;
+          console.log('before ng-3');
+ 
+          this.ngZone.run(() => {
 
+              this.router.navigate(['dashboard']);
+              this.scannedDevices = [];
+              this.alreadyConnected=true;
+           });
           //Dissmiss loader
           this.loadingController.dismiss().then((response) => {
             console.log('Loader closed!', response);
@@ -338,21 +354,15 @@ async startBleScan()
                 this.playSingle();
               else
                 this.doVibrationFor(200);
-        
-              console.log('before ng-zone');
-              this.ngZone.run(()=> {
-                let navigationExtras: NavigationExtras = {
-                  queryParams: { 
-                    device: JSON.stringify(device),
-                    deviceTrain: JSON.stringify(this.trainID)
-                  }
-                }; 
-                if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-                if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
-                this.scannedDevices = [];
-                this.navCtrl.navigateForward(['dashboard'], navigationExtras);
-              });
-              this.alreadyConnected=true;
+
+                this.ngZone.run(() => {
+
+                  if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+                  this.router.navigate(['dashboard']);
+                  this.scannedDevices = [];
+                  this.alreadyConnected=true;
+               });
+
               //Dissmiss loader
               this.loadingController.dismiss().then((response) => {
                 console.log('Loader closed!', response);
@@ -380,20 +390,14 @@ async startBleScan()
               else
                 this.doVibrationFor(200);
         
-              console.log('before ng-zone');
-              this.ngZone.run(()=> {
-                let navigationExtras: NavigationExtras = {
-                  queryParams: { 
-                    device: JSON.stringify(device),
-                    deviceTrain: JSON.stringify(this.trainID)
-                  }
-                }; 
-                if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-                if(isLogEnabled) console.log('Navigation extras: device train = '+this.trainID);
-                this.scannedDevices = [];
-                this.navCtrl.navigateForward(['dashboard'], navigationExtras);
-              });
-              this.alreadyConnected=true;
+                this.ngZone.run(() => {
+
+                  if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+                  this.router.navigate(['dashboard']);
+                  this.scannedDevices = [];
+                  this.alreadyConnected=true;
+               });
+
               //Dissmiss loader
               this.loadingController.dismiss().then((response) => {
                 console.log('Loader closed!', response);
@@ -435,16 +439,14 @@ async startBleScan()
         if (device.name!="train")
         {  
 
-            let navigationExtras: NavigationExtras = {
-              queryParams: { 
-                device: JSON.stringify(device),
-                deviceTrain: JSON.stringify(trainID)
-              }
-            }; 
-            if(isLogEnabled) console.info('Navigating to the [dashboard] page');
-            if(isLogEnabled) console.log('Navigation extras: device = '+JSON.stringify(device));
-            //this.scannedDevices = [];
-            this.navCtrl.navigateForward(['dashboard'], navigationExtras);
+          this.ngZone.run(() => {
+
+            if(isLogEnabled) console.log('Navigating to the [dashboard] page');
+            this.router.navigate(['dashboard']);
+            this.scannedDevices = [];
+            this.alreadyConnected=true;
+         });
+            
         }
       }, 
       (error) => {

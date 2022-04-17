@@ -16,9 +16,6 @@ import { ScreenOrientation } from '@ionic-native/screen-orientation/ngx';
 import { Vibration } from '@ionic-native/vibration/ngx';
 import 'hammerjs';
 
-declare const NavigationBar: any;
-//NavigationBar.backgroundColorByHexString("#FF0000", true);
-NavigationBar.hide();
 
 
 const CUSTOM_SERVICE_UUID       = '6E400001-B5A3-F393-E0A9-E50E24DCCA9E';
@@ -148,28 +145,35 @@ export class DashboardPage implements AfterViewInit {
                 private gamepad: GamepadService,
                 private ngZone: NgZone ) 
                 {
+                  if (this.platform.is("android"))
+                  {
+                    let NavigationBar: any;
+                    //NavigationBar.backgroundColorByHexString("#FF0000", true);
+                    NavigationBar.hide();
+                  }
+
                   this.platform.ready().then(() => {
                     this.screenOrientation.lock(this.screenOrientation.ORIENTATIONS.LANDSCAPE);
                     this.setRingtoneLock();  
 
                     });
-                  this.route.queryParams.subscribe(params => {
-                    let deviceCar = JSON.parse(params['device']);
-                    this.trainID = JSON.parse(params['deviceTrain']);
-     
-                    this.ble.isConnected(deviceCar.id).then(
-                      () => this.onConnected(deviceCar),
-                      () => this.onNotConnected(deviceCar)
-                    );  
-                  });
+
+                  
                   this.LapTimes = [];
-                  this.getAudioMode();
+
+                  if (this.platform.is("android"))
+                  {
+                    this.getAudioMode();
+                  }  
+                  else
+                    this.alertMode = 'Ring';   
 
                   //this.listenToGamepad();
                 }
       ngOnInit() {    
         const refreshRate = 50;
   
+        
         setInterval( () =>
         {
           
@@ -239,7 +243,7 @@ export class DashboardPage implements AfterViewInit {
           //0 -> 120
           this.mappedSteeringController = this.mappedSteeringController * 0.6;          
           //30 -> 150
-          this.mappedSteeringController = this.mappedSteeringController + 30  + this.TrimValue;          
+          this.mappedSteeringController = this.mappedSteeringController + 30  - this.TrimValue;          
 
           //map right stick to gas as we use it
           //-100 -> +100
@@ -293,6 +297,18 @@ export class DashboardPage implements AfterViewInit {
             if(isLogEnabled) console.log('App NOT Runing for the first time');
         });
 
+        
+  
+        
+        this.storage.get("storageDevice").then((value) => 
+        {
+            let deviceCar = JSON.parse(value);   
+            this.ble.isConnected(deviceCar.id).then(
+              () => this.onConnected(deviceCar),
+              () => this.onNotConnected(deviceCar)
+            );  
+        });   
+
 
         this.storage.get("TrimValue").then((value) => {
           if ( !value ) {            
@@ -343,6 +359,8 @@ export class DashboardPage implements AfterViewInit {
         this.time = "00:00";
         this.timeBegan = new Date();
         this.startedNoRace = setInterval(this.clockRunningNoRace.bind(this), 1000);
+
+     
         
       }       
     
@@ -395,9 +413,7 @@ export class DashboardPage implements AfterViewInit {
     }  
 // on connected to a device
   onConnected(device)
-  {
-    
-
+  {    
     this.ngZone.run(() => { 
 
       this.connectedDevice = device;
@@ -502,6 +518,12 @@ playSingleLock() {
         for (let i = 0, l = string.length; i < l; i ++) {
           array[i] = string.charCodeAt(i);
         } 
+        console.log('writeWithoutResponse');
+        console.log('this.carID',this.carID);
+        console.log('CUSTOM_SERVICE_UUID',CUSTOM_SERVICE_UUID);
+        console.log('LEDS_STATES_CHAR_UUID',LEDS_STATES_CHAR_UUID);
+        console.log('array.buffer',array.buffer);
+
         this.ble.writeWithoutResponse(this.carID, CUSTOM_SERVICE_UUID, LEDS_STATES_CHAR_UUID, array.buffer).then(
           () => {           
             if(isLogEnabled) console.log("sending settings to car: "+this.carID);
@@ -697,9 +719,9 @@ playSingleLock() {
           this.revSteering = this.revSteering * steeringMultiplier
 
           //convert it to 0->180
-          this.revSteering = this.revSteering +90 + this.TrimValue;
+          this.revSteering = this.revSteering +90;
           //reverse steering
-          this.revSteering = 180 - this.revSteering;
+          this.revSteering = 180 - this.revSteering  - this.TrimValue ;
           //console.log("this.revSteering: " + this.revSteering);
 
 
@@ -718,7 +740,7 @@ playSingleLock() {
         //now back to 0-180
         netSteering = netSteering*steeringMultiplier +90;
         this.revSteering = Math.round(180-(netSteering*1));
-        this.revSteering =  this.revSteering + this.TrimValue;
+        this.revSteering =  this.revSteering - this.TrimValue;
     } 
 
     let Mapped180Gas = 180-(this.gasLevel);
@@ -1462,36 +1484,66 @@ async startBleScan()
       () =>
       { // Bluetooth is enabled.
         // is the location enabled?
-        this.ble.isLocationEnabled().then(
-          () =>
-          { // location is enabled.
-                if(isLogEnabled) console.info('Scanning ....');
-                
-                // start the BLE scanning.
-                this.ble.scan([], 1).subscribe(
-                  (device) => 
-                  {
-                    this.onDiscoveredDevice(device);
+        if (this.platform.is("android"))
+        {
+          this.ble.isLocationEnabled().then(
+            () =>
+            { // location is enabled.
+                  if(isLogEnabled) console.info('Scanning ....');
+                  
+                  // start the BLE scanning.
+                  this.ble.scan([], 1).subscribe(
+                    (device) => 
+                    {
+                      this.onDiscoveredDevice(device);
 
-                  }, 
-                  (error)  =>  
-                  {
-                    if(isLogEnabled) console.error('Error scanning.', error);
-                    //Dissmiss loader
-                    this.loadingController.dismiss().then((response) => {
-                      if(isLogEnabled) console.log('Loader closed!', response);
-                    }).catch((err) => {
-                      if(isLogEnabled) console.log('Error occured : ', err);
-                    });                    
+                    }, 
+                    (error)  =>  
+                    {
+                      if(isLogEnabled) console.error('Error scanning.', error);
+                      //Dissmiss loader
+                      this.loadingController.dismiss().then((response) => {
+                        if(isLogEnabled) console.log('Loader closed!', response);
+                      }).catch((err) => {
+                        if(isLogEnabled) console.log('Error occured : ', err);
+                      });                    
 
-                  }); 
-          },
-          // location is not enabled.
-          (error) =>
-          {
-            if(isLogEnabled) console.error('Error isLocationEnabled.', error);
-            this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
-          });  
+                    }); 
+            },
+            // location is not enabled.
+            (error) =>
+            {
+              if(isLogEnabled) console.error('Error isLocationEnabled.', error);
+              this.showLocationEnableAlert('Ooops!', 'The Location is Not enabled. Please enable it and try again.'); 
+            });  
+        }
+        else
+        { // location is enabled.
+          if(isLogEnabled) console.info('Scanning ....');
+          
+          // start the BLE scanning.
+          this.ble.scan([], 1).subscribe(
+            (device) => 
+            {
+              this.onDiscoveredDevice(device);
+
+            }, 
+            (error)  =>  
+            {
+              if(isLogEnabled) console.error('Error scanning.', error);
+              //Dissmiss loader
+              this.loadingController.dismiss().then((response) => {
+                if(isLogEnabled) console.log('Loader closed!', response);
+              }).catch((err) => {
+                if(isLogEnabled) console.log('Error occured : ', err);
+              });                    
+
+            }); 
+        }
+
+
+
+
       },
       // Bluetooth is not enabled.
       (error) => 
