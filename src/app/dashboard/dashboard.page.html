@@ -1,5 +1,5 @@
 <body style="background-color: {{bgColor}};"  >
-
+<!-- LAP TIMES POPUP-->    
     <div style=" z-index:100; height:100%;background-color: rgba(105,105,105,0.9);
     border-radius: 25px;position:absolute; width:60%;margin-left:23%;" *ngIf="LapStatsShow">
         <div style="text-align: center;font-size:30px;color:white;margin-top:10px;">
@@ -16,6 +16,7 @@
           </div>        
     
     </div>
+<!-- GAME MENU-->    
 <div style="border:0px solid red; color:white;height:100%;z-index:-200;" *ngIf="menuShow">
  
     <ion-header color="dark" style="border-bottom: 1px solid grey;">
@@ -64,7 +65,7 @@
 
 
 <div *ngIf="!menuShow" >
-    <!-- LAP stats-->
+    <!-- TIME BOXES-->
     <div style="position: absolute;top:20px;left:20px;width:70px;">        
         <ion-label color="light" class="fixedLabel" position="fixed"  style="margin-left:100px;">{{LapsCount}}/{{TotalLaps}}</ion-label>
     </div>
@@ -80,132 +81,22 @@
 
 
     <!-- ICONS -->
-    <div style="position: absolute;top:20px;left:10px;width:70px;border-radius: 15px;background-color: rgb(0, 98, 255);color:white;"  (touchstart) = "NitroClick()">        
+    <div style="z-index: 2;position: absolute;top:20px;left:10px;width:70px;border-radius: 15px;background-color: rgb(0, 98, 255);color:white;"  (touchstart) = "NitroClick()">        
             <ion-icon src="/assets/icon/nitro.svg" style="font-size: 45px;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
     </div>   
-    <div style="position: absolute;top:95px;left:10px;width:70px;border-radius: 15px;background-color: rgb(231, 162, 0);color:white;"  (touchstart) = "goToSettings()">        
+    <div style="z-index: 2;position: absolute;top:95px;left:10px;width:70px;border-radius: 15px;background-color: rgb(231, 162, 0);color:white;"  (touchstart) = "goToSettings()">        
         <ion-icon name="hammer-outline" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px;color:white; "></ion-icon>
     </div>   
-    <div style="position: absolute;top:165px;left:10px;width:70px;border-radius: 15px;background-color: #1d8400;color:white;"  (touchstart) = "this.startBleScan();menuShow = true" >        
+    <div style="z-index: 2;position: absolute;top:165px;left:10px;width:70px;border-radius: 15px;background-color: #1d8400;color:white;"  (touchstart) = "this.startBleScan();menuShow = true" >        
         <ion-icon src="/assets/icon/lap.svg" style="font-size: 40px;font-weight:700;width:70px; padding-top:10px;padding-bottom:10px; "></ion-icon>
     </div>                  
     <!-- Steering Wheel -->
     <img src="/assets/steering-wheel.png" width="120px;" (pan)="onMoveSteering($event)" (panend)="onEndSteering($event)" 
-    style="margin-left:20px;transform: rotate({{wheelRotate}}deg);
+    style="margin-left:20px;transform: rotate({{wheelRotate}}deg); z-index: 1;
     position:absolute;bottom:10px;left:10px;" > 
 
-    <!-- RPM Gauge -->
-    <div style="position: absolute; bottom: -5px; left:150px;width:300px;">
-
-        <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:130px;" (touchstart) = "disconnect()" >        
-            <ion-icon name="power" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
-        </span> 
-        <span style="width:40px;border-radius: 50px;background-color: rgb(231, 162, 0);color:white;position:absolute;top:120px;left:70px;" *ngIf="ControllerFound" >        
-            <ion-icon name="game-controller-outline" style="font-size: 29px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
-        </span> 
-        <radial-gauge id="gauge-ps" width="300" height="300"
-            [attr.value]="RPMValue"
-            units="RPM/1000"
-            title=""
-            color-needle="#FF0000"
-            data-type="radial-gauge"
-            major-ticks="0,1,2,3,4,5,6,7,8,9,10"
-            min-value="0"
-            max-value="1000"
-            color-plate="#000"
-            color-title="#eee"
-            color-units="#ccc"
-            color-numbers="#eee"
-            color-major-ticks="#ddd"
-            color-minor-ticks="#ddd"
-            borders="true"    
-            minor-ticks="2"
-            stroke-ticks="true"
-            animation-rule="quad"
-            [attr.animation-duration]="AnimationDuration"
-            animated-value="true"
-            font-units-weight="700"
-            value=0
-            value-dec=0
-            highlights='[{"from": 700, "to": 1000, "color": "rgba(200, 50, 50, .75)"}]'
-        ></radial-gauge>
-
-    </div>
-
-    <!-- Temp Gauge -->
-    <div style="position: absolute; bottom: 0px; left:440px;width:150px;height:150px;">
-        <radial-gauge id="gauge-ps" width="150" height="150"
-            [attr.value]="TempValue"
-            units="TEMP"
-            title=""
-            color-needle="#FF0000"
-            data-type="radial-gauge"
-            major-ticks="0,90 ,180"
-            min-value="0"
-            max-value="180"
-            [attr.color-plate]="TempColor"
-            color-title="#eee"
-            color-units="#ccc"
-            color-numbers="#eee"
-            color-major-ticks="#ddd"
-            color-minor-ticks="#ddd"
-            borders="true"    
-            minor-ticks="4"
-            stroke-ticks="true"
-            animation-rule="quad"
-            [attr.animation-duration]="AnimationDuration"
-            animated-value="true"
-            start-angle="90"
-            ticks-angle="180"
-            value-box="true"
-            font-value-size="35"
-            font-value-weight="500"
-            needle-type="arrow"
-            font-numbers-size="50"
-            font-units-size="40"
-            font-units-weight="700"
-            value-dec=0
-            highlights='[{"from": 150, "to": 180, "color": "rgba(200, 0, 0, .75)"},{"from": 120, "to": 150, "color": "rgba(255, 131, 0, .75)"}]'
-        ></radial-gauge>
-    </div>
-
-    <!-- Fuel Gauge -->
-    <div style="position: absolute; bottom: 150px; left:440px;width:150px;height:150px;" (touchstart) = "FuelClick()">
-        <radial-gauge id="gauge-ps" width="150" height="150"
-            [attr.value]="FuelValue"
-            units="FUEL"
-            title=""
-            color-needle="#FF0000"            
-            data-type="radial-gauge"
-            major-ticks="E, ,F"
-            min-value="0"
-            max-value="1000"
-            [attr.color-plate]="FuelColor"
-            color-title="#eee"
-            color-units="#ccc"
-            color-numbers="#eee"
-            color-major-ticks="#ddd"
-            color-minor-ticks="#ddd"
-            borders="true"    
-            minor-ticks="2"
-            stroke-ticks="true"
-            animation-rule="quad"
-            [attr.animation-duration]="AnimationDuration"
-            animated-value="true"
-            start-angle="60"
-            ticks-angle="240"
-            value-box="false"
-            needle-type="arrow"
-            font-numbers-size="50"
-            font-units-size="40"
-            font-units-weight="700"
-            value-dec=0
-            highlights='[{"from": 900, "to": 1000, "color": "rgba(0, 200, 0, .75)"},{"from": 0, "to": 100, "color": "rgba(200, 0, 0, .75)"}]'
-        ></radial-gauge>
-    </div>
-
-    <span style="position: absolute;  right:0px;top:20px"   (pan)="onMoveGas($event)" (panend)="onEndGas($event)">
-        <linear-gauge id="linear-ps" width="120" height="355" 
+    <span style="position: absolute;  right:0px;top:20px;z-index: 200;"   (pan)="onMoveGas($event)" (panend)="onEndGas($event)">
+        <linear-gauge id="linear-ps" width="120" height="355" style="z-index: 400;"
         [attr.value]="GasValue"
         [attr.color-bar-progress]="ProgressBarColor"
         title=""
@@ -233,6 +124,124 @@
         highlights='[{"from": 0, "to": 0, "color": "rgba(200, 50, 50, .75)"}]'    
         ></linear-gauge> 
     </span>
+
+    <!-- GAUGES AREAD -->
+    <div class="gauges-area" style=" position: relative;height:400px;" >
+        <div  style="width:450px; 
+        position: absolute; top: 55%; left: 50%; -ms-transform: translate(-50%, -50%); transform: translate(-50%, -50%);">
+            <!-- RPM Gauge -->
+            <div style="float:left;width:300px;margin-left:10px;">
+                <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:140px;z-index: 1000;" (touchstart) = "disconnect()" >        
+                    <ion-icon name="power" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
+                </span> 
+                <span style="width:40px;border-radius: 50px;background-color: rgb(231, 162, 0);color:white;position:absolute;top:120px;left:80px;" *ngIf="ControllerFound" >        
+                    <ion-icon name="game-controller-outline" style="font-size: 29px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
+                </span> 
+                <radial-gauge id="gauge-ps" width="300" height="300"
+                    [attr.value]="RPMValue"
+                    units="RPM/1000"
+                    title=""
+                    color-needle="#FF0000"
+                    data-type="radial-gauge"
+                    major-ticks="0,1,2,3,4,5,6,7,8,9,10"
+                    min-value="0"
+                    max-value="1000"
+                    color-plate="#000"
+                    color-title="#eee"
+                    color-units="#ccc"
+                    color-numbers="#eee"
+                    color-major-ticks="#ddd"
+                    color-minor-ticks="#ddd"
+                    borders="true"    
+                    minor-ticks="2"
+                    stroke-ticks="true"
+                    animation-rule="quad"
+                    [attr.animation-duration]="AnimationDuration"
+                    animated-value="true"
+                    font-units-weight="700"
+                    value=0
+                    value-dec=0
+                    highlights='[{"from": 700, "to": 1000, "color": "rgba(200, 50, 50, .75)"}]'
+                ></radial-gauge>
+            </div>
+
+
+            <!-- Temp Gauge -->
+            <div style="width:150px;float:left;margin-left:-10px">
+                <radial-gauge id="gauge-ps" width="150" height="150"
+                    [attr.value]="TempValue"
+                    units="TEMP"
+                    title=""
+                    color-needle="#FF0000"
+                    data-type="radial-gauge"
+                    major-ticks="0,90 ,180"
+                    min-value="0"
+                    max-value="180"
+                    [attr.color-plate]="TempColor"
+                    color-title="#eee"
+                    color-units="#ccc"
+                    color-numbers="#eee"
+                    color-major-ticks="#ddd"
+                    color-minor-ticks="#ddd"
+                    borders="true"    
+                    minor-ticks="4"
+                    stroke-ticks="true"
+                    animation-rule="quad"
+                    [attr.animation-duration]="AnimationDuration"
+                    animated-value="true"
+                    start-angle="90"
+                    ticks-angle="180"
+                    value-box="true"
+                    font-value-size="35"
+                    font-value-weight="500"
+                    needle-type="arrow"
+                    font-numbers-size="50"
+                    font-units-size="40"
+                    font-units-weight="700"
+                    value-dec=0
+                    highlights='[{"from": 150, "to": 180, "color": "rgba(200, 0, 0, .75)"},{"from": 120, "to": 150, "color": "rgba(255, 131, 0, .75)"}]'
+                ></radial-gauge>
+            </div>
+  
+            <!-- Fuel Gauge -->
+            <div style="width:150px;float:left;margin-left:-10px;margin-top:-10px" (touchstart) = "FuelClick()">
+                <radial-gauge id="gauge-ps" width="150" height="150"
+                    [attr.value]="FuelValue"
+                    units="FUEL"
+                    title=""
+                    color-needle="#FF0000"            
+                    data-type="radial-gauge"
+                    major-ticks="E, ,F"
+                    min-value="0"
+                    max-value="1000"
+                    [attr.color-plate]="FuelColor"
+                    color-title="#eee"
+                    color-units="#ccc"
+                    color-numbers="#eee"
+                    color-major-ticks="#ddd"
+                    color-minor-ticks="#ddd"
+                    borders="true"    
+                    minor-ticks="2"
+                    stroke-ticks="true"
+                    animation-rule="quad"
+                    [attr.animation-duration]="AnimationDuration"
+                    animated-value="true"
+                    start-angle="60"
+                    ticks-angle="240"
+                    value-box="false"
+                    needle-type="arrow"
+                    font-numbers-size="50"
+                    font-units-size="40"
+                    font-units-weight="700"
+                    value-dec=0
+                    highlights='[{"from": 900, "to": 1000, "color": "rgba(0, 200, 0, .75)"},{"from": 0, "to": 100, "color": "rgba(200, 0, 0, .75)"}]'
+                ></radial-gauge>
+            </div>
+        
+        </div>
+    </div>
+
+
 
 </div>
 </body>
