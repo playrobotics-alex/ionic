@@ -1214,10 +1214,10 @@ playSingleLock() {
         if (this.RaceType=='countdown')
         {
           this.maxLapTime = this.InitialMaxLapTime;
-          this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+          //this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
         }  
-        else
-          this.started = setInterval(this.clockRunning.bind(this), 108);
+        //else
+          //this.started = setInterval(this.clockRunning.bind(this), 108);
         this.running = true;
         this.LapsCount=1;
       }   
