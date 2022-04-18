@@ -1745,6 +1745,7 @@ connectToDevice(device)
                 this.timeBegan = null;
                 this.timeStopped = null;
                 this.time = this.blankTime;
+                this.timerStarted=false;
 
                 this.start(gameType);
               },
