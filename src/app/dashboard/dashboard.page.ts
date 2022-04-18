@@ -62,7 +62,7 @@ export class DashboardPage implements AfterViewInit {
   public LapStatsShow = false;
   public alertMode = "";
 
-  
+  public timerStarted=false;
 
   public RaceType = "lap";
 
@@ -1204,9 +1204,9 @@ playSingleLock() {
     {
       
       var timerStarted = false;       
-      if (lapBLE==1)      
+      if ((lapBLE==1)&&(timerStarted==false))      
       {      
-        //We are going to start the interval timer now and we want to avoid starting it again later in the code
+        //We are going to start the interval timer now and we want to avoid starting it again
         timerStarted = true; 
         if (this.timeBegan === null) {
           this.reset();
@@ -1312,7 +1312,8 @@ playSingleLock() {
           if (this.LapsCount<9)
           {
             this.timeBegan = new Date();
-            if (timerStarted == false)
+            //If this is the first lap the timer was already started at the beggining of this function
+            if (lapBLE>1)
             {
               this.started = setInterval(this.clockRunning.bind(this), 108);
               console.log('timer started 222 , interval = ',this.started);
@@ -1345,7 +1346,7 @@ playSingleLock() {
               //Restart lap time
               this.maxLapTime =  this.maxLapTime - 1;
               this.timeBegan = new Date();
-              if (timerStarted == false)
+              if (lapBLE>1)
               {
                 this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
                 console.log('timer started 333 , interval = ',this.started);
