@@ -90,3 +90,15 @@ table tr:nth-child(odd) {
 .table_best_lap_class {
   background-color: #45d21f !important;
 }
+
+@media all and (min-width: 750px) {
+  .small-gauges {
+    margin-left: 25px;
+  }
+}
+
+@media all and (min-width: 800px) {
+  .small-gauges {
+    margin-left: 50px;
+  }
+}

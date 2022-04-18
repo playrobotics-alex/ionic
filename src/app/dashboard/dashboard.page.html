@@ -126,12 +126,10 @@
     </span>
 
     <!-- GAUGES AREAD -->
-    <div class="gauges-area" style=" position: relative;height:420px;" >
-        <div  style="width:450px; 
-        position: absolute; top: 50%; left: 50%; -ms-transform: translate(-50%, -50%); transform: translate(-50%, -50%);">
+    <div class="gauges-area" style=" display: flex; justify-content: center; align-items: flex-end; height: 100vh;" >
             <!-- RPM Gauge -->
-            <div style="float:left;width:300px;margin-left:10px;">
-                <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:140px;z-index: 1000;" (touchstart) = "disconnect()" >        
+            <div style="width:300px;margin-left:10px;position: relative;">
+                <span style="width:40px;border-radius: 50px;background-color: rgba(231, 0, 0, 0.639);color:white;position:absolute;top:70px;left:130px;z-index: 1000;" (touchstart) = "disconnect()" >        
                     <ion-icon name="power" style="font-size: 25px;font-weight:700;width:40px; padding-top:5px;padding-bottom:5px; "></ion-icon>
                 </span> 
                 <span style="width:40px;border-radius: 50px;background-color: rgb(231, 162, 0);color:white;position:absolute;top:120px;left:80px;" *ngIf="ControllerFound" >        
@@ -165,80 +163,80 @@
                 ></radial-gauge>
             </div>
 
+            <div class="small-gauges" style=" display: flex; justify-content: flex-end; flex-direction: column; height: 100vh;" >  
+                <!-- Temp Gauge -->
+                <div style="width:150px;margin-left:-10px">
+                    <radial-gauge id="gauge-ps" width="150" height="150"
+                        [attr.value]="TempValue"
+                        units="TEMP"
+                        title=""
+                        color-needle="#FF0000"
+                        data-type="radial-gauge"
+                        major-ticks="0,90 ,180"
+                        min-value="0"
+                        max-value="180"
+                        [attr.color-plate]="TempColor"
+                        color-title="#eee"
+                        color-units="#ccc"
+                        color-numbers="#eee"
+                        color-major-ticks="#ddd"
+                        color-minor-ticks="#ddd"
+                        borders="true"    
+                        minor-ticks="4"
+                        stroke-ticks="true"
+                        animation-rule="quad"
+                        [attr.animation-duration]="AnimationDuration"
+                        animated-value="true"
+                        start-angle="90"
+                        ticks-angle="180"
+                        value-box="true"
+                        font-value-size="35"
+                        font-value-weight="500"
+                        needle-type="arrow"
+                        font-numbers-size="50"
+                        font-units-size="40"
+                        font-units-weight="700"
+                        value-dec=0
+                        highlights='[{"from": 150, "to": 180, "color": "rgba(200, 0, 0, .75)"},{"from": 120, "to": 150, "color": "rgba(255, 131, 0, .75)"}]'
+                    ></radial-gauge>
+                </div>
+    
+                <!-- Fuel Gauge -->
+                <div style="width:150px;margin-left:-10px;margin-top:-8px;" (touchstart) = "FuelClick()">
+                    <radial-gauge id="gauge-ps" width="150" height="150"
+                        [attr.value]="FuelValue"
+                        units="FUEL"
+                        title=""
+                        color-needle="#FF0000"            
+                        data-type="radial-gauge"
+                        major-ticks="E, ,F"
+                        min-value="0"
+                        max-value="1000"
+                        [attr.color-plate]="FuelColor"
+                        color-title="#eee"
+                        color-units="#ccc"
+                        color-numbers="#eee"
+                        color-major-ticks="#ddd"
+                        color-minor-ticks="#ddd"
+                        borders="true"    
+                        minor-ticks="2"
+                        stroke-ticks="true"
+                        animation-rule="quad"
+                        [attr.animation-duration]="AnimationDuration"
+                        animated-value="true"
+                        start-angle="60"
+                        ticks-angle="240"
+                        value-box="false"
+                        needle-type="arrow"
+                        font-numbers-size="50"
+                        font-units-size="40"
+                        font-units-weight="700"
+                        value-dec=0
+                        highlights='[{"from": 900, "to": 1000, "color": "rgba(0, 200, 0, .75)"},{"from": 0, "to": 100, "color": "rgba(200, 0, 0, .75)"}]'
+                    ></radial-gauge>
+                </div>
+            </div>  
 
-            <!-- Temp Gauge -->
-            <div style="width:150px;float:left;margin-left:-10px">
-                <radial-gauge id="gauge-ps" width="150" height="150"
-                    [attr.value]="TempValue"
-                    units="TEMP"
-                    title=""
-                    color-needle="#FF0000"
-                    data-type="radial-gauge"
-                    major-ticks="0,90 ,180"
-                    min-value="0"
-                    max-value="180"
-                    [attr.color-plate]="TempColor"
-                    color-title="#eee"
-                    color-units="#ccc"
-                    color-numbers="#eee"
-                    color-major-ticks="#ddd"
-                    color-minor-ticks="#ddd"
-                    borders="true"    
-                    minor-ticks="4"
-                    stroke-ticks="true"
-                    animation-rule="quad"
-                    [attr.animation-duration]="AnimationDuration"
-                    animated-value="true"
-                    start-angle="90"
-                    ticks-angle="180"
-                    value-box="true"
-                    font-value-size="35"
-                    font-value-weight="500"
-                    needle-type="arrow"
-                    font-numbers-size="50"
-                    font-units-size="40"
-                    font-units-weight="700"
-                    value-dec=0
-                    highlights='[{"from": 150, "to": 180, "color": "rgba(200, 0, 0, .75)"},{"from": 120, "to": 150, "color": "rgba(255, 131, 0, .75)"}]'
-                ></radial-gauge>
-            </div>
-  
-            <!-- Fuel Gauge -->
-            <div style="width:150px;float:left;margin-left:-10px;margin-top:-10px" (touchstart) = "FuelClick()">
-                <radial-gauge id="gauge-ps" width="150" height="150"
-                    [attr.value]="FuelValue"
-                    units="FUEL"
-                    title=""
-                    color-needle="#FF0000"            
-                    data-type="radial-gauge"
-                    major-ticks="E, ,F"
-                    min-value="0"
-                    max-value="1000"
-                    [attr.color-plate]="FuelColor"
-                    color-title="#eee"
-                    color-units="#ccc"
-                    color-numbers="#eee"
-                    color-major-ticks="#ddd"
-                    color-minor-ticks="#ddd"
-                    borders="true"    
-                    minor-ticks="2"
-                    stroke-ticks="true"
-                    animation-rule="quad"
-                    [attr.animation-duration]="AnimationDuration"
-                    animated-value="true"
-                    start-angle="60"
-                    ticks-angle="240"
-                    value-box="false"
-                    needle-type="arrow"
-                    font-numbers-size="50"
-                    font-units-size="40"
-                    font-units-weight="700"
-                    value-dec=0
-                    highlights='[{"from": 900, "to": 1000, "color": "rgba(0, 200, 0, .75)"},{"from": 0, "to": 100, "color": "rgba(200, 0, 0, .75)"}]'
-                ></radial-gauge>
-            </div>
-        
-        </div>
     </div>
 
 
