@@ -102,3 +102,14 @@ table tr:nth-child(odd) {
     margin-left: 50px;
   }
 }
+
+@media all and (min-height: 350px) {
+  .gauges-area {
+    margin-bottom: 25px;
+  }
+}
+@media all and (min-height: 400px) {
+  .gauges-area {
+    margin-bottom: 50px;
+  }
+}

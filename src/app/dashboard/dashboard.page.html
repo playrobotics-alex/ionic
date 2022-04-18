@@ -95,7 +95,7 @@
     style="margin-left:20px;transform: rotate({{wheelRotate}}deg); z-index: 1;
     position:absolute;bottom:10px;left:10px;" > 
 
-    <span style="position: absolute;  right:0px;top:20px;z-index: 200;"   (pan)="onMoveGas($event)" (panend)="onEndGas($event)">
+    <span style="position: absolute;  right:0px;bottom:0px;z-index: 200;"   (pan)="onMoveGas($event)" (panend)="onEndGas($event)">
         <linear-gauge id="linear-ps" width="120" height="355" style="z-index: 400;"
         [attr.value]="GasValue"
         [attr.color-bar-progress]="ProgressBarColor"
