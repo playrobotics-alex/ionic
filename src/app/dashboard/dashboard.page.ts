@@ -1201,8 +1201,12 @@ playSingleLock() {
     //In best lap and countdown races we start the clock only once the car passes the start line
     if ( (this.RaceType=='lap')||(this.RaceType=='countdown') )
     {
-      if (lapBLE==1)
+      
+      var timerStarted = false;       
+      if (lapBLE==1)      
       {      
+        //We are going to start the interval timer now and we want to avoid starting it again later in the code
+        timerStarted = true; 
         if (this.timeBegan === null) {
           this.reset();
           this.timeBegan = new Date();
@@ -1214,10 +1218,13 @@ playSingleLock() {
         if (this.RaceType=='countdown')
         {
           this.maxLapTime = this.InitialMaxLapTime;
-          //this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+          this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
         }  
-        //else
-          //this.started = setInterval(this.clockRunning.bind(this), 108);
+        else
+          this.started = setInterval(this.clockRunning.bind(this), 108);
+
+        console.log('timer started , interval = ',this.started);
+  
         this.running = true;
         this.LapsCount=1;
       }   
@@ -1304,7 +1311,11 @@ playSingleLock() {
           if (this.LapsCount<9)
           {
             this.timeBegan = new Date();
-            this.started = setInterval(this.clockRunning.bind(this), 108);
+            if (timerStarted == false)
+            {
+              this.started = setInterval(this.clockRunning.bind(this), 108);
+              console.log('timer started , interval = ',this.started);
+            }  
             this.running = true;
             //this.LapsCount++;
           }  
@@ -1333,7 +1344,11 @@ playSingleLock() {
               //Restart lap time
               this.maxLapTime =  this.maxLapTime - 1;
               this.timeBegan = new Date();
-              this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+              if (timerStarted == false)
+              {
+                this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+                console.log('timer started , interval = ',this.started);
+              }                  
               this.running = true;
               this.doVibrationFor(200);
 
