@@ -1202,12 +1202,10 @@ playSingleLock() {
     //In best lap and countdown races we start the clock only once the car passes the start line
     if ( (this.RaceType=='lap')||(this.RaceType=='countdown') )
     {
-      
-      var timerStarted = false;       
-      if ((lapBLE==1)&&(timerStarted==false))      
+      if ((lapBLE==1)&&(this.timerStarted==false))      
       {      
         //We are going to start the interval timer now and we want to avoid starting it again
-        timerStarted = true; 
+        this.timerStarted=true;
         if (this.timeBegan === null) {
           this.reset();
           this.timeBegan = new Date();
@@ -1225,7 +1223,7 @@ playSingleLock() {
           this.started = setInterval(this.clockRunning.bind(this), 108);
 
         console.log('timer started 111 , interval = ',this.started);
-  
+
         this.running = true;
         this.LapsCount=1;
       }   
