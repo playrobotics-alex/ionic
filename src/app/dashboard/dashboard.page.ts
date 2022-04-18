@@ -992,6 +992,7 @@ playSingleLock() {
             this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
           }
           this.started = setInterval(this.clockRunning.bind(this), 108);
+          console.log('starting RACE - timer started , interval = ',this.started);
           this.LapsCount=1;
           this.running = true;
         }
@@ -1223,7 +1224,7 @@ playSingleLock() {
         else
           this.started = setInterval(this.clockRunning.bind(this), 108);
 
-        console.log('timer started , interval = ',this.started);
+        console.log('timer started 111 , interval = ',this.started);
   
         this.running = true;
         this.LapsCount=1;
@@ -1314,7 +1315,7 @@ playSingleLock() {
             if (timerStarted == false)
             {
               this.started = setInterval(this.clockRunning.bind(this), 108);
-              console.log('timer started , interval = ',this.started);
+              console.log('timer started 222 , interval = ',this.started);
             }  
             this.running = true;
             //this.LapsCount++;
@@ -1347,7 +1348,7 @@ playSingleLock() {
               if (timerStarted == false)
               {
                 this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
-                console.log('timer started , interval = ',this.started);
+                console.log('timer started 333 , interval = ',this.started);
               }                  
               this.running = true;
               this.doVibrationFor(200);
