@@ -1723,6 +1723,14 @@ connectToDevice(device)
               text: 'Start New',
               handler: () => {
                 console.log('Confirm Okay');
+                this.running = false;
+                console.log('stopping interval',this.started);
+                clearInterval(this.started);
+                this.stoppedDuration = 0;
+                this.timeBegan = null;
+                this.timeStopped = null;
+                this.time = this.blankTime;
+
                 this.start(gameType);
               },
             },

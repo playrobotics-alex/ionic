@@ -458,7 +458,7 @@ void setup() {
     // Create a BLE Characteristic
     pCharacteristic = pService->createCharacteristic(
                         CHARACTERISTIC_UUID_TX,
-                        BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ|BLECharacteristic::PROPERTY_WRITE
+                        BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ|BLECharacteristic::PROPERTY_WRITE_NR
                       );
    int moshe=0;  
    pCharacteristic->setValue(moshe);
@@ -470,7 +470,7 @@ void setup() {
     BLECharacteristic *pCharacteristic = pService->createCharacteristic(
                                            CHARACTERISTIC_UUID_RX,
                                            BLECharacteristic::PROPERTY_READ |
-                                           BLECharacteristic::PROPERTY_WRITE | 
+                                           BLECharacteristic::PROPERTY_WRITE_NR | 
                                            BLECharacteristic::PROPERTY_NOTIFY
                                          );
  
