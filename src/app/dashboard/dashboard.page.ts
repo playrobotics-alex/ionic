@@ -486,8 +486,8 @@ playSingleLock() {
         //If trainer is connected and we are not subscrbied to notifications lets subscribe
         if (( this.trainID.length>2 )&&(this.SubscribedToNotifyBLE===false))
         {
-          //this.SubscribedToNotifyBLE = true;
-          if(isLogEnabled) console.log("-==subscribing==-");
+          //if(isLogEnabled) console.log("-==subscribing==-");
+          console.log("-==subscribing==-");
           this.SubscribedToNotifyBLE = true;
           this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
             (data) => {
@@ -940,8 +940,7 @@ playSingleLock() {
                 //if(isLogEnabled) 
                 //{
                   console.log("sending settings to trainer start function");
-                  console.log(string);
-                //}  
+                  console.log(string);                  
             },
             error => { 
               //if(isLogEnabled) 
@@ -952,52 +951,7 @@ playSingleLock() {
           );   
       }
 
-      //If we are here the race is new! Lets do countdown
-      //3
-      this.doVibrationFor(200);
-      this.time = "-3-";
-      //2
-      setTimeout(() => {
-        this.doVibrationFor(200);
-        this.time = "-2-";
-      },1200);
-      //1
-      setTimeout(() => {
-        this.doVibrationFor(200);
-        this.time = "-1-";
-      },2400);
-      //GO!
-      setTimeout(() => {
-        this.doVibrationFor(400);
-        this.doBlinkColor("#49fe00","#000"); 
-        /*
-        if (this.RPMValue>0)
-        {
-          this.time = "DISQ";
-          this.doBlinkColor("#FF0000","#000");        
-        } 
-        */ 
-        this.reset();
-        this.LapTimes = [];
-
-        //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
-        if (this.RaceType=="drag")
-        {
-          if (this.timeBegan === null) {
-            this.reset();
-            this.timeBegan = new Date();
-          }
-          if (this.timeStopped !== null) {
-            let newStoppedDuration:any = (+new Date() - this.timeStopped)
-            this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
-          }
-          this.started = setInterval(this.clockRunning.bind(this), 108);
-          console.log('starting RACE - timer started , interval = ',this.started);
-          this.LapsCount=1;
-          this.running = true;
-        }
-        
-      },3600);      
+       
     }
     else
     {
@@ -1179,17 +1133,66 @@ playSingleLock() {
  
   }
   onNotify(buffer:ArrayBuffer){
+    console.log("-==notify recived==-");
     this.ble.read(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").then(
       data => this.ReadLapData(data),
-      () => this.showAlert('Unexpected Error', 'Failed to subscribe')
+      () => this.showAlert('Unexpected Error', 'Failed to read')
     )
   }
 
   ReadLapData(buffer:ArrayBuffer) {
+
     // Temperature is a 4 byte floating point value
     var data = new Uint8Array(buffer);
-    if(isLogEnabled) console.log('Array we got from BLE: ',data);
+    //if(isLogEnabled) console.log('Array we got from BLE: ',data);
+    console.log('Array we got from BLE: ',data);
     //Transfor the buff array to a 5 digit number
+    if ((data[0]==231)&&(data[1]==3)&&(data[2]==0))
+    {
+//If we are here the race is new! Lets do countdown
+                    //3
+                    this.doVibrationFor(200);
+                    this.time = "-3-";
+                    //2
+                    setTimeout(() => {
+                      this.doVibrationFor(200);
+                      this.time = "-2-";
+                    },1200);
+                    //1
+                    setTimeout(() => {
+                      this.doVibrationFor(200);
+                      this.time = "-1-";
+                    },2400);
+                    //GO!
+                    setTimeout(() => {
+
+                      this.doVibrationFor(200);
+                      this.doBlinkColor("#49fe00","#000"); 
+                      this.LapTimes = [];
+
+                      //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
+                      if (this.RaceType=="drag")
+                      {
+                        if (this.timeBegan === null) 
+                        {
+                          this.timeBegan = new Date();
+                        }
+                        if (this.timeStopped !== null) 
+                        {
+                          let newStoppedDuration:any = (+new Date() - this.timeStopped)
+                          this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
+                        }
+                        this.started = setInterval(this.clockRunning.bind(this), 108);
+                        console.log('starting RACE - timer started , interval = ',this.started);
+                        this.LapsCount=1;
+                        this.running = true;
+                      }
+                      
+                    },3600); 
+
+
+    }
+
     
     var lapData= data[2]*256*256+data[1]*256+data[0];
    // lap-number|| lap second X 10  || lap second X 1 || lap second / 10 ||   lap second / 100 ||
@@ -1563,7 +1566,7 @@ async startBleScan()
     }  
   } 
 
-// connect to a device
+// Connecting to the TRAINER
 connectToDevice(device) 
 {    
   this.alreadyConnected=false;
@@ -1575,7 +1578,7 @@ connectToDevice(device)
 });
 
   if(isLogEnabled) console.log('connect to device to '+device.name+'.');
-  this.showToast('Connecting to '+device.name+' ...', 'medium', 2000, 'bottom');
+  this.showToast('Connecting to finish line ...', 'medium', 2000, 'bottom');
   if(isLogEnabled) console.log('this.ble now');
   setTimeout(() => {
     if(isLogEnabled) console.log('INSIDE this.ble now - attempt 1');
@@ -1746,6 +1749,7 @@ connectToDevice(device)
                 this.timeStopped = null;
                 this.time = this.blankTime;
                 this.timerStarted=false;
+                this.LapsCount=1;
 
                 this.start(gameType);
               },
