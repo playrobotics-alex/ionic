@@ -1147,7 +1147,7 @@ playSingleLock() {
     //if(isLogEnabled) console.log('Array we got from BLE: ',data);
     console.log('Array we got from BLE: ',data);
     //Transfor the buff array to a 5 digit number
-    if ((data[0]==231)&&(data[1]==3)&&(data[2]==0))
+    if ((data[0]==236)&&(data[1]==3)&&(data[2]==0))
     {
 //If we are here the race is new! Lets do countdown
                     //3

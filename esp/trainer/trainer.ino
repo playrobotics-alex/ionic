@@ -205,6 +205,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
         {
           got_start=true;
           RaceType = rxValue[0];
+          Serial.println("START RACE");
         }  
  
  
@@ -418,6 +419,7 @@ void loop() {
           
           pCharacteristic->setValue(moshe);
           pCharacteristic->notify();
+          Serial.println("MOSHE NOTIFY");
           int elapsedSeconds = elapsedMillis/10;
           //If this is a drag race we want to show the time during the first lap as well
           if ((lap_counter>1)||(RaceType=='D'))
@@ -452,7 +454,8 @@ void loop() {
       int peleg = 999;     
       pCharacteristic->setValue(peleg);
       pCharacteristic->notify();   
-               
+      Serial.println("PELEG NOTIFY");  
+             
       if (RaceType=='C')
       {
          char bufferLap[2];
