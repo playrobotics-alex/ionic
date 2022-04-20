@@ -33,6 +33,7 @@ int InitialMaxLapTime;
 int LapTimeLeft;
 int LapTimeLeftPreviousSecond;
 std::string rxValue;
+std::string testrxValue="bb";
 
 unsigned long startMillis;
 unsigned long currentMillis;
@@ -417,7 +418,10 @@ void loop() {
           int moshe = lap_counter*10000;
           moshe = moshe + elapsedMillis/10;    
           
-          pCharacteristic->setValue(moshe);
+          //pCharacteristic->setValue(testrxValue);
+          char txString[4]="bbb";
+          pCharacteristic->setValue(txString);
+
           pCharacteristic->notify();
           Serial.println("MOSHE NOTIFY");
           int elapsedSeconds = elapsedMillis/10;
