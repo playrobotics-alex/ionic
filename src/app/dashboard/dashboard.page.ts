@@ -489,21 +489,14 @@ playSingleLock() {
           //if(isLogEnabled) console.log("-==subscribing==-");
           console.log("-==subscribing==-");
           this.SubscribedToNotifyBLE = true;
-         // this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E", onNotify);
-         this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
-          (buffer) => {const data = new Uint8Array(buffer[0]); console.log(JSON.stringify(data)); console.log("yes1") },
-          (error) => console.log(error)
-          )
-
-/*
 
           this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
-            (data) => {
-              this.onNotify(data);              
+            (buffer) => {
+              this.onNotify(buffer[0]);              
             },
             (error) => console.error('Unexpected Error', 'Failed to subscribe')
           )
-  */
+
           
         }
         this.storage.get("IndoorLightsToggle").then((value) => {
@@ -1157,7 +1150,7 @@ playSingleLock() {
     //if(isLogEnabled) console.log('Array we got from BLE: ',data);
     console.log('Array we got from BLE: ',data);
     //Transfor the buff array to a 5 digit number
-    if ((data[0]==231)&&(data[1]==3)&&(data[2]==0))
+    if ((data[0]==57)&&(data[1]==57)&&(data[2]==57))
     {
                     //If we are here the race is new! Lets do countdown
                     //3

@@ -417,10 +417,7 @@ void loop() {
   
           int moshe = lap_counter*10000;
           moshe = moshe + elapsedMillis/10;    
-          
-          //pCharacteristic->setValue(testrxValue);
-          char txString[4]="bbb";
-          pCharacteristic->setValue("alex");
+          pCharacteristic->setValue(moshe);
 
           pCharacteristic->notify();
           Serial.println("MOSHE NOTIFY");
@@ -455,10 +452,10 @@ void loop() {
   {
       //We need to start a race!  
       got_start=false;  
-      //int peleg = 999;     
-      //pCharacteristic->setValue(peleg);
-      //pCharacteristic->notify();   
-      //Serial.println("PELEG NOTIFY");  
+      ////57,57,57
+      pCharacteristic->setValue("999");
+      pCharacteristic->notify();   
+      Serial.println("PELEG NOTIFY 999");  
              
       if (RaceType=='C')
       {
