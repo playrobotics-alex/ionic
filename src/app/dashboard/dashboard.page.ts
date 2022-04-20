@@ -1149,221 +1149,188 @@ playSingleLock() {
     var data = new Uint8Array(buffer);
     //if(isLogEnabled) console.log('Array we got from BLE: ',data);
     console.log('Array we got from BLE: ',data);
-    //Transfor the buff array to a 5 digit number
+
+    //Check if we got a race start notification 999
     if ((data[0]==57)&&(data[1]==57)&&(data[2]==57))
     {
-                    //If we are here the race is new! Lets do countdown
-                    //3
-                    this.doVibrationFor(200);
-                    this.time = "-3-";
-                    //2
-                    setTimeout(() => {
-                      this.doVibrationFor(200);
-                      this.time = "-2-";
-                    },1200);
-                    //1
-                    setTimeout(() => {
-                      this.doVibrationFor(200);
-                      this.time = "-1-";
-                    },2400);
-                    //GO!
-                    setTimeout(() => {
+      //If we are here the race is new! Lets do countdown
+      //3
+      this.doVibrationFor(200);
+      this.time = "-3-";
+      //2
+      setTimeout(() => {
+        this.doVibrationFor(200);
+        this.time = "-2-";
+      },1200);
+      //1
+      setTimeout(() => {
+        this.doVibrationFor(200);
+        this.time = "-1-";
+      },2400);
+      //GO!
+      setTimeout(() => {
 
-                      this.doVibrationFor(200);
-                      this.doBlinkColor("#49fe00","#000"); 
-                      this.LapTimes = [];
+        this.doVibrationFor(200);
+        this.doBlinkColor("#49fe00","#000"); 
+        this.LapTimes = [];
 
-                      //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
-                      if (this.RaceType=="drag")
-                      {
-                        if (this.timeBegan === null) 
-                        {
-                          this.timeBegan = new Date();
-                        }
-                        if (this.timeStopped !== null) 
-                        {
-                          let newStoppedDuration:any = (+new Date() - this.timeStopped)
-                          this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
-                        }
-                        this.started = setInterval(this.clockRunning.bind(this), 108);
-                        console.log('starting RACE - timer started , interval = ',this.started);
-                        this.LapsCount=1;
-                        this.running = true;
-                      }
-                      
-                    },3600); 
+        //If this is a drag race we need to start the clock right away and not wait for the car to cross the finish line
+        if (this.RaceType=="drag")
+        {
+          if (this.timeBegan === null) 
+          {
+            this.timeBegan = new Date();
+          }
+          if (this.timeStopped !== null) 
+          {
+            let newStoppedDuration:any = (+new Date() - this.timeStopped)
+            this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
+          }
+          this.started = setInterval(this.clockRunning.bind(this), 108);
+          console.log('starting RACE - timer started , interval = ',this.started);
+          this.LapsCount=1;
+          this.running = true;
+        }
+        
+      },3600); 
 
 
     }
-
-    
-    var lapData= data[2]*256*256+data[1]*256+data[0];
-   // lap-number|| lap second X 10  || lap second X 1 || lap second / 10 ||   lap second / 100 ||
-    var lapBLE = Math.round(lapData/10000)
-    if(isLogEnabled) console.log('Lap: ',lapBLE);
-    
-    var lapTimeBLE = Math.round(lapData%10000)/100;
-    if(isLogEnabled) console.log('Time: ',lapTimeBLE);
-    
-    //In best lap and countdown races we start the clock only once the car passes the start line
-    if ( (this.RaceType=='lap')||(this.RaceType=='countdown') )
+    else
     {
-      if ((lapBLE==1)&&(this.timerStarted==false))      
-      {      
-        //We are going to start the interval timer now and we want to avoid starting it again
-        this.timerStarted=true;
-        if (this.timeBegan === null) {
-          this.reset();
-          this.timeBegan = new Date();
-        }
-        if (this.timeStopped !== null) {
-          let newStoppedDuration:any = (+new Date() - this.timeStopped)
-          this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
-        }
-        if (this.RaceType=='countdown')
-        {
-          this.maxLapTime = this.InitialMaxLapTime;
-          this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
-        }  
-        else
-          this.started = setInterval(this.clockRunning.bind(this), 108);
 
-        console.log('timer started 111 , interval = ',this.started);
-
-        this.running = true;
-        this.LapsCount=1;
-      }   
-      var lapType = 'B';
-
-      //Now we need to check best lap time and do some other things
-      if((this.running)&&(lapBLE > this.LapsCount))
+      
+      var lapData= data[2]*256*256+data[1]*256+data[0];
+    // lap-number|| lap second X 10  || lap second X 1 || lap second / 10 ||   lap second / 100 ||
+      var lapBLE = Math.round(lapData/10000)
+      if(isLogEnabled) console.log('Lap: ',lapBLE);
+      
+      var lapTimeBLE = Math.round(lapData%10000)/100;
+      if(isLogEnabled) console.log('Time: ',lapTimeBLE);
+      
+      //In best lap and countdown races we start the clock only once the car passes the start line
+      if ( (this.RaceType=='lap')||(this.RaceType=='countdown') )
       {
-        //There was a lap recoreded by the trainer
-        this.LapsCount = lapBLE;        
-        if (this.RaceType=='lap')
-        {
-            //Check for best lap
-          if ((lapTimeBLE < this.BestLapTimeLap)||(this.BestLapTimeLap==0))
-          {
-            this.BestLapTime= lapTimeBLE;
-            this.BestLapTimeString= lapTimeBLE.toString();
-            //check if there is no decimal point
-            if ( this.BestLapTimeString.indexOf('.')<1)
-              this.BestLapTimeString =  this.BestLapTimeString + '.00';
-            //Save best lap time in case we switch to other race type and then go back
-            this.BestLapTimeLapString = this.BestLapTimeString; 
-            this.BestLapTimeLap = this.BestLapTime;
-
-            this.doVibrationFor(200);
-            setTimeout(() => {
-              this.doVibrationFor(200);
-            },200);    
-            lapType = 'B';  
-            this.BestLapId = this.LapsCount - 1;
-          }
-          else
-          {
-            this.doVibrationFor(200);
-            lapType = 'R';  
-          }  
-
-          //Update laps array
-          var SingleLapTime = 
-          { 
-            id: this.LapsCount-1, 
-            time: lapTimeBLE, 
-            lapType: lapType
-          }; 
-          this.LapTimes.push(SingleLapTime);
-          if(isLogEnabled) console.log("pushing lap times");
-          if(isLogEnabled) console.log(this.LapTimes);
-
-
-          //Send score lights command to trainer
-
-          // Z -> start race
-          // Y -> end race
-          // L -> Leds command
-          // F -> like L but Final lap
-          let string = 'L';
-          if (this.LapsCount==9)
-            string = 'F'; 
-          string = string +  this.LapsCount + lapType;
-
-          let array = new Uint8Array(string.length);
-          for (let i = 0, l = string.length; i < l; i ++) {
-            array[i] = string.charCodeAt(i);
-          } 
-  
-          this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
-            () => {  
-              if(isLogEnabled) {         
-                console.log("sending settings to trainer");
-                console.log(this.trainID);
-              }  
-            },
-            error => { 
-              if(isLogEnabled) 
-                console.error('Error sending date, disconnecting.', error);
-              clearInterval(this.get_duration_interval);
-              this.navCtrl.navigateBack('scanner');
-              }
-          );   
-  
-
-          this.reset();
-          //Race still on?
-          if (this.LapsCount<9)
-          {
-            this.timeBegan = new Date();
-            //If this is the first lap the timer was already started at the beggining of this function
-            if (lapBLE>1)
-            {
-              this.started = setInterval(this.clockRunning.bind(this), 108);
-              console.log('timer started 222 , interval = ',this.started);
-            }  
-            this.running = true;
-            //this.LapsCount++;
-          }  
-          else
-          {
-            //Race finished       Type: LAP
-            this.doBlinkColor("#FFF","#000");          
-            this.LapTimeString = this.time;
-            this.doVibrationFor(2000);
-            this.stop();
-            this.time = "FINSH";
-            this.LapsCount = 1;
-            this.running = false;
-            this.LapStatsShow = true;
-
-          }
-        }
-
-        if ((this.RaceType=='countdown')&&(this.running))
-        {
+        if ((lapBLE==1)&&(this.timerStarted==false))      
+        {      
+          //We are going to start the interval timer now and we want to avoid starting it again
+          this.timerStarted=true;
+          if (this.timeBegan === null) {
             this.reset();
-              let string = 'L';
-            //If we are on the 16 lap end the race
-            if (this.LapsCount<17)
-            {
-              //Restart lap time
-              this.maxLapTime =  this.maxLapTime - 1;
-              this.timeBegan = new Date();
-              if (lapBLE>1)
-              {
-                this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
-                console.log('timer started 333 , interval = ',this.started);
-              }                  
-              this.running = true;
-              this.doVibrationFor(200);
+            this.timeBegan = new Date();
+          }
+          if (this.timeStopped !== null) {
+            let newStoppedDuration:any = (+new Date() - this.timeStopped)
+            this.stoppedDuration = this.stoppedDuration + newStoppedDuration;
+          }
+          if (this.RaceType=='countdown')
+          {
+            this.maxLapTime = this.InitialMaxLapTime;
+            this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+          }  
+          else
+            this.started = setInterval(this.clockRunning.bind(this), 108);
 
+          console.log('timer started 111 , interval = ',this.started);
+
+          this.running = true;
+          this.LapsCount=1;
+        }   
+        var lapType = 'B';
+
+        //Now we need to check best lap time and do some other things
+        if((this.running)&&(lapBLE > this.LapsCount))
+        {
+          //There was a lap recoreded by the trainer
+          this.LapsCount = lapBLE;        
+          if (this.RaceType=='lap')
+          {
+              //Check for best lap
+            if ((lapTimeBLE < this.BestLapTimeLap)||(this.BestLapTimeLap==0))
+            {
+              this.BestLapTime= lapTimeBLE;
+              this.BestLapTimeString= lapTimeBLE.toString();
+              //check if there is no decimal point
+              if ( this.BestLapTimeString.indexOf('.')<1)
+                this.BestLapTimeString =  this.BestLapTimeString + '.00';
+              //Save best lap time in case we switch to other race type and then go back
+              this.BestLapTimeLapString = this.BestLapTimeString; 
+              this.BestLapTimeLap = this.BestLapTime;
+
+              this.doVibrationFor(200);
+              setTimeout(() => {
+                this.doVibrationFor(200);
+              },200);    
+              lapType = 'B';  
+              this.BestLapId = this.LapsCount - 1;
             }
             else
             {
-              this.maxLapTime = this.InitialMaxLapTime;
-              this.BestLapTimeString= (this.LapsCount-1).toString();
-              string = 'F';
+              this.doVibrationFor(200);
+              lapType = 'R';  
+            }  
+
+            //Update laps array
+            var SingleLapTime = 
+            { 
+              id: this.LapsCount-1, 
+              time: lapTimeBLE, 
+              lapType: lapType
+            }; 
+            this.LapTimes.push(SingleLapTime);
+            if(isLogEnabled) console.log("pushing lap times");
+            if(isLogEnabled) console.log(this.LapTimes);
+
+
+            //Send score lights command to trainer
+
+            // Z -> start race
+            // Y -> end race
+            // L -> Leds command
+            // F -> like L but Final lap
+            let string = 'L';
+            if (this.LapsCount==9)
+              string = 'F'; 
+            string = string +  this.LapsCount + lapType;
+
+            let array = new Uint8Array(string.length);
+            for (let i = 0, l = string.length; i < l; i ++) {
+              array[i] = string.charCodeAt(i);
+            } 
+    
+            this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
+              () => {  
+                if(isLogEnabled) {         
+                  console.log("sending settings to trainer");
+                  console.log(this.trainID);
+                }  
+              },
+              error => { 
+                if(isLogEnabled) 
+                  console.error('Error sending date, disconnecting.', error);
+                clearInterval(this.get_duration_interval);
+                this.navCtrl.navigateBack('scanner');
+                }
+            );   
+    
+
+            this.reset();
+            //Race still on?
+            if (this.LapsCount<9)
+            {
+              this.timeBegan = new Date();
+              //If this is the first lap the timer was already started at the beggining of this function
+              if (lapBLE>1)
+              {
+                this.started = setInterval(this.clockRunning.bind(this), 108);
+                console.log('timer started 222 , interval = ',this.started);
+              }  
+              this.running = true;
+              //this.LapsCount++;
+            }  
+            else
+            {
+              //Race finished       Type: LAP
               this.doBlinkColor("#FFF","#000");          
               this.LapTimeString = this.time;
               this.doVibrationFor(2000);
@@ -1371,106 +1338,143 @@ playSingleLock() {
               this.time = "FINSH";
               this.LapsCount = 1;
               this.running = false;
+              this.LapStatsShow = true;
 
-              //Save best lap time in case we switch to other race type and then go back
-              this.BestLapTimeCountString = this.BestLapTimeString; 
-              if(isLogEnabled) console.log(" this.BestLapTimeCountString: "+ this.BestLapTimeCountString);
             }
-            //Send lap data to trainer
-            string = string +  this.LapsCount;
-            let array = new Uint8Array(string.length);
-            for (let i = 0, l = string.length; i < l; i ++) {
-              array[i] = string.charCodeAt(i);
-            } 
-    
-            this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
-              () => {           
-                if(isLogEnabled) 
+          }
+
+          if ((this.RaceType=='countdown')&&(this.running))
+          {
+              this.reset();
+                let string = 'L';
+              //If we are on the 16 lap end the race
+              if (this.LapsCount<17)
+              {
+                //Restart lap time
+                this.maxLapTime =  this.maxLapTime - 1;
+                this.timeBegan = new Date();
+                if (lapBLE>1)
                 {
-                  console.log("sending settings to trainer");
-                  console.log(this.trainID);
-                }  
-              },
-              error => { 
-                if(isLogEnabled) 
-                  console.error('Error sending date, disconnecting.', error);
-                clearInterval(this.get_duration_interval);
-                this.navCtrl.navigateBack('scanner');
-                }
-            );   
+                  this.started = setInterval(this.clockRunningCountdown.bind(this), 108);
+                  console.log('timer started 333 , interval = ',this.started);
+                }                  
+                this.running = true;
+                this.doVibrationFor(200);
+
+              }
+              else
+              {
+                this.maxLapTime = this.InitialMaxLapTime;
+                this.BestLapTimeString= (this.LapsCount-1).toString();
+                string = 'F';
+                this.doBlinkColor("#FFF","#000");          
+                this.LapTimeString = this.time;
+                this.doVibrationFor(2000);
+                this.stop();
+                this.time = "FINSH";
+                this.LapsCount = 1;
+                this.running = false;
+
+                //Save best lap time in case we switch to other race type and then go back
+                this.BestLapTimeCountString = this.BestLapTimeString; 
+                if(isLogEnabled) console.log(" this.BestLapTimeCountString: "+ this.BestLapTimeCountString);
+              }
+              //Send lap data to trainer
+              string = string +  this.LapsCount;
+              let array = new Uint8Array(string.length);
+              for (let i = 0, l = string.length; i < l; i ++) {
+                array[i] = string.charCodeAt(i);
+              } 
+      
+              this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
+                () => {           
+                  if(isLogEnabled) 
+                  {
+                    console.log("sending settings to trainer");
+                    console.log(this.trainID);
+                  }  
+                },
+                error => { 
+                  if(isLogEnabled) 
+                    console.error('Error sending date, disconnecting.', error);
+                  clearInterval(this.get_duration_interval);
+                  this.navCtrl.navigateBack('scanner');
+                  }
+              );   
+
+          }
+          return;
+        }  
+    }
+    else
+    {
+      //If we are here this is a drag race, actually there is no need to check it again
+      if (this.RaceType=="drag")
+      {
+        if(isLogEnabled) 
+        {
+          console.log('this.running '+this.running);
+          console.log('lapBLE '+lapBLE);
+          console.log('this.LapsCount '+this.LapsCount);
+        }  
+        if((this.running)&&(lapBLE >= this.LapsCount))
+        {
+          //Race finished      
+          this.doBlinkColor("#FFF","#000");          
+          this.LapTimeString = this.time;
+
+          this.BestLapTime= lapTimeBLE;
+          this.BestLapTimeString= lapTimeBLE.toString();
+          //check if there is no decimal point
+          if ( this.BestLapTimeString.indexOf('.')<1)
+            this.BestLapTimeString =  this.BestLapTimeString + '.00';
+          
+          //Save best lap time in case we switch to drag and then go back
+          this.BestLapTimeDragString = this.BestLapTimeString; 
+          this.BestLapTimeDrag = this.BestLapTime;
+
+          this.doVibrationFor(2000);
+          this.stop();
+          this.time = "FINSH";
+          this.LapsCount = 1;
+          this.running = false;
+
+
+          //Send score lights command to trainer
+          if ( this.trainID.length>2 )
+          {
+              // F -> Final lap
+              let string = 'F';
+              string = string +  this.LapsCount + lapType;
+
+              let array = new Uint8Array(string.length);
+              for (let i = 0, l = string.length; i < l; i ++) {
+                array[i] = string.charCodeAt(i);
+              } 
+
+              this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
+                () => {        
+                  if(isLogEnabled) 
+                  {   
+                    console.log("sending settings to trainer");
+                    console.log(this.trainID);
+                  }  
+                },
+                error => { 
+                  if(isLogEnabled) 
+                    console.error('Error sending date, disconnecting.', error);
+                  clearInterval(this.get_duration_interval);
+                  this.navCtrl.navigateBack('scanner');
+                  }
+              );   
+          }    
+
 
         }
-        return;
-      }  
-  }
-  else
-  {
-    //If we are here this is a drag race, actually there is no need to check it again
-    if (this.RaceType=="drag")
-    {
-      if(isLogEnabled) 
-      {
-        console.log('this.running '+this.running);
-        console.log('lapBLE '+lapBLE);
-        console.log('this.LapsCount '+this.LapsCount);
-      }  
-      if((this.running)&&(lapBLE >= this.LapsCount))
-      {
-        //Race finished      
-        this.doBlinkColor("#FFF","#000");          
-        this.LapTimeString = this.time;
-
-        this.BestLapTime= lapTimeBLE;
-        this.BestLapTimeString= lapTimeBLE.toString();
-        //check if there is no decimal point
-        if ( this.BestLapTimeString.indexOf('.')<1)
-          this.BestLapTimeString =  this.BestLapTimeString + '.00';
         
-        //Save best lap time in case we switch to drag and then go back
-        this.BestLapTimeDragString = this.BestLapTimeString; 
-        this.BestLapTimeDrag = this.BestLapTime;
+      }  
 
-        this.doVibrationFor(2000);
-        this.stop();
-        this.time = "FINSH";
-        this.LapsCount = 1;
-        this.running = false;
-
-
-        //Send score lights command to trainer
-        if ( this.trainID.length>2 )
-        {
-            // F -> Final lap
-            let string = 'F';
-            string = string +  this.LapsCount + lapType;
-
-            let array = new Uint8Array(string.length);
-            for (let i = 0, l = string.length; i < l; i ++) {
-              array[i] = string.charCodeAt(i);
-            } 
-
-            this.ble.writeWithoutResponse(this.trainID, TRAINER_SERVICE_UUID, TRAINER_CHAR_UUID, array.buffer).then(
-              () => {        
-                if(isLogEnabled) 
-                {   
-                  console.log("sending settings to trainer");
-                  console.log(this.trainID);
-                }  
-              },
-              error => { 
-                if(isLogEnabled) 
-                  console.error('Error sending date, disconnecting.', error);
-                clearInterval(this.get_duration_interval);
-                this.navCtrl.navigateBack('scanner');
-                }
-            );   
-        }    
-
-
-      }
-      
     }  
-
   }    
 }
 
