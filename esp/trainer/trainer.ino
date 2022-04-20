@@ -239,7 +239,7 @@ void setup() {
                         BLECharacteristic::PROPERTY_NOTIFY|BLECharacteristic::PROPERTY_READ|BLECharacteristic::PROPERTY_WRITE_NR|BLECharacteristic::PROPERTY_WRITE
                       );
    int moshe=0;  
-   pCharacteristic->setValue(moshe);
+   pCharacteristic->setValue("aaa");
     
     BLE2902 *desc = new BLE2902();
     desc->setNotifications(true);
@@ -420,7 +420,7 @@ void loop() {
           
           //pCharacteristic->setValue(testrxValue);
           char txString[4]="bbb";
-          pCharacteristic->setValue(txString);
+          pCharacteristic->setValue("alex");
 
           pCharacteristic->notify();
           Serial.println("MOSHE NOTIFY");
