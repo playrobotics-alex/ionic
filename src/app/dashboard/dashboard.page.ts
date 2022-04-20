@@ -491,7 +491,7 @@ playSingleLock() {
           this.SubscribedToNotifyBLE = true;
          // this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E", onNotify);
          this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
-          (buffer) => { let data = new Uint8Array(buffer); console.log(JSON.stringify(buffer)) },
+          (buffer) => { let data = new Uint8Array(buffer); console.log(JSON.stringify(buffer)); console.log("yes") },
           (error) => console.log(error)
           )
 
