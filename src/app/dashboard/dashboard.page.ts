@@ -490,12 +490,13 @@ playSingleLock() {
           console.log("-==subscribing==-");
           this.SubscribedToNotifyBLE = true;
          // this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E", onNotify);
-        
          this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
           (buffer) => { let data = new Uint32Array(buffer); console.log(data) },
-          (error) => console.log((error)
-      )
+          (error) => console.log(error)
+          )
+
 /*
+
           this.ble.startNotification(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").subscribe(
             (data) => {
               this.onNotify(data);              
