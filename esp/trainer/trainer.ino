@@ -451,10 +451,10 @@ void loop() {
   {
       //We need to start a race!  
       got_start=false;  
-      int peleg = 999;     
-      pCharacteristic->setValue(peleg);
-      pCharacteristic->notify();   
-      Serial.println("PELEG NOTIFY");  
+      //int peleg = 999;     
+      //pCharacteristic->setValue(peleg);
+      //pCharacteristic->notify();   
+      //Serial.println("PELEG NOTIFY");  
              
       if (RaceType=='C')
       {
