@@ -587,7 +587,7 @@ playSingleLock() {
     if (this.SlowFuelToggle==true)
     {
       if (this.RPMValue>700)
-        this.FuelValue = (this.FuelValue * 10 - 10.5 * 10) / 10;
+        this.FuelValue = (this.FuelValue * 10 - 1.5 * 10) / 10;
       else
       {
         if (this.RPMValue>500)
