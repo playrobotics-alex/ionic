@@ -331,7 +331,7 @@ export class DashboardPage implements AfterViewInit {
           this.RPMValue=1000;
           this.FuelValue=1000;
           this.TempValue=180;       
-          console.log('TempValu update: '+this.TempValue);             
+          console.log('TempValu update1: '+this.TempValue);             
         },500);
 
         setTimeout(() => 
@@ -339,7 +339,7 @@ export class DashboardPage implements AfterViewInit {
           this.RPMValue=0;
           this.FuelValue=0;
           this.TempValue=0;
-          console.log('TempValu update: '+this.TempValue);             
+          console.log('TempValu update2: '+this.TempValue);             
         },1400);
         
         setTimeout(() => 
@@ -573,13 +573,13 @@ playSingleLock() {
     if(this.TempValue<25)
     {
       this.TempValue =  this.TempValue+2;
-      console.log('TempValu update: '+this.TempValue);             
+      console.log('TempValu update3: '+this.TempValue);             
     }  
     else
       if(this.TempValue<90)
       {
         this.TempValue = this.TempValue + 0.1;
-        console.log('TempValu update: '+this.TempValue);             
+        console.log('TempValu update4: '+this.TempValue);             
       }  
     
 
@@ -618,7 +618,7 @@ playSingleLock() {
         if (this.TempValue<175)
         {
           this.TempValue = this.TempValue + 0.25;
-          console.log('TempValu update: '+this.TempValue);             
+          console.log('TempValu update5: '+this.TempValue);             
         }  
       }  
       else
@@ -628,7 +628,7 @@ playSingleLock() {
           if (this.TempValue<175)
           {
             this.TempValue = this.TempValue + 0.1;
-            console.log('TempValu update: '+this.TempValue);             
+            console.log('TempValu update6: '+this.TempValue);             
           }  
         }  
         else  
@@ -638,7 +638,7 @@ playSingleLock() {
             if(this.TempValue>90)
             {
               this.TempValue = this.TempValue - 0.2;
-              console.log('TempValu update: '+this.TempValue);             
+              console.log('TempValu update7: '+this.TempValue);             
             }  
           }  
           else
@@ -647,7 +647,7 @@ playSingleLock() {
               if (this.TempValue > 90)
               {
                 this.TempValue = this.TempValue - 0.3;
-                console.log('TempValu update: '+this.TempValue);             
+                console.log('TempValu update8: '+this.TempValue);             
               }    
           }  
         }   
