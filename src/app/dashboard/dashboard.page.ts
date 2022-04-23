@@ -330,7 +330,8 @@ export class DashboardPage implements AfterViewInit {
           this.AnimationDuration=700;
           this.RPMValue=1000;
           this.FuelValue=1000;
-          this.TempValue=180;                    
+          this.TempValue=180;       
+          console.log('TempValu update: '+this.TempValue);             
         },500);
 
         setTimeout(() => 
@@ -338,6 +339,7 @@ export class DashboardPage implements AfterViewInit {
           this.RPMValue=0;
           this.FuelValue=0;
           this.TempValue=0;
+          console.log('TempValu update: '+this.TempValue);             
         },1400);
         
         setTimeout(() => 
@@ -569,10 +571,16 @@ playSingleLock() {
     }
     //Temp
     if(this.TempValue<25)
+    {
       this.TempValue =  this.TempValue+2;
+      console.log('TempValu update: '+this.TempValue);             
+    }  
     else
       if(this.TempValue<90)
+      {
         this.TempValue = this.TempValue + 0.1;
+        console.log('TempValu update: '+this.TempValue);             
+      }  
     
 
     //====Fuel managment======        
@@ -608,27 +616,39 @@ playSingleLock() {
       if (this.RPMValue>700)
       {
         if (this.TempValue<175)
+        {
           this.TempValue = this.TempValue + 0.25;
+          console.log('TempValu update: '+this.TempValue);             
+        }  
       }  
       else
       {
         if (this.RPMValue>500)
         {
           if (this.TempValue<175)
+          {
             this.TempValue = this.TempValue + 0.1;
+            console.log('TempValu update: '+this.TempValue);             
+          }  
         }  
         else  
         {
           if (this.RPMValue < 300)
           {
             if(this.TempValue>90)
+            {
               this.TempValue = this.TempValue - 0.2;
+              console.log('TempValu update: '+this.TempValue);             
+            }  
           }  
           else
           {
               //between 300 -> 500
               if (this.TempValue > 90)
+              {
                 this.TempValue = this.TempValue - 0.3;
+                console.log('TempValu update: '+this.TempValue);             
+              }    
           }  
         }   
       }          
@@ -816,6 +836,7 @@ playSingleLock() {
   // Function to disconnect from the device
   disconnect()
   {
+    clearInterval(this.started);
     if (this.alertMode== 'Ring') 
       this.playSingleLock();
     else
@@ -890,6 +911,8 @@ playSingleLock() {
 
   start(RaceType) 
   {        
+    //When a race is started we will send a command to the trainer
+    //The trainer will then sed a notification to ionic that he starts to countdown (999) - onNotify
     this.reset();
     clearInterval(this.startedNoRace);
     if ( this.trainID.length>2 )
@@ -1137,6 +1160,8 @@ playSingleLock() {
   onNotify(buffer:ArrayBuffer){
     console.log("-==notify recived==-");
     this.ReadLapData(buffer);
+    //No need to read because we are parsing the data from the notification
+
     //this.ble.read(this.trainID, TRAINER_SERVICE_UUID, "7E400003-B5A3-F393-E0A9-E50E24DCCA9E").then(
       //data => this.ReadLapData(data),
       //() => this.showAlert('Unexpected Error', 'Failed to read')
