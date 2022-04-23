@@ -587,23 +587,23 @@ playSingleLock() {
     if (this.SlowFuelToggle==true)
     {
       if (this.RPMValue>700)
-        this.FuelValue = this.FuelValue - 10.5;      
+        this.FuelValue = (this.FuelValue * 10 - 10.5 * 10) / 10;
       else
       {
         if (this.RPMValue>500)
-          this.FuelValue = this.FuelValue - 0.3;      
+          this.FuelValue = (this.FuelValue * 10 - 0.3 * 10) / 10;          
         else  
         {
           if (this.RPMValue < 300)
           {
             if(this.RPMValue > 0)
-              this.FuelValue = this.FuelValue - 0.1;      
+              this.FuelValue = (this.FuelValue * 10 - 0.1 * 10) / 10;              
           }  
           else
           {
               //between 300 -> 500
               if (this.RPMValue > 50)
-                this.FuelValue = this.FuelValue - 0.2;      
+                this.FuelValue = (this.FuelValue * 10 - 0.2 * 10) / 10;                
           }  
         }   
       }    
