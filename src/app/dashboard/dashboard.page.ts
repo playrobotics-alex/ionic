@@ -572,13 +572,13 @@ playSingleLock() {
     //Temp
     if(this.TempValue<25)
     {
-      this.TempValue =  this.TempValue+2;
+      this.TempValue = (this.TempValue * 10 + 2 * 10) / 10;
       console.log('TempValu update3: '+this.TempValue);             
     }  
     else
       if(this.TempValue<90)
       {
-        this.TempValue = this.TempValue + 0.1;
+        this.TempValue = (this.TempValue * 10 + 0.1 * 10) / 10;
         console.log('TempValu update4: '+this.TempValue);             
       }  
     
@@ -617,7 +617,8 @@ playSingleLock() {
       {
         if (this.TempValue<175)
         {
-          this.TempValue = this.TempValue + 0.25;
+          this.TempValue = (this.TempValue * 10 + 0.25 * 10) / 10;
+
           console.log('TempValu update5: '+this.TempValue);             
         }  
       }  
@@ -627,7 +628,7 @@ playSingleLock() {
         {
           if (this.TempValue<175)
           {
-            this.TempValue = this.TempValue + 0.1;
+            this.TempValue = (this.TempValue * 10 + 0.1 * 10) / 10;
             console.log('TempValu update6: '+this.TempValue);             
           }  
         }  
@@ -637,7 +638,7 @@ playSingleLock() {
           {
             if(this.TempValue>90)
             {
-              this.TempValue = this.TempValue - 0.2;
+              this.TempValue = (this.TempValue * 10 - 0.2 * 10) / 10;
               console.log('TempValu update7: '+this.TempValue);             
             }  
           }  
@@ -646,7 +647,7 @@ playSingleLock() {
               //between 300 -> 500
               if (this.TempValue > 90)
               {
-                this.TempValue = this.TempValue - 0.3;
+                this.TempValue = (this.TempValue * 10 - 0.3 * 10) / 10;
                 console.log('TempValu update8: '+this.TempValue);             
               }    
           }  
