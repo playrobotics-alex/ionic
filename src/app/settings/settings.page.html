@@ -64,6 +64,10 @@
           <ion-toggle [checked]="IndoorLightsToggle"  [(ngModel)]="IndoorLightsToggle" (ionChange)="OnIndoorLightsToggleChange($event, IndoorLightsToggle)"  ></ion-toggle>
         
       </ion-item>
+      <ion-item>
+        <ion-label>Enable Super Nitro</ion-label>
+        <ion-toggle [checked]="SuperNitroToggle"  [(ngModel)]="SuperNitroToggle"  (ionChange)="OnSuperNitroToggleChange($event, SuperNitroToggle)" > </ion-toggle>
+      </ion-item>      
 
     </ion-list>
   </div>
