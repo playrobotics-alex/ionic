@@ -999,11 +999,12 @@ playSingleLock() {
   start(RaceType) 
   {        
     //When a race is started we will send a command to the trainer
-    //The trainer will then sed a notification to ionic that he starts to countdown (999) - onNotify
-    this.reset();
-    clearInterval(this.startedNoRace);
+    //The trainer will then send a notification to ionic that he starts to countdown (999) - onNotify
     if ( this.trainID.length>2 )
     {
+      this.reset();
+      clearInterval(this.startedNoRace);
+
       this.RaceType = RaceType;
       if(isLogEnabled) console.log("RaceType: "+ this.RaceType);
       if (this.RaceType=="lap")
@@ -1318,7 +1319,7 @@ playSingleLock() {
     // lap-number|| lap second X 10  || lap second X 1 || lap second / 10 ||   lap second / 100 ||
       var lapBLE = Math.round(lapData/10000)
       if(isLogEnabled) console.log('Lap: ',lapBLE);
-      
+      console.log('Lap: ',lapBLE);
       var lapTimeBLE = Math.round(lapData%10000)/100;
       if(isLogEnabled) console.log('Time: ',lapTimeBLE);
       
@@ -1453,7 +1454,12 @@ playSingleLock() {
               this.LapsCount = 1;
               this.running = false;
               this.LapStatsShow = true;
-
+              this.timeBegan = null;
+              this.timeStopped = null;
+              this.stoppedDuration = 0;
+              this.started = null;
+              this.startedNoRace = null;
+              this.timerStarted = false
             }
           }
 
