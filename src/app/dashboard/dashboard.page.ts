@@ -301,7 +301,7 @@ export class DashboardPage implements AfterViewInit {
             if (this.nitro==true)
             {
               if (this.SuperNitroToggle==false)
-              this.mappedSpeedController  = Math.round(this.mappedSpeedController *0.65+31.5);          
+              this.mappedSpeedController  = Math.round(this.mappedSpeedController *0.8+18);          
             }      
             else  
               this.mappedSpeedController  = this.mappedSpeedController *0.5 + 45;
@@ -841,7 +841,7 @@ playSingleLock() {
     if (this.nitro==true)
     {
       if (this.SuperNitroToggle==false)
-        NitroGas = Math.round(Mapped180Gas*0.65+31.5);
+        NitroGas = Math.round(Mapped180Gas*0.8+18);
       else  
         NitroGas = Mapped180Gas;                
     }      
