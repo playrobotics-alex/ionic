@@ -123,8 +123,11 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           int steering_int = steering_string.toInt() ;
 
           //left sttering compinsation (currently done on car side)
-          if (steering_int<90)
-          steering_int = steering_int - ((90-steering_int) *0.3);
+          //if (steering_int>90)
+            //steering_int = steering_int + (steering_int *0.2)+3;
+
+          //if (steering_int<40)
+            //steering_int = 45;
 
           //maybe map steering?
           //steering_value = map(acc_int*1, -100, 100, 0, 180);
