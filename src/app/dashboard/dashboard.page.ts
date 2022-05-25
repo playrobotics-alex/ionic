@@ -123,6 +123,9 @@ export class DashboardPage implements AfterViewInit {
 
   maxLapTime : number = 25;
 
+  OldRpmToDisplay : number = 0;
+
+
   //Controller Global Variables
   ControllerFound : boolean = false;
   mappedSteeringController : number = 0;
@@ -214,19 +217,46 @@ export class DashboardPage implements AfterViewInit {
 
             // Print the pressed buttons to our HTML
             for (const button of pressedButtons) {
-                if(isLogEnabled) console.log(button);
-                if(button.id==8)
+                console.log(button);
+                //Android and ios have different button ids!
+                if (this.platform.is("android"))
                 {
-                  console.log('NITRO');
-                  this.nitro = true;
-                  this.bgColor = "rgb(0, 0, 151)";
-                }  
-                if(button.id==9)
+                  if(button.id==8)
+                  {
+                    console.log('NITRO');
+                    this.nitro = true;
+                    if (this.SuperNitroToggle==false)
+                      this.bgColor = "rgb(0, 0, 151)";
+                    else
+                      this.bgColor = "rgb(153, 0, 76)";
+                  }  
+                  if(button.id==9)
+                  {
+                    console.log('NO NITRO');
+                    this.nitro = false;
+                    this.bgColor = "rgb(0, 0, 0)";
+                  }                 
+                }
+                else
                 {
-                  console.log('NO NITRO');
-                  this.nitro = false;
-                  this.bgColor = "rgb(0, 0, 0)";
-                }                  
+                  //ios
+                  if(button.id==10)
+                  {
+                    console.log('NITRO');
+                    this.nitro = true;
+                    if (this.SuperNitroToggle==false)
+                      this.bgColor = "rgb(0, 0, 151)";
+                    else
+                      this.bgColor = "rgb(153, 0, 76)";
+                  }  
+                  if(button.id==11)
+                  {
+                    console.log('NO NITRO');
+                    this.nitro = false;
+                    this.bgColor = "rgb(0, 0, 0)";
+                  }                      
+                }
+                 
 
                 //This is not working coorectly because button clicks were not handeled (double click)
                 /*
@@ -615,42 +645,41 @@ playSingleLock() {
         if(isLogEnabled) console.log('TempValu update4: '+this.TempValue);             
       }  
     
-
+      let rand = Math.floor(Math.random() *  100);
     //====Fuel managment======        
-    if (this.SlowFuelToggle==true)
+    if ((this.SlowFuelToggle==true)&&(rand%10==0))
     {
       if (this.RPMValue>700)
-        this.FuelValue = (this.FuelValue * 10 - 1.5 * 10) / 10;
+        this.FuelValue = (this.FuelValue * 10 - 5 * 10) / 10;
       else
       {
         if (this.RPMValue>500)
-          this.FuelValue = (this.FuelValue * 10 - 0.3 * 10) / 10;          
+          this.FuelValue = (this.FuelValue * 10 - 3 * 10) / 10;          
         else  
         {
           if (this.RPMValue < 300)
           {
             if(this.RPMValue > 0)
-              this.FuelValue = (this.FuelValue * 10 - 0.1 * 10) / 10;              
+              this.FuelValue = (this.FuelValue * 10 - 1 * 10) / 10;              
           }  
           else
           {
               //between 300 -> 500
               if (this.RPMValue > 50)
-                this.FuelValue = (this.FuelValue * 10 - 0.2 * 10) / 10;                
+                this.FuelValue = (this.FuelValue * 10 - 2 * 10) / 10;                
           }  
         }   
       }    
     }
 
     //====Temp managment======        
-
-    if (this.SlowHeatToggle==true)
+    if ((this.SlowHeatToggle==true)&&(rand%10==0))
     {
       if (this.RPMValue>700)
       {
         if (this.TempValue<175)
         {
-          this.TempValue = (this.TempValue * 10 + 0.25 * 10) / 10;
+          this.TempValue = (this.TempValue * 10 + 2.5 * 10) / 10;
 
           if(isLogEnabled) console.log('TempValu update5: '+this.TempValue);             
         }  
@@ -661,7 +690,7 @@ playSingleLock() {
         {
           if (this.TempValue<175)
           {
-            this.TempValue = (this.TempValue * 10 + 0.1 * 10) / 10;
+            this.TempValue = (this.TempValue * 10 + 1 * 10) / 10;
             if(isLogEnabled) console.log('TempValu update6: '+this.TempValue);             
           }  
         }  
@@ -671,7 +700,7 @@ playSingleLock() {
           {
             if(this.TempValue>90)
             {
-              this.TempValue = (this.TempValue * 10 - 0.2 * 10) / 10;
+              this.TempValue = (this.TempValue * 10 - 2 * 10) / 10;
               if(isLogEnabled) console.log('TempValu update7: '+this.TempValue);             
             }  
           }  
@@ -680,7 +709,7 @@ playSingleLock() {
               //between 300 -> 500
               if (this.TempValue > 90)
               {
-                this.TempValue = (this.TempValue * 10 - 0.3 * 10) / 10;
+                this.TempValue = (this.TempValue * 10 - 3 * 10) / 10;
                 if(isLogEnabled) console.log('TempValu update8: '+this.TempValue);             
               }    
           }  
@@ -751,17 +780,23 @@ playSingleLock() {
 
     }     
 
-    if (this.nitro==false)
-      this.RPMValue =RpmToDisplay/2;
-    else
+    //Updating the RPM guage
+    //in order not to overload the rpm guage we want to update it only if there is a major change
+    if ( Math.abs(this.OldRpmToDisplay - RpmToDisplay) > 50 )
     {
-      
-      if (this.SuperNitroToggle==false)
-        this.RPMValue =RpmToDisplay/1.3;
-      else  
-        this.RPMValue =RpmToDisplay;
-    }  
-   
+      if (this.nitro==false)      
+        this.RPMValue =RpmToDisplay/2;
+      else
+      {
+        
+        if (this.SuperNitroToggle==false)
+          this.RPMValue =RpmToDisplay/1.3;
+        else  
+          this.RPMValue =RpmToDisplay;
+      }      
+      this.OldRpmToDisplay = RpmToDisplay;
+    }
+
     // Get the device current acceleration
     // sreering with accelerometer
     let steeringMultiplier = 0.75; 
@@ -942,7 +977,10 @@ playSingleLock() {
     }
     else
     {
-      this.bgColor = "rgb(0, 0, 151)";
+      if (this.SuperNitroToggle==false)
+        this.bgColor = "rgb(0, 0, 151)";
+      else
+        this.bgColor = "rgb(60, 9, 137)";
       this.nitro=true;
     }  
   }
