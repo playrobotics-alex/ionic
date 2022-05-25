@@ -980,7 +980,7 @@ playSingleLock() {
       if (this.SuperNitroToggle==false)
         this.bgColor = "rgb(0, 0, 151)";
       else
-        this.bgColor = "rgb(60, 9, 137)";
+        this.bgColor = "rgb(201, 0, 208)";
       this.nitro=true;
     }  
   }
@@ -1240,6 +1240,8 @@ playSingleLock() {
 
   goToSettings()
   {
+      this.bgColor = "rgb(0, 0, 0)";
+      this.nitro=false;
       if(isLogEnabled) console.info('Navigating to the [settings] page');
       this.navCtrl.navigateForward(['settings']);
  
