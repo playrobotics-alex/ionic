@@ -17,7 +17,7 @@
     
     </div>
 <!-- GAME MENU-->    
-<div style="border:0px solid red; color:white;height:100%;z-index:-200;" *ngIf="menuShow">
+<div style="border:0px solid red; color:white;height:100%;z-index:-200;background-color: black;" *ngIf="menuShow">
  
     <ion-header color="dark" style="border-bottom: 1px solid grey;">
         <ion-toolbar color="dark">
@@ -25,7 +25,7 @@
             <ion-icon style="font-size: 30px;margin-right:15px; padding-right: 4px;margin-left:10%;" slot="end" name="close" (click)="menuShow=!menuShow" ></ion-icon>
         </ion-toolbar>
     </ion-header>
-        <div style="margin-top:4%;">
+        <div style="margin-top:4%;background-color: black;">
             <div style="text-align: center;color:red" *ngIf="!alreadyConnected" (click)="startBleScan()">
                 You need to connect the <b>Smart Finish Line</b> in order to play games. <u>SCAN</u>
             </div>

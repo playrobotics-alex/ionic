@@ -85,6 +85,7 @@ export class DashboardPage implements AfterViewInit {
   AccSteeringToggle : boolean;
   SlowFuelToggle : boolean;
   SlowHeatToggle : boolean;
+  SuperNitroToggle : boolean;
   TrimValue : number = 0;
   InitialMaxLapTime : number = 30;
 
@@ -122,11 +123,14 @@ export class DashboardPage implements AfterViewInit {
 
   maxLapTime : number = 25;
 
+  OldRpmToDisplay : number = 0;
+
+
   //Controller Global Variables
-  ControllerFound : boolean;
+  ControllerFound : boolean = false;
   mappedSteeringController : number = 0;
   mappedSpeedController : number = 0;
-
+  gamePadCounter: number =0;
 
   constructor(  private ble: BLE,
                 private deviceMotion: DeviceMotion,    
@@ -164,100 +168,154 @@ export class DashboardPage implements AfterViewInit {
 
                   //this.listenToGamepad();
                 }
-      ngOnInit() {    
-        const refreshRate = 50;
-  
+      ngOnInit() {   
+        //how ofter we will be getting data from the controller 
+        const refreshRate = 10;
+        this.gamePadCounter = 0;
         
         setInterval( () =>
         {
-          
-          // Returns up to 4 gamepads.
-          const gamepads = navigator.getGamepads();
-          // We take the first one, for simplicity
-          const gamepad = gamepads[0];
-  
-          // Escape if no gamepad was found
-          if (!gamepad) 
+          if (!this.ControllerFound) 
           {
-              if(isLogEnabled) console.log('No gamepad found.');
-              this.ControllerFound = false;
-              return;
+              //If game pad was not found we are going to be checking for gamepad only once per second
+              this.gamePadCounter++;
+              if (this.gamePadCounter%10==0)
+              {// Returns up to 4 gamepads.
+                const gamepads = navigator.getGamepads();
+                // We take the first one, for simplicity
+                const gamepad = gamepads[0];
+                if (!gamepad) 
+                {
+                  if(isLogEnabled) console.log('No gamepad found.');
+                  this.ControllerFound = false;
+                  return;
+                }  
+                else
+                  this.ControllerFound = true;
+              } 
+              else
+                return; 
           }
           else
           {
-            if(isLogEnabled) console.log('FOUNDDD');
-            this.ControllerFound = true;
-          }  
-  
-          // Filter out only the buttons which are pressed
-          const pressedButtons = gamepad.buttons                
-              .map((button, id) => ({id, button}))
-              .filter(isPressed);
-  
-          // Print the pressed buttons to our HTML
-          for (const button of pressedButtons) {
-              if(isLogEnabled) console.log(button);
-              if(button.id==8)
-              {
-                console.log('NITRO');
-                this.nitro = true;
-                this.bgColor = "rgb(0, 0, 151)";
+            console.log('we have gamepad');
+            
+            const gamepads = navigator.getGamepads();
+            // We take the first one, for simplicity
+            const gamepad = gamepads[0];
+            if (!gamepad) 
+            {
+              console.log('GAMEPAD LOST!');
+              this.ControllerFound = false;
+              return;
+            }              
+
+            // Filter out only the buttons which are pressed
+            const pressedButtons = gamepad.buttons                
+            .map((button, id) => ({id, button}))
+            .filter(isPressed);
+
+            // Print the pressed buttons to our HTML
+            for (const button of pressedButtons) {
+                console.log(button);
+                //Android and ios have different button ids!
+                if (this.platform.is("android"))
+                {
+                  if(button.id==8)
+                  {
+                    console.log('NITRO');
+                    this.nitro = true;
+                    if (this.SuperNitroToggle==false)
+                      this.bgColor = "rgb(0, 0, 151)";
+                    else
+                      this.bgColor = "rgb(153, 0, 76)";
+                  }  
+                  if(button.id==9)
+                  {
+                    console.log('NO NITRO');
+                    this.nitro = false;
+                    this.bgColor = "rgb(0, 0, 0)";
+                  }                 
+                }
+                else
+                {
+                  //ios
+                  if(button.id==10)
+                  {
+                    console.log('NITRO');
+                    this.nitro = true;
+                    if (this.SuperNitroToggle==false)
+                      this.bgColor = "rgb(0, 0, 151)";
+                    else
+                      this.bgColor = "rgb(153, 0, 76)";
+                  }  
+                  if(button.id==11)
+                  {
+                    console.log('NO NITRO');
+                    this.nitro = false;
+                    this.bgColor = "rgb(0, 0, 0)";
+                  }                      
+                }
+                 
+
+                //This is not working coorectly because button clicks were not handeled (double click)
+                /*
+                if(button.id==2)
+                  this.menuShow = true;
+
+                if((button.id==3)&&(this.menuShow==true))
+                  this.start('lap');
+
+                if((button.id==4)&&(this.menuShow==true))
+                  this.start('drag');          
+                  
+                if((button.id==0)&&(this.menuShow==true))
+                  this.start('countdown');                 
+                */
+
+
+            }
+            const pressedAxes = gamepad.axes;
+
+            //map left stick to steering as we use it
+            //-100 -> +100
+            this.mappedSteeringController =  Math.round(pressedAxes[0]*-100);
+            //0 -> 200
+            this.mappedSteeringController = this.mappedSteeringController + 100;
+            //0 -> 120
+            this.mappedSteeringController = this.mappedSteeringController * 0.6;          
+            //30 -> 150
+            this.mappedSteeringController = this.mappedSteeringController + 30  - this.TrimValue;          
+
+            //map right stick to gas as we use it
+            //-100 -> +100
+            this.mappedSpeedController =  pressedAxes[3]*100;
+            //0 -> 200
+            this.mappedSpeedController = this.mappedSpeedController + 100;
+            //0 -> 180
+            this.mappedSpeedController = this.mappedSpeedController * 0.9;  
+
+            //Yes nitro -- 0 -> 180 (super)
+            //No nitro -- 30 -> 150
+            //We now also have not super nitro
+            if (this.nitro==true)
+            {
+              if (this.SuperNitroToggle==false)
+              this.mappedSpeedController  = Math.round(this.mappedSpeedController *0.8+18);          
+            }      
+            else  
+              this.mappedSpeedController  = this.mappedSpeedController *0.5 + 45;
+              
+              
+
+            this.mappedSpeedController = Math.round(this.mappedSpeedController);
+
+
+            if(isLogEnabled) console.log('steering 0: ' + this.mappedSteeringController + ' || Gas 3: ' + this.mappedSpeedController);
+              //console.log('1: ' +pressedAxes[1]);
+              //console.log('2: ' +pressedAxes[2]);
               }  
-              if(button.id==9)
-              {
-                console.log('NO NITRO');
-                this.nitro = false;
-                this.bgColor = "rgb(0, 0, 0)";
-              }                  
- 
-              //This is not working coorectly because button clicks were not handeled (double click)
-              /*
-              if(button.id==2)
-                this.menuShow = true;
- 
-              if((button.id==3)&&(this.menuShow==true))
-                this.start('lap');
-
-              if((button.id==4)&&(this.menuShow==true))
-                this.start('drag');          
-                
-              if((button.id==0)&&(this.menuShow==true))
-                this.start('countdown');                 
-              */
-
-
-          }
-          const pressedAxes = gamepad.axes;
-
-          //map left stick to steering as we use it
-          //-100 -> +100
-          this.mappedSteeringController =  Math.round(pressedAxes[0]*-100);
-          //0 -> 200
-          this.mappedSteeringController = this.mappedSteeringController + 100;
-          //0 -> 120
-          this.mappedSteeringController = this.mappedSteeringController * 0.6;          
-          //30 -> 150
-          this.mappedSteeringController = this.mappedSteeringController + 30  - this.TrimValue;          
-
-          //map right stick to gas as we use it
-          //-100 -> +100
-          this.mappedSpeedController =  pressedAxes[3]*100;
-          //0 -> 200
-          this.mappedSpeedController = this.mappedSpeedController + 100;
-          //0 -> 180
-          this.mappedSpeedController = this.mappedSpeedController * 0.9;  
-
-          //Yes nitro -- 0 -> 180
-          //No nitro -- 30 -> 150
-          if (this.nitro==false)
-              this.mappedSpeedController = this.mappedSpeedController * 0.5 + 45;  
-
-          this.mappedSpeedController = Math.round(this.mappedSpeedController);
-
-
-          if(isLogEnabled) console.log('steering 0: ' + this.mappedSteeringController + ' || Gas 3: ' + this.mappedSpeedController);
-            //console.log('1: ' +pressedAxes[1]);
-            //console.log('2: ' +pressedAxes[2]);
+  
 
         }
           
@@ -285,6 +343,7 @@ export class DashboardPage implements AfterViewInit {
             this.storage.set('FirstTimeApp', 'NO'); 
             this.storage.set('TrimValue', '0'); 
             this.storage.set('InitialMaxLapTime', '20'); 
+            this.storage.set('SuperNitroToggle', '0'); 
             this.TrimValue = 0;
           }            
           else
@@ -534,6 +593,10 @@ playSingleLock() {
             }
         );   
       });
+      this.storage.get("SuperNitroToggle").then((value) => {
+        this.SuperNitroToggle=value;
+        if(isLogEnabled) console.log('SuperNitroToggle: ', value);
+      });
       this.storage.get("SlowHeatToggle").then((value) => {
         this.SlowHeatToggle=value;
         if(isLogEnabled) console.log('SlowHeatToggle: ', value);
@@ -582,42 +645,41 @@ playSingleLock() {
         if(isLogEnabled) console.log('TempValu update4: '+this.TempValue);             
       }  
     
-
+      let rand = Math.floor(Math.random() *  100);
     //====Fuel managment======        
-    if (this.SlowFuelToggle==true)
+    if ((this.SlowFuelToggle==true)&&(rand%10==0))
     {
       if (this.RPMValue>700)
-        this.FuelValue = (this.FuelValue * 10 - 1.5 * 10) / 10;
+        this.FuelValue = (this.FuelValue * 10 - 5 * 10) / 10;
       else
       {
         if (this.RPMValue>500)
-          this.FuelValue = (this.FuelValue * 10 - 0.3 * 10) / 10;          
+          this.FuelValue = (this.FuelValue * 10 - 3 * 10) / 10;          
         else  
         {
           if (this.RPMValue < 300)
           {
             if(this.RPMValue > 0)
-              this.FuelValue = (this.FuelValue * 10 - 0.1 * 10) / 10;              
+              this.FuelValue = (this.FuelValue * 10 - 1 * 10) / 10;              
           }  
           else
           {
               //between 300 -> 500
               if (this.RPMValue > 50)
-                this.FuelValue = (this.FuelValue * 10 - 0.2 * 10) / 10;                
+                this.FuelValue = (this.FuelValue * 10 - 2 * 10) / 10;                
           }  
         }   
       }    
     }
 
     //====Temp managment======        
-
-    if (this.SlowHeatToggle==true)
+    if ((this.SlowHeatToggle==true)&&(rand%10==0))
     {
       if (this.RPMValue>700)
       {
         if (this.TempValue<175)
         {
-          this.TempValue = (this.TempValue * 10 + 0.25 * 10) / 10;
+          this.TempValue = (this.TempValue * 10 + 2.5 * 10) / 10;
 
           if(isLogEnabled) console.log('TempValu update5: '+this.TempValue);             
         }  
@@ -628,7 +690,7 @@ playSingleLock() {
         {
           if (this.TempValue<175)
           {
-            this.TempValue = (this.TempValue * 10 + 0.1 * 10) / 10;
+            this.TempValue = (this.TempValue * 10 + 1 * 10) / 10;
             if(isLogEnabled) console.log('TempValu update6: '+this.TempValue);             
           }  
         }  
@@ -638,7 +700,7 @@ playSingleLock() {
           {
             if(this.TempValue>90)
             {
-              this.TempValue = (this.TempValue * 10 - 0.2 * 10) / 10;
+              this.TempValue = (this.TempValue * 10 - 2 * 10) / 10;
               if(isLogEnabled) console.log('TempValu update7: '+this.TempValue);             
             }  
           }  
@@ -647,7 +709,7 @@ playSingleLock() {
               //between 300 -> 500
               if (this.TempValue > 90)
               {
-                this.TempValue = (this.TempValue * 10 - 0.3 * 10) / 10;
+                this.TempValue = (this.TempValue * 10 - 3 * 10) / 10;
                 if(isLogEnabled) console.log('TempValu update8: '+this.TempValue);             
               }    
           }  
@@ -718,11 +780,23 @@ playSingleLock() {
 
     }     
 
-    if (this.nitro==false)
-      this.RPMValue =RpmToDisplay/2;
-    else
-      this.RPMValue =RpmToDisplay;
-   
+    //Updating the RPM guage
+    //in order not to overload the rpm guage we want to update it only if there is a major change
+    if ( Math.abs(this.OldRpmToDisplay - RpmToDisplay) > 50 )
+    {
+      if (this.nitro==false)      
+        this.RPMValue =RpmToDisplay/2;
+      else
+      {
+        
+        if (this.SuperNitroToggle==false)
+          this.RPMValue =RpmToDisplay/1.3;
+        else  
+          this.RPMValue =RpmToDisplay;
+      }      
+      this.OldRpmToDisplay = RpmToDisplay;
+    }
+
     // Get the device current acceleration
     // sreering with accelerometer
     let steeringMultiplier = 0.75; 
@@ -765,11 +839,20 @@ playSingleLock() {
     let currentNitroGas=0;
 
     if (this.nitro==true)
-      NitroGas = Mapped180Gas;
+    {
+      if (this.SuperNitroToggle==false)
+        NitroGas = Math.round(Mapped180Gas*0.8+18);
+      else  
+        NitroGas = Mapped180Gas;                
+    }      
     else  
       NitroGas = Mapped180Gas*0.5 + 45;
     
     //check if we have a controller connected
+
+    //***possible compinsation if we do it on he app and not car */
+    //if (this.revSteering<90)
+      //this.revSteering = this.revSteering - (this.revSteering *0.5);
 
     let string = NitroGas +'S' + this.revSteering;
     if (this.ControllerFound == true)
@@ -894,7 +977,10 @@ playSingleLock() {
     }
     else
     {
-      this.bgColor = "rgb(0, 0, 151)";
+      if (this.SuperNitroToggle==false)
+        this.bgColor = "rgb(0, 0, 151)";
+      else
+        this.bgColor = "rgb(201, 0, 208)";
       this.nitro=true;
     }  
   }
@@ -913,11 +999,12 @@ playSingleLock() {
   start(RaceType) 
   {        
     //When a race is started we will send a command to the trainer
-    //The trainer will then sed a notification to ionic that he starts to countdown (999) - onNotify
-    this.reset();
-    clearInterval(this.startedNoRace);
+    //The trainer will then send a notification to ionic that he starts to countdown (999) - onNotify
     if ( this.trainID.length>2 )
     {
+      this.reset();
+      clearInterval(this.startedNoRace);
+
       this.RaceType = RaceType;
       if(isLogEnabled) console.log("RaceType: "+ this.RaceType);
       if (this.RaceType=="lap")
@@ -1154,6 +1241,8 @@ playSingleLock() {
 
   goToSettings()
   {
+      this.bgColor = "rgb(0, 0, 0)";
+      this.nitro=false;
       if(isLogEnabled) console.info('Navigating to the [settings] page');
       this.navCtrl.navigateForward(['settings']);
  
@@ -1230,7 +1319,7 @@ playSingleLock() {
     // lap-number|| lap second X 10  || lap second X 1 || lap second / 10 ||   lap second / 100 ||
       var lapBLE = Math.round(lapData/10000)
       if(isLogEnabled) console.log('Lap: ',lapBLE);
-      
+      console.log('Lap: ',lapBLE);
       var lapTimeBLE = Math.round(lapData%10000)/100;
       if(isLogEnabled) console.log('Time: ',lapTimeBLE);
       
@@ -1365,7 +1454,12 @@ playSingleLock() {
               this.LapsCount = 1;
               this.running = false;
               this.LapStatsShow = true;
-
+              this.timeBegan = null;
+              this.timeStopped = null;
+              this.stoppedDuration = 0;
+              this.started = null;
+              this.startedNoRace = null;
+              this.timerStarted = false
             }
           }
 
