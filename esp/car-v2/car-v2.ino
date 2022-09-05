@@ -10,7 +10,16 @@
 // How many leds in your strip?
 #define NUM_LEDS 1
 #define DATA_PIN 27
+#define MOTOR_SPEED 21
+#define MOTOR_DIR 22
 CRGB leds[NUM_LEDS];
+
+// Setting PWM properties
+const int freq = 22000;
+const int pwmChannel = 14;
+const int resolution = 8;
+int dutyCycle = 200;
+
 
 Servo servo1;
 Servo servo2;
@@ -115,30 +124,54 @@ class MyCallbacks: public BLECharacteristicCallbacks {
           //servo1.write(speed_value);
           if (speed_value>90)
           {
-            //Forward
-            digitalWrite( MOTOR_DIR, HIGH ); 
-            mapped_speed = map(speed_value, 90, 180, 255, 0)
-            analogWrite( MOTOR_SPEED, mapped_speed );     
+            //Reverse
+            mapped_speed = map(speed_value, 90, 180, 160, 255);
+            if (mapped_speed>125)
+            {
+              digitalWrite( MOTOR_DIR, LOW );             
+              //analogWrite( MOTOR_SPEED, mapped_speed );     
+              ledcWrite(pwmChannel, mapped_speed); 
+            }  
+            else
+            {
+              digitalWrite( MOTOR_DIR, LOW );              
+              ledcWrite(pwmChannel, 0);    
+            }
           }
           else
           {
             if (speed_value<90)
             {
-              //Reverse
-              digitalWrite( MOTOR_DIR, LOW );
-              mapped_speed = map(speed_value, 0, 90, 0, 255)
-              analogWrite( MOTOR_SPEED, mapped_speed );                   
+              //Forward
+              mapped_speed = map(speed_value, 0, 90, 255, 160);
+              if (mapped_speed>125)
+              {
+                digitalWrite( MOTOR_DIR, HIGH );
+                //analogWrite( MOTOR_SPEED, mapped_speed );                   
+                ledcWrite(pwmChannel, 255-mapped_speed);     
+              }
+              else
+              {
+                digitalWrite( MOTOR_DIR, LOW );              
+                ledcWrite(pwmChannel, 0);    
+              }
             }
             else
             {
               //If=90 -> Stop motor
-              digitalWrite( MOTOR_DIR, LOW );
-              digitalWrite( MOTOR_SPEED, LOW );
-                
+              //digitalWrite( MOTOR_DIR, HIGH );
+              //digitalWrite( MOTOR_SPEED, HIGH );
+              digitalWrite( MOTOR_DIR, LOW );              
+              ledcWrite(pwmChannel, 0);
+              //delay(100);
+              //digitalWrite( MOTOR_SPEED, HIGH );                   
+              Serial.print("STOP ");
             }
           }
           
-          
+          Serial.print("mapped speed: ");
+          Serial.println(mapped_speed);
+
           String steering_string = getValue(rxValue.c_str(), 'S', 1);
           Serial.println(steering_string);
           
@@ -159,14 +192,20 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 
 
 
-int MOTOR_SPEED = 21;
-int MOTOR_DIR = 22;
+
 
 void setup() {
   Serial.begin(115200);
   pinMode(MOTOR_SPEED,OUTPUT);
   pinMode(MOTOR_DIR,OUTPUT);
+  
+  // configure LED PWM functionalitites
+  ledcSetup(pwmChannel, freq, resolution);  
+  // attach the channel to the GPIO to be controlled
+  ledcAttachPin(MOTOR_SPEED, pwmChannel);
 
+  
+    
   FastLED.addLeds<WS2812B, 27>(leds, NUM_LEDS);  // GRB ordering is assumed
   FastLED.setBrightness(50);
   leds[0] = CRGB::White;
