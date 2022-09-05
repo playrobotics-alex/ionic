@@ -1,7 +1,7 @@
 <ion-header color="dark" style="border-bottom: 1px solid grey;">
     <ion-toolbar color="dark">
         <ion-title slot="start">Garage</ion-title>
-        <ion-icon style="font-size: 30px;margin-right:15px; padding-right: 4px;" slot="end" name="search" (click)="startBleScan()" color="primary"></ion-icon>
+        <ion-icon style="font-size: 30px;margin-right:15px; padding-right: 4px;" slot="end" src="/assets/icon/search.svg" (click)="startBleScan()" color="primary"></ion-icon>
     </ion-toolbar>
 </ion-header>
 <ion-content color="dark">
@@ -11,9 +11,7 @@
                 <ion-row style="padding-top:20px;">
                     <ion-col class="ion-text-start" size="auto" >
                         <div class="rssi-circle">
-                            <ion-icon name="car-sport-outline"  style="font-size: 40px; margin-top:4px;"></ion-icon>
-                            
- 
+                            <ion-icon src="/assets/icon/car-sport-outline.svg"  style="font-size: 40px; margin-top:4px;"></ion-icon>                            
                         </div>
                     </ion-col>
                     <ion-col class="ion-text-start" size="auto">
@@ -37,7 +35,7 @@
     <ng-template #noDevicesScanned >
         <div style="text-align:center;border:0px solid blue;  height: 80vh; vertical-align: middle;">
             <div style='position: relative; top: 50%; -webkit-transform: translateY(-50%);-ms-transform: translateY(-50%);  transform: translateY(-50%);'>
-                <ion-icon style="font-size: 82px;color:gray;" name="car-sport-outline" ></ion-icon>
+                <ion-icon style="font-size: 82px;color:gray;" src="/assets/icon/car-sport-outline.svg" ></ion-icon>
                 <br>
                 <br>
                 <span style="font-size: 22px;">No cars in your garage yet...</span>

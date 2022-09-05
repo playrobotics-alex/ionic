@@ -3,7 +3,9 @@
     <ion-title>Settings</ion-title>
 
     <ion-buttons slot="start">
-      <ion-back-button  defaultHref="dashboard"></ion-back-button>
+      <ion-back-button  class="button-clear" defaultHref="dashboard">
+        <i class="button button-icon my-back-button"></i>
+      </ion-back-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -37,20 +39,21 @@
       <ion-item>
         <ion-label>{{TrimValue}}</ion-label>
         <ion-range min="-30" max="30" pin="true" snaps="true" step="2" value="0" (ionChange)="onRangeChange($event)" [value]="TrimValue">
-          <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
-          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+          <ion-icon slot="start" src="/assets/icon/arrow-back-outline.svg"></ion-icon>
+          <ion-icon slot="end" src="/assets/icon/arrow-forward-outline.svg"></ion-icon>
 
         </ion-range>
       </ion-item>
-
+      <!--
       <ion-item>
         <ion-label>Countdown Race First Lap Time:</ion-label>
       </ion-item>
       <ion-item>
         <ion-label>{{InitialMaxLapTime}}</ion-label>
         <ion-range min="16" max="30" pin="true" snaps="true" step="1" value="20" (ionChange)="onRangeChangeCountdown($event)" [value]="InitialMaxLapTime">
-          <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
-          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+          <ion-icon slot="start" src="/assets/icon/arrow-back-outline.svg"></ion-icon>
+          <ion-icon slot="end" src="/assets/icon/arrow-forward-outline.svg"></ion-icon>
+
 
         </ion-range>
         
@@ -58,17 +61,18 @@
       <ion-item>
         <ion-label>First lap:{{InitialMaxLapTime}} | Last Lap {{InitialMaxLapTime-16}}</ion-label>
       </ion-item>   
-      
+    -->
       <ion-item>
         <ion-label>Indoor Lights On</ion-label>
           <ion-toggle [checked]="IndoorLightsToggle"  [(ngModel)]="IndoorLightsToggle" (ionChange)="OnIndoorLightsToggleChange($event, IndoorLightsToggle)"  ></ion-toggle>
         
       </ion-item>
+      <!--
       <ion-item>
         <ion-label>Enable Super Nitro</ion-label>
         <ion-toggle [checked]="SuperNitroToggle"  [(ngModel)]="SuperNitroToggle"  (ionChange)="OnSuperNitroToggleChange($event, SuperNitroToggle)" > </ion-toggle>
       </ion-item>      
-
+      -->
     </ion-list>
   </div>
 

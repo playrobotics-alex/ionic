@@ -48,12 +48,13 @@ export class DashboardPage implements AfterViewInit {
   public startedNoRace = null
   public running = false
   public nitro = false
+  public SuperNitro = false
   public blankTime = "00.00"
   public time = "LAP"
-  public BestLapTimeString = "BEST"
-  public BestLapTimeDragString = "BEST"
-  public BestLapTimeLapString = "BEST"
-  public BestLapTimeCountString = "BEST"
+  public BestLapTimeString = "DRIVE"
+  public BestLapTimeDragString = "DRIVE"
+  public BestLapTimeLapString = "DRIVE"
+  public BestLapTimeCountString = "DRIVE"
 
   public BestLapId = 1;
 
@@ -124,7 +125,8 @@ export class DashboardPage implements AfterViewInit {
   maxLapTime : number = 25;
 
   OldRpmToDisplay : number = 0;
-
+  
+  tempValue : number = Math.floor(Math.random() * 16) + 84;
 
   //Controller Global Variables
   ControllerFound : boolean = false;
@@ -225,15 +227,14 @@ export class DashboardPage implements AfterViewInit {
                   {
                     console.log('NITRO');
                     this.nitro = true;
-                    if (this.SuperNitroToggle==false)
-                      this.bgColor = "rgb(0, 0, 151)";
-                    else
-                      this.bgColor = "rgb(153, 0, 76)";
+                    this.SuperNitro = false;
+                    this.bgColor = "rgb(0, 0, 151)";
                   }  
                   if(button.id==9)
                   {
                     console.log('NO NITRO');
                     this.nitro = false;
+                    this.SuperNitro = false;
                     this.bgColor = "rgb(0, 0, 0)";
                   }                 
                 }
@@ -244,15 +245,14 @@ export class DashboardPage implements AfterViewInit {
                   {
                     console.log('NITRO');
                     this.nitro = true;
-                    if (this.SuperNitroToggle==false)
-                      this.bgColor = "rgb(0, 0, 151)";
-                    else
-                      this.bgColor = "rgb(153, 0, 76)";
+                    this.SuperNitro = false;
+                    this.bgColor = "rgb(0, 0, 151)";
                   }  
                   if(button.id==11)
                   {
                     console.log('NO NITRO');
                     this.nitro = false;
+                    this.SuperNitro = false;
                     this.bgColor = "rgb(0, 0, 0)";
                   }                      
                 }
@@ -298,10 +298,11 @@ export class DashboardPage implements AfterViewInit {
             //Yes nitro -- 0 -> 180 (super)
             //No nitro -- 30 -> 150
             //We now also have not super nitro
-            if (this.nitro==true)
+            if ((this.nitro==true)||(this.SuperNitro==true))
             {
-              if (this.SuperNitroToggle==false)
-              this.mappedSpeedController  = Math.round(this.mappedSpeedController *0.8+18);          
+              //if super nitro is on we just leave the value as is, otherwise:
+              if (this.SuperNitro==false)
+                this.mappedSpeedController  = Math.round(this.mappedSpeedController *0.8+18);          
             }      
             else  
               this.mappedSpeedController  = this.mappedSpeedController *0.5 + 45;
@@ -784,12 +785,12 @@ playSingleLock() {
     //in order not to overload the rpm guage we want to update it only if there is a major change
     if ( Math.abs(this.OldRpmToDisplay - RpmToDisplay) > 50 )
     {
-      if (this.nitro==false)      
+      if ((this.nitro==false)&&(this.SuperNitro==false))      
         this.RPMValue =RpmToDisplay/2;
       else
       {
         
-        if (this.SuperNitroToggle==false)
+        if (this.SuperNitro==false)
           this.RPMValue =RpmToDisplay/1.3;
         else  
           this.RPMValue =RpmToDisplay;
@@ -810,9 +811,11 @@ playSingleLock() {
           this.revSteering = this.revSteering * steeringMultiplier
 
           //convert it to 0->180
-          this.revSteering = this.revSteering +90;
-          //reverse steering
+          this.revSteering = this.revSteering +90;          
+          this.revSteering = this.revSteering  - this.TrimValue ;
+
           this.revSteering = 180 - this.revSteering  - this.TrimValue ;
+          //reverse steering
           //console.log("this.revSteering: " + this.revSteering);
 
 
@@ -838,9 +841,9 @@ playSingleLock() {
     let NitroGas=0;
     let currentNitroGas=0;
 
-    if (this.nitro==true)
+    if ((this.nitro==true)||(this.SuperNitro==true))
     {
-      if (this.SuperNitroToggle==false)
+      if (this.SuperNitro==false)
         NitroGas = Math.round(Mapped180Gas*0.8+18);
       else  
         NitroGas = Mapped180Gas;                
@@ -969,6 +972,7 @@ playSingleLock() {
 
   async NitroClick()
   {
+    this.SuperNitro=false;
     if (this.nitro)
     {
       this.bgColor = "rgb(0, 0, 0)";
@@ -977,11 +981,24 @@ playSingleLock() {
     }
     else
     {
-      if (this.SuperNitroToggle==false)
-        this.bgColor = "rgb(0, 0, 151)";
-      else
-        this.bgColor = "rgb(201, 0, 208)";
+      this.bgColor = "rgb(0, 0, 151)";
       this.nitro=true;
+    }  
+  }
+
+  async SuperNitroClick()
+  {
+    this.nitro=false;
+    if (this.SuperNitro)
+    {
+      this.bgColor = "rgb(0, 0, 0)";
+      this.SuperNitro=false;
+
+    }
+    else
+    {
+      this.bgColor = "rgb(201, 0, 208)";
+      this.SuperNitro=true;
     }  
   }
  
@@ -1243,6 +1260,7 @@ playSingleLock() {
   {
       this.bgColor = "rgb(0, 0, 0)";
       this.nitro=false;
+      this.SuperNitro=false;
       if(isLogEnabled) console.info('Navigating to the [settings] page');
       this.navCtrl.navigateForward(['settings']);
  
